@@ -19,8 +19,8 @@
 package org.napile.primitive;
 
 /**
- * @author: VISTALL
- * @date:  21:06/30.12.2010
+ * @author VISTALL
+ * @date 21:06/30.12.2010
  * This is interface contains the same methods of #Collection and ##Map
  */
 public interface Container

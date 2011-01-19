@@ -107,17 +107,16 @@ import org.napile.primitive.iterators.IntIterator;
  *
  * @author Josh Bloch
  * @author Neal Gafter
- * @version %I%, %G%
- * @see	 IntSet
- * @see	 IntList
- * @see	 IntObjectMap
- * @see	 SortedIntSet
- * @see	 SortedIntObjectMap
- * @see	 HashIntSet
- * @see	 TreeIntSet
- * @see	 ArrayIntList
- * @see	 AbstractIntCollection
- * @see org.napile.primitive.Containers
+ * @see	 org.napile.primitive.sets.IntSet
+ * @see	 org.napile.primitive.lists.IntList
+ * @see	 org.napile.primitive.maps.IntObjectMap
+ * @see	 org.napile.primitive.sets.SortedIntSet
+ * @see	 org.napile.primitive.maps.SortedIntObjectMap
+ * @see	 org.napile.primitive.sets.impl.HashIntSet
+ * @see	 org.napile.primitive.sets.impl.TreeIntSet
+ * @see	 org.napile.primitive.lists.impl.ArrayIntList
+ * @see	 org.napile.primitive.collections.abstracts.AbstractIntCollection
+ * @see	 org.napile.primitive.Containers
  * @since 1.2
  */
 
@@ -416,8 +415,8 @@ public interface IntCollection extends Container
 	 * @return <tt>true</tt> if the specified object is equal to this
 	 *         collection
 	 * @see Object#equals(Object)
-	 * @see IntSet#equals(Object)
-	 * @see IntList#equals(Object)
+	 * @see org.napile.primitive.sets.IntSet#equals(Object)
+	 * @see org.napile.primitive.lists.IntList#equals(Object)
 	 */
 	boolean equals(Object o);
 

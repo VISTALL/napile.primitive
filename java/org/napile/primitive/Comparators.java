@@ -21,8 +21,8 @@ package org.napile.primitive;
 import org.napile.primitive.comparators.IntComparator;
 
 /**
- * @author: VISTALL
- * @date:  21:03/21.12.2010
+ * @author VISTALL
+ * @date  21:03/21.12.2010
  */
 public class Comparators
 {

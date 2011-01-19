@@ -96,13 +96,10 @@ import org.napile.primitive.iterators.IntListIterator;
  *
  * @author Josh Bloch
  * @author Neal Gafter
- * @version %I%, %G%
- * @see Collection
- * @see IntSet
- * @see ArrayIntList
- * @see Collections#EMPTY_LIST
- * @see AbstractIntList
- * @see AbstractSequentialList
+ * @see IntCollection
+ * @see org.napile.primitive.sets.IntSet
+ * @see org.napile.primitive.lists.impl.ArrayIntList
+ * @see org.napile.primitive.lists.abstracts.AbstractIntList
  * @since 1.2
  */
 

@@ -35,41 +35,136 @@ import org.napile.primitive.sets.IntSet;
 import org.napile.primitive.sets.abstracts.AbstractIntSet;
 
 /**
- * @author: VISTALL
- * @date: 20:57/30.12.2010
+ * @author VISTALL
+ * @date 20:57/30.12.2010
  * <p/>
  * Some parts from {@link java.util.Collections}
  */
 public class Containers
 {
-	public static final IntIterator		EMPTY_INT_ITERATOR		= new EmptyIntIterator();
+	public static final IntIterator EMPTY_INT_ITERATOR = new EmptyIntIterator();
 	//
-	public static final Container		EMPTY_CONTAINER 		= new EmptyContainer();
+	public static final Container EMPTY_CONTAINER = new EmptyContainer();
 	//
-	public static final IntList			EMPTY_INT_LIST 			= new EmptyIntList();
+	public static final IntList EMPTY_INT_LIST = new EmptyIntList();
 	//
-	public static final IntSet			EMPTY_INT_SET 			= new EmptyIntSet();
+	public static final IntSet EMPTY_INT_SET = new EmptyIntSet();
 	//
-	public static final IntObjectMap	EMPTY_INT_OBJECT_MAP 	= new EmptyIntObjectMap();
+	public static final IntObjectMap EMPTY_INT_OBJECT_MAP = new EmptyIntObjectMap();
 
+	/**
+	 * Return empty instance of IntObjectMap
+	 * @param <V>
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	public static <V> IntObjectMap<V> emptyIntObjectMap()
 	{
 		return EMPTY_INT_OBJECT_MAP;
 	}
 
+	public static IntList singletonIntList(int t)
+	{
+		return new SingletonIntList(t);
+	}
+
+	/**
+	 * Return simple singleton of iterator if param
+	 * @param e
+	 * @return
+	 */
+	public static IntIterator singletonIntIterator(final int e)
+	{
+		return new SingletonIntIterator(e);
+	}
+
+	private static class SingletonIntIterator implements IntIterator
+	{
+		private boolean _hasNext = true;
+		private final int _value;
+
+		public SingletonIntIterator(int value)
+		{
+			_value = value;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			return _hasNext;
+		}
+
+		@Override
+		public int next()
+		{
+			if(_hasNext)
+			{
+				_hasNext = false;
+				return _value;
+			}
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void remove()
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private static class SingletonIntList extends AbstractIntList implements RandomAccess, Serializable
+	{
+		private final int element;
+
+		SingletonIntList(int obj)
+		{
+			element = obj;
+		}
+
+		@Override
+		public IntIterator iterator()
+		{
+			return singletonIntIterator(element);
+		}
+
+		@Override
+		public int size()
+		{
+			return 1;
+		}
+
+		@Override
+		public boolean contains(int obj)
+		{
+			return element == obj;
+		}
+
+		@Override
+		public int get(int index)
+		{
+			if(index != 0)
+			{
+				throw new IndexOutOfBoundsException("Index: " + index + ", Size: 1");
+			}
+			return element;
+		}
+	}
+
 	private static class EmptyIntIterator implements IntIterator
 	{
+		@Override
 		public boolean hasNext()
 		{
 			return false;
 		}
 
+		@Override
 		public int next()
 		{
 			throw new NoSuchElementException();
 		}
 
+		@Override
 		public void remove()
 		{
 			throw new UnsupportedOperationException();
@@ -78,53 +173,61 @@ public class Containers
 
 	private static class EmptyIntObjectMap extends AbstractIntObjectMap<Object> implements Serializable
 	{
-		private static final long serialVersionUID = 6428348081105594320L;
-
+		@Override
 		public int size()
 		{
 			return 0;
 		}
 
+		@Override
 		public boolean isEmpty()
 		{
 			return true;
 		}
 
+		@Override
 		public boolean containsKey(int key)
 		{
 			return false;
 		}
 
+		@Override
 		public boolean containsValue(Object value)
 		{
 			return false;
 		}
 
+		@Override
 		public Object get(int key)
 		{
 			return null;
 		}
 
+		@Override
 		public IntSet keySet()
 		{
 			return EMPTY_INT_SET;
 		}
 
+		@Override
 		public Collection<Object> values()
 		{
 			return Collections.emptySet();
 		}
 
+		@Override
 		public Set<IntObjectMap.Entry<Object>> entrySet()
 		{
 			return Collections.emptySet();
 		}
 
+		@Override
 		public boolean equals(Object o)
 		{
 			return (o instanceof Map) && ((Map) o).size() == 0;
 		}
 
+		@Override
 		public int hashCode()
 		{
 			return 0;
@@ -160,16 +263,19 @@ public class Containers
 
 	private static class EmptyIntSet extends AbstractIntSet implements Serializable
 	{
+		@Override
 		public IntIterator iterator()
 		{
 			return EMPTY_INT_ITERATOR;
 		}
 
+		@Override
 		public int size()
 		{
 			return 0;
 		}
 
+		@Override
 		public boolean contains(int obj)
 		{
 			return false;
@@ -184,16 +290,19 @@ public class Containers
 
 	private static class EmptyIntList extends AbstractIntList implements RandomAccess, Serializable
 	{
+		@Override
 		public int size()
 		{
 			return 0;
 		}
 
+		@Override
 		public boolean contains(int obj)
 		{
 			return false;
 		}
 
+		@Override
 		public int get(int index)
 		{
 			throw new IndexOutOfBoundsException("Index: " + index);
