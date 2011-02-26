@@ -24,10 +24,11 @@
  */
 package org.napile.primitive.sets.abstracts;
 
-import org.napile.primitive.collections.IntCollection;
-import org.napile.primitive.collections.abstracts.AbstractIntCollection;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.collections.LongCollection;
+import org.napile.primitive.collections.abstracts.AbstractLongCollection;
+import org.napile.primitive.iterators.LongIterator;
 import org.napile.primitive.sets.IntSet;
+import org.napile.primitive.sets.LongSet;
 
 /**
  * This class provides a skeletal implementation of the <tt>Set</tt>
@@ -52,18 +53,18 @@ import org.napile.primitive.sets.IntSet;
  * @author Josh Bloch
  * @author Neal Gafter
  * @version %I%, %G%
- * @see IntCollection
- * @see AbstractIntCollection
- * @see IntSet
+ * @see org.napile.primitive.collections.LongCollection
+ * @see AbstractLongCollection
+ * @see LongSet
  * @since 1.2
  */
-public abstract class AbstractIntSet extends AbstractIntCollection implements IntSet
+public abstract class AbstractLongSet extends AbstractLongCollection implements LongSet
 {
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	public AbstractIntSet()
+	public AbstractLongSet()
 	{
 	}
 
@@ -97,7 +98,7 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 		{
 			return false;
 		}
-		IntCollection c = (IntCollection) o;
+		LongCollection c = (LongCollection) o;
 		if(c.size() != size())
 		{
 			return false;
@@ -136,10 +137,10 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	public int hashCode()
 	{
 		int h = 0;
-		IntIterator i = iterator();
+		LongIterator i = iterator();
 		while(i.hasNext())
 		{
-			int obj = i.next();
+			long obj = i.next();
 			h += obj;
 		}
 		return h;
@@ -177,23 +178,23 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @throws NullPointerException		  if this set contains a null element and the
 	 *                                       specified collection does not permit null elements (optional),
 	 *                                       or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(Object)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	public boolean removeAll(IntCollection c)
+	public boolean removeAll(LongCollection c)
 	{
 		boolean modified = false;
 
 		if(size() > c.size())
 		{
-			for(IntIterator i = c.iterator(); i.hasNext();)
+			for(LongIterator i = c.iterator(); i.hasNext();)
 			{
 				modified |= remove(i.next());
 			}
 		}
 		else
 		{
-			for(IntIterator i = iterator(); i.hasNext();)
+			for(LongIterator i = iterator(); i.hasNext();)
 			{
 				if(c.contains(i.next()))
 				{

@@ -119,12 +119,12 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	public boolean containsValue(Object value)
 	{
 		Iterator<Entry<V>> i = entrySet().iterator();
-		if (value == null)
+		if(value == null)
 		{
-			while (i.hasNext())
+			while(i.hasNext())
 			{
 				Entry<V> e = i.next();
-				if (e.getValue() == null)
+				if(e.getValue() == null)
 				{
 					return true;
 				}
@@ -132,10 +132,10 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 		}
 		else
 		{
-			while (i.hasNext())
+			while(i.hasNext())
 			{
 				Entry<V> e = i.next();
-				if (value.equals(e.getValue()))
+				if(value.equals(e.getValue()))
 				{
 					return true;
 				}
@@ -160,10 +160,10 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	public boolean containsKey(int key)
 	{
 		Iterator<Entry<V>> i = entrySet().iterator();
-		while (i.hasNext())
+		while(i.hasNext())
 		{
-			Entry< V> e = i.next();
-			if (key == e.getKey())
+			Entry<V> e = i.next();
+			if(key == e.getKey())
 			{
 				return true;
 			}
@@ -187,10 +187,10 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	public V get(int key)
 	{
 		Iterator<Entry<V>> i = entrySet().iterator();
-		while (i.hasNext())
+		while(i.hasNext())
 		{
 			Entry<V> e = i.next();
-			if (key == e.getKey())
+			if(key == e.getKey())
 			{
 				return e.getValue();
 			}
@@ -241,13 +241,13 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public V remove(int key)
 	{
-		Iterator<Entry< V>> i = entrySet().iterator();
+		Iterator<Entry<V>> i = entrySet().iterator();
 		Entry<V> correctEntry = null;
 
-		while (correctEntry == null && i.hasNext())
+		while(correctEntry == null && i.hasNext())
 		{
 			Entry<V> e = i.next();
-			if (key == e.getKey())
+			if(key == e.getKey())
 			{
 				correctEntry = e;
 			}
@@ -255,7 +255,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 
 
 		V oldValue = null;
-		if (correctEntry != null)
+		if(correctEntry != null)
 		{
 			oldValue = correctEntry.getValue();
 			i.remove();
@@ -284,7 +284,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public void putAll(IntObjectMap<? extends V> m)
 	{
-		for (Entry<? extends V> e : m.entrySet())
+		for(Entry<? extends V> e : m.entrySet())
 		{
 			put(e.getKey(), e.getValue());
 		}
@@ -334,7 +334,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public IntSet keySet()
 	{
-		if (keySet == null)
+		if(keySet == null)
 		{
 			keySet = new AbstractIntSet()
 			{
@@ -392,7 +392,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public Collection<V> values()
 	{
-		if (values == null)
+		if(values == null)
 		{
 			values = new AbstractCollection<V>()
 			{
@@ -461,50 +461,50 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public boolean equals(Object o)
 	{
-		if (o == this)
+		if(o == this)
 		{
 			return true;
 		}
 
-		if (!(o instanceof IntObjectMap))
+		if(!(o instanceof IntObjectMap))
 		{
 			return false;
 		}
-		IntObjectMap< V> m = (IntObjectMap<V>) o;
-		if (m.size() != size())
+		IntObjectMap<V> m = (IntObjectMap<V>) o;
+		if(m.size() != size())
 		{
 			return false;
 		}
 
 		try
 		{
-			Iterator<Entry< V>> i = entrySet().iterator();
-			while (i.hasNext())
+			Iterator<Entry<V>> i = entrySet().iterator();
+			while(i.hasNext())
 			{
 				Entry<V> e = i.next();
 				int key = e.getKey();
 				V value = e.getValue();
-				if (value == null)
+				if(value == null)
 				{
-					if (!(m.get(key) == null && m.containsKey(key)))
+					if(!(m.get(key) == null && m.containsKey(key)))
 					{
 						return false;
 					}
 				}
 				else
 				{
-					if (!value.equals(m.get(key)))
+					if(!value.equals(m.get(key)))
 					{
 						return false;
 					}
 				}
 			}
 		}
-		catch (ClassCastException unused)
+		catch(ClassCastException unused)
 		{
 			return false;
 		}
-		catch (NullPointerException unused)
+		catch(NullPointerException unused)
 		{
 			return false;
 		}
@@ -533,7 +533,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	{
 		int h = 0;
 		Iterator<Entry<V>> i = entrySet().iterator();
-		while (i.hasNext())
+		while(i.hasNext())
 		{
 			h += i.next().hashCode();
 		}
@@ -555,14 +555,14 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	public String toString()
 	{
 		Iterator<Entry<V>> i = entrySet().iterator();
-		if (!i.hasNext())
+		if(!i.hasNext())
 		{
 			return "{}";
 		}
 
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
-		for (; ;)
+		for(; ;)
 		{
 			Entry<V> e = i.next();
 			int key = e.getKey();
@@ -570,7 +570,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 			sb.append(key);
 			sb.append('=');
 			sb.append(value == this ? "(this Map)" : value);
-			if (!i.hasNext())
+			if(!i.hasNext())
 			{
 				return sb.append('}').toString();
 			}
@@ -713,7 +713,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 		 */
 		public boolean equals(Object o)
 		{
-			if (!(o instanceof Map.Entry))
+			if(!(o instanceof Map.Entry))
 			{
 				return false;
 			}
@@ -852,7 +852,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 		 */
 		public boolean equals(Object o)
 		{
-			if (!(o instanceof Entry))
+			if(!(o instanceof Entry))
 			{
 				return false;
 			}

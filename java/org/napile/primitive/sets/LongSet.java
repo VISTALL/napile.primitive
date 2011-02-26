@@ -25,7 +25,8 @@
 package org.napile.primitive.sets;
 
 import org.napile.primitive.collections.IntCollection;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.collections.LongCollection;
+import org.napile.primitive.iterators.LongIterator;
 
 /**
  * A collection that contains no duplicate elements.  More formally, sets
@@ -72,17 +73,15 @@ import org.napile.primitive.iterators.IntIterator;
  * @author Josh Bloch
  * @author Neal Gafter
  * @version %I%, %G%
- * @see IntCollection
- * @see IntList
+ * @see LongCollection
+ * @see LongList
  * @see SortedIntSet
- * @see HashIntSet
- * @see TreeIntSet
- * @see AbstractIntSet
- * @see Collections#singleton(java.lang.Object)
- * @see Collections#EMPTY_SET
+ * @see HashLongSet
+ * @see TreeLongSet
+ * @see AbstractLongSet
  * @since 1.2
  */
-public interface IntSet extends IntCollection
+public interface LongSet extends LongCollection
 {
 	// Query Operations
 
@@ -115,7 +114,7 @@ public interface IntSet extends IntCollection
 	 * @throws NullPointerException if the specified element is null and this
 	 *                              set does not permit null elements (optional)
 	 */
-	boolean contains(int o);
+	boolean contains(long o);
 
 	/**
 	 * Returns an iterator over the elements in this set.  The elements are
@@ -124,7 +123,7 @@ public interface IntSet extends IntCollection
 	 *
 	 * @return an iterator over the elements in this set
 	 */
-	IntIterator iterator();
+	LongIterator iterator();
 
 	/**
 	 * Returns an array containing all of the elements in this set.
@@ -142,7 +141,7 @@ public interface IntSet extends IntCollection
 	 *
 	 * @return an array containing all the elements in this set
 	 */
-	int[] toArray();
+	long[] toArray();
 
 	/**
 	 * Returns an array containing all of the elements in this set; the
@@ -186,7 +185,7 @@ public interface IntSet extends IntCollection
 	 *                              set
 	 * @throws NullPointerException if the specified array is null
 	 */
-	int[] toArray(int[] a);
+	long[] toArray(long[] a);
 
 
 	// Modification Operations
@@ -221,7 +220,7 @@ public interface IntSet extends IntCollection
 	 * @throws IllegalArgumentException	  if some property of the specified element
 	 *                                       prevents it from being added to this set
 	 */
-	boolean add(int e);
+	boolean add(long e);
 
 
 	/**
@@ -243,7 +242,7 @@ public interface IntSet extends IntCollection
 	 * @throws UnsupportedOperationException if the <tt>remove</tt> operation
 	 *                                       is not supported by this set
 	 */
-	boolean remove(int o);
+	boolean remove(long o);
 
 
 	// Bulk Operations
@@ -262,9 +261,9 @@ public interface IntSet extends IntCollection
 	 * @throws NullPointerException if the specified collection contains one
 	 *                              or more null elements and this set does not permit null
 	 *                              elements (optional), or if the specified collection is null
-	 * @see #contains(int)
+	 * @see #contains(long)
 	 */
-	boolean containsAll(IntCollection c);
+	boolean containsAll(LongCollection c);
 
 	/**
 	 * Adds all of the elements in the specified collection to this set if
@@ -285,9 +284,9 @@ public interface IntSet extends IntCollection
 	 *                                       elements, or if the specified collection is null
 	 * @throws IllegalArgumentException	  if some property of an element of the
 	 *                                       specified collection prevents it from being added to this set
-	 * @see #add(int)
+	 * @see #add(long)
 	 */
-	boolean addAll(IntCollection c);
+	boolean addAll(LongCollection c);
 
 	/**
 	 * Retains only the elements in this set that are contained in the
@@ -306,9 +305,9 @@ public interface IntSet extends IntCollection
 	 * @throws NullPointerException		  if this set contains a null element and the
 	 *                                       specified collection does not permit null elements (optional),
 	 *                                       or if the specified collection is null
-	 * @see #remove(int)
+	 * @see #remove(long)
 	 */
-	boolean retainAll(IntCollection c);
+	boolean retainAll(LongCollection c);
 
 	/**
 	 * Removes from this set all of its elements that are contained in the
@@ -326,10 +325,10 @@ public interface IntSet extends IntCollection
 	 * @throws NullPointerException		  if this set contains a null element and the
 	 *                                       specified collection does not permit null elements (optional),
 	 *                                       or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean removeAll(IntCollection c);
+	boolean removeAll(LongCollection c);
 
 	/**
 	 * Removes all of the elements from this set (optional operation).

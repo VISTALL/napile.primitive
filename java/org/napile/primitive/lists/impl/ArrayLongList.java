@@ -29,8 +29,10 @@ import java.util.ConcurrentModificationException;
 import java.util.RandomAccess;
 
 import org.napile.primitive.collections.IntCollection;
+import org.napile.primitive.collections.LongCollection;
 import org.napile.primitive.lists.IntList;
-import org.napile.primitive.lists.abstracts.AbstractIntList;
+import org.napile.primitive.lists.LongList;
+import org.napile.primitive.lists.abstracts.AbstractLongList;
 
 /**
  * Resizable-array implementation of the <tt>List</tt> interface.  Implements
@@ -102,14 +104,14 @@ import org.napile.primitive.lists.abstracts.AbstractIntList;
  * @since 1.2
  */
 
-public class ArrayIntList extends AbstractIntList implements IntList, RandomAccess, Cloneable, java.io.Serializable
+public class ArrayLongList extends AbstractLongList implements LongList, RandomAccess, Cloneable, java.io.Serializable
 {
 
 	/**
 	 * The array buffer into which the elements of the ArrayList are stored.
 	 * The capacity of the ArrayList is the length of this array buffer.
 	 */
-	private transient int[] elementData;
+	private transient long[] elementData;
 
 	/**
 	 * The size of the ArrayList (the number of elements it contains).
@@ -125,20 +127,20 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @throws IllegalArgumentException if the specified initial capacity
 	 *                                  is negative
 	 */
-	public ArrayIntList(int initialCapacity)
+	public ArrayLongList(int initialCapacity)
 	{
 		super();
 		if(initialCapacity < 0)
 		{
 			throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
 		}
-		this.elementData = new int[initialCapacity];
+		this.elementData = new long[initialCapacity];
 	}
 
 	/**
 	 * Constructs an empty list with an initial capacity of ten.
 	 */
-	public ArrayIntList()
+	public ArrayLongList()
 	{
 		this(10);
 	}
@@ -151,7 +153,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param c the collection whose elements are to be placed into this list
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public ArrayIntList(IntCollection c)
+	public ArrayLongList(LongCollection c)
 	{
 		elementData = c.toArray();
 		size = elementData.length;
@@ -185,7 +187,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 		int oldCapacity = elementData.length;
 		if(minCapacity > oldCapacity)
 		{
-			int oldData[] = elementData;
+			long oldData[] = elementData;
 			int newCapacity = (oldCapacity * 3) / 2 + 1;
 			if(newCapacity < minCapacity)
 			{
@@ -201,6 +203,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *
 	 * @return the number of elements in this list
 	 */
+	@Override
 	public int size()
 	{
 		return size;
@@ -211,6 +214,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *
 	 * @return <tt>true</tt> if this list contains no elements
 	 */
+	@Override
 	public boolean isEmpty()
 	{
 		return size == 0;
@@ -225,7 +229,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param o element whose presence in this list is to be tested
 	 * @return <tt>true</tt> if this list contains the specified element
 	 */
-	public boolean contains(int o)
+	@Override
+	public boolean contains(long o)
 	{
 		return indexOf(o) >= 0;
 	}
@@ -237,7 +242,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
 	 * or -1 if there is no such index.
 	 */
-	public int indexOf(int o)
+	@Override
+	public int indexOf(long o)
 	{
 		for(int i = 0; i < size; i++)
 		{
@@ -257,7 +263,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
 	 * or -1 if there is no such index.
 	 */
-	public int lastIndexOf(int o)
+	@Override
+	public int lastIndexOf(long o)
 	{
 		for(int i = size - 1; i >= 0; i--)
 		{
@@ -276,11 +283,12 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *
 	 * @return a clone of this <tt>ArrayList</tt> instance
 	 */
+	@Override
 	public Object clone()
 	{
 		try
 		{
-			ArrayIntList v = (ArrayIntList) super.clone();
+			ArrayLongList v = (ArrayLongList) super.clone();
 			v.elementData = Arrays.copyOf(elementData, size);
 			v.modCount = 0;
 			return v;
@@ -306,7 +314,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return an array containing all of the elements in this list in
 	 *         proper sequence
 	 */
-	public int[] toArray()
+	@Override
+	public long[] toArray()
 	{
 		return Arrays.copyOf(elementData, size);
 	}
@@ -335,7 +344,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *                              this list
 	 * @throws NullPointerException if the specified array is null
 	 */
-	public int[] toArray(int[] a)
+	@Override
+	public long[] toArray(long[] a)
 	{
 		if(a.length < size)// Make a new array of a's runtime type, but my contents:
 		{
@@ -358,7 +368,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return the element at the specified position in this list
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public int get(int index)
+	@Override
+	public long get(int index)
 	{
 		RangeCheck(index);
 
@@ -374,11 +385,12 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return the element previously at the specified position
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public int set(int index, int element)
+	@Override
+	public long set(int index, long element)
 	{
 		RangeCheck(index);
 
-		int oldValue = elementData[index];
+		long oldValue = elementData[index];
 		elementData[index] = element;
 		return oldValue;
 	}
@@ -389,7 +401,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param e element to be appended to this list
 	 * @return <tt>true</tt> (as specified by {@link IntCollection#add})
 	 */
-	public boolean add(int e)
+	@Override
+	public boolean add(long e)
 	{
 		ensureCapacity(size + 1);  // Increments modCount!!
 		elementData[size++] = e;
@@ -405,7 +418,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param element element to be inserted
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public void add(int index, int element)
+	@Override
+	public void add(int index, long element)
 	{
 		if(index > size || index < 0)
 		{
@@ -427,12 +441,13 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return the element that was removed from the list
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public int removeByIndex(int index)
+	@Override
+	public long removeByIndex(int index)
 	{
 		RangeCheck(index);
 
 		modCount++;
-		int oldValue = elementData[index];
+		long oldValue = elementData[index];
 
 		int numMoved = size - index - 1;
 		if(numMoved > 0)
@@ -457,7 +472,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param o element to be removed from this list, if present
 	 * @return <tt>true</tt> if this list contained the specified element
 	 */
-	public boolean remove(int o)
+	@Override
+	public boolean remove(long o)
 	{
 		for(int index = 0; index < size; index++)
 		{
@@ -516,9 +532,10 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return <tt>true</tt> if this list changed as a result of the call
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public boolean addAll(IntCollection c)
+	@Override
+	public boolean addAll(LongCollection c)
 	{
-		int[] a = c.toArray();
+		long[] a = c.toArray();
 		int numNew = a.length;
 		ensureCapacity(size + numNew);  // Increments modCount
 		System.arraycopy(a, 0, elementData, size, numNew);
@@ -541,14 +558,15 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 * @throws NullPointerException	  if the specified collection is null
 	 */
-	public boolean addAll(int index, IntCollection c)
+	@Override
+	public boolean addAll(int index, LongCollection c)
 	{
 		if(index > size || index < 0)
 		{
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 
-		int[] a = c.toArray();
+		long[] a = c.toArray();
 		int numNew = a.length;
 		ensureCapacity(size + numNew);  // Increments modCount
 
@@ -576,6 +594,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *                                   range (fromIndex &lt; 0 || fromIndex &gt;= size() || toIndex
 	 *                                   &gt; size() || toIndex &lt; fromIndex)
 	 */
+	@Override
 	protected void removeRange(int fromIndex, int toIndex)
 	{
 		modCount++;
@@ -624,7 +643,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 		// Write out all elements in the proper order.
 		for(int i = 0; i < size; i++)
 		{
-			s.writeInt(elementData[i]);
+			s.writeLong(elementData[i]);
 		}
 
 		if(modCount != expectedModCount)
@@ -645,12 +664,12 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 
 		// Read in array length and allocate array
 		int arrayLength = s.readInt();
-		int[] a = elementData = new int[arrayLength];
+		long[] a = elementData = new long[arrayLength];
 
 		// Read in all elements in the proper order.
 		for(int i = 0; i < size; i++)
 		{
-			a[i] = s.readInt();
+			a[i] = s.readLong();
 		}
 	}
 }

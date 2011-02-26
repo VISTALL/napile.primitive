@@ -58,20 +58,20 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * <p/>
  * <pre>
  * class Handler { void handle(); ... }
- * <p/>
+ *
  * class X {
  *    private final CopyOnWriteArraySet&lt;Handler&gt; handlers
  *       = new CopyOnWriteArraySet&lt;Handler&gt;();
  *    public void addHandler(Handler h) { handlers.add(h); }
- * <p/>
+ *
  *    private long internalState;
  *    private synchronized void changeState() { internalState = ...; }
- * <p/>
+ *
  *    public void update() {
  *       changeState();
  *       for (Handler handler : handlers)
  *          handler.handle();
- *	}
+ *	 }
  * }
  * </pre>
  * <p/>
@@ -192,7 +192,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * <p/>
 	 * <pre>
 	 *     String[] y = x.toArray(new String[0]);</pre>
-	 * <p/>
+	 *
 	 * Note that <tt>toArray(new Object[0])</tt> is identical in function to
 	 * <tt>toArray()</tt>.
 	 *

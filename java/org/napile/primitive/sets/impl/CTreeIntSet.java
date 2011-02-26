@@ -41,7 +41,6 @@ import org.napile.primitive.sets.IntSet;
 import org.napile.primitive.sets.NavigableIntSet;
 import org.napile.primitive.sets.SortedIntSet;
 import org.napile.primitive.sets.abstracts.AbstractIntSet;
-
 import sun.misc.Unsafe;
 
 /**
@@ -421,7 +420,8 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 	}
 
 	/**
-	 * @throws java.util.NoSuchElementException {@inheritDoc}
+	 * @throws java.util.NoSuchElementException
+	 *          {@inheritDoc}
 	 */
 	public int first()
 	{
@@ -429,7 +429,8 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 	}
 
 	/**
-	 * @throws java.util.NoSuchElementException {@inheritDoc}
+	 * @throws java.util.NoSuchElementException
+	 *          {@inheritDoc}
 	 */
 	public int last()
 	{

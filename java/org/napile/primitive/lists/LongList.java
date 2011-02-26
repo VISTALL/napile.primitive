@@ -26,9 +26,10 @@ package org.napile.primitive.lists;
 
 import java.util.Collection;
 
-import org.napile.primitive.collections.IntCollection;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.collections.LongCollection;
 import org.napile.primitive.iterators.IntListIterator;
+import org.napile.primitive.iterators.LongIterator;
+import org.napile.primitive.iterators.LongListIterator;
 
 /**
  * An ordered collection (also known as a <i>sequence</i>).  The user of this
@@ -96,14 +97,14 @@ import org.napile.primitive.iterators.IntListIterator;
  *
  * @author Josh Bloch
  * @author Neal Gafter
- * @see IntCollection
- * @see org.napile.primitive.sets.IntSet
- * @see org.napile.primitive.lists.impl.ArrayIntList
- * @see org.napile.primitive.lists.abstracts.AbstractIntList
+ * @see LongCollection
+ * @see org.napile.primitive.sets.LongSet
+ * @see org.napile.primitive.lists.impl.ArrayLongList
+ * @see org.napile.primitive.lists.abstracts.AbstractLongList
  * @since 1.2
  */
 
-public interface IntList extends IntCollection
+public interface LongList extends LongCollection
 {
 	// Query Operations
 
@@ -136,14 +137,14 @@ public interface IntList extends IntCollection
 	 * @throws NullPointerException if the specified element is null and this
 	 *                              list does not permit null elements (optional)
 	 */
-	boolean contains(int o);
+	boolean contains(long o);
 
 	/**
 	 * Returns an iterator over the elements in this list in proper sequence.
 	 *
 	 * @return an iterator over the elements in this list in proper sequence
 	 */
-	IntIterator iterator();
+	LongIterator iterator();
 
 	/**
 	 * Returns an array containing all of the elements in this list in proper
@@ -160,7 +161,7 @@ public interface IntList extends IntCollection
 	 * @return an array containing all of the elements in this list in proper
 	 *         sequence
 	 */
-	int[] toArray();
+	long[] toArray();
 
 	/**
 	 * Returns an array containing all of the elements in this list in
@@ -200,7 +201,7 @@ public interface IntList extends IntCollection
 	 *                              this list
 	 * @throws NullPointerException if the specified array is null
 	 */
-	int[] toArray(int[] a);
+	long[] toArray(long[] a);
 
 
 	// Modification Operations
@@ -227,7 +228,7 @@ public interface IntList extends IntCollection
 	 * @throws IllegalArgumentException	  if some property of this element
 	 *                                       prevents it from being added to this list
 	 */
-	boolean add(int e);
+	boolean add(long e);
 
 	/**
 	 * Removes the first occurrence of the specified element from this list,
@@ -248,7 +249,7 @@ public interface IntList extends IntCollection
 	 * @throws UnsupportedOperationException if the <tt>remove</tt> operation
 	 *                                       is not supported by this list
 	 */
-	boolean remove(int o);
+	boolean remove(long o);
 
 
 	// Bulk Modification Operations
@@ -266,9 +267,9 @@ public interface IntList extends IntCollection
 	 * @throws NullPointerException if the specified collection contains one
 	 *                              or more null elements and this list does not permit null
 	 *                              elements (optional), or if the specified collection is null
-	 * @see #contains(int)
+	 * @see #contains(long)
 	 */
-	boolean containsAll(IntCollection c);
+	boolean containsAll(LongCollection c);
 
 	/**
 	 * Appends all of the elements in the specified collection to the end of
@@ -289,9 +290,9 @@ public interface IntList extends IntCollection
 	 *                                       elements, or if the specified collection is null
 	 * @throws IllegalArgumentException	  if some property of an element of the
 	 *                                       specified collection prevents it from being added to this list
-	 * @see #add(int)
+	 * @see #add(long)
 	 */
-	boolean addAll(IntCollection c);
+	boolean addAll(LongCollection c);
 
 	/**
 	 * Inserts all of the elements in the specified collection into this
@@ -320,7 +321,7 @@ public interface IntList extends IntCollection
 	 * @throws IndexOutOfBoundsException	 if the index is out of range
 	 *                                       (<tt>index &lt; 0 || index &gt; size()</tt>)
 	 */
-	boolean addAll(int index, IntCollection c);
+	boolean addAll(int index, LongCollection c);
 
 	/**
 	 * Removes from this list all of its elements that are contained in the
@@ -335,10 +336,10 @@ public interface IntList extends IntCollection
 	 * @throws NullPointerException		  if this list contains a null element and the
 	 *                                       specified collection does not permit null elements (optional),
 	 *                                       or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean removeAll(IntCollection c);
+	boolean removeAll(LongCollection c);
 
 	/**
 	 * Retains only the elements in this list that are contained in the
@@ -355,10 +356,10 @@ public interface IntList extends IntCollection
 	 * @throws NullPointerException		  if this list contains a null element and the
 	 *                                       specified collection does not permit null elements (optional),
 	 *                                       or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean retainAll(IntCollection c);
+	boolean retainAll(LongCollection c);
 
 	/**
 	 * Removes all of the elements from this list (optional operation).
@@ -421,7 +422,7 @@ public interface IntList extends IntCollection
 	 * @throws IndexOutOfBoundsException if the index is out of range
 	 *                                   (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
-	int get(int index);
+	long get(int index);
 
 	/**
 	 * Replaces the element at the specified position in this list with the
@@ -441,7 +442,7 @@ public interface IntList extends IntCollection
 	 * @throws IndexOutOfBoundsException	 if the index is out of range
 	 *                                       (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
-	int set(int index, int element);
+	long set(int index, long element);
 
 	/**
 	 * Inserts the specified element at the specified position in this list
@@ -462,7 +463,7 @@ public interface IntList extends IntCollection
 	 * @throws IndexOutOfBoundsException	 if the index is out of range
 	 *                                       (<tt>index &lt; 0 || index &gt; size()</tt>)
 	 */
-	void add(int index, int element);
+	void add(int index, long element);
 
 	/**
 	 * Removes the element at the specified position in this list (optional
@@ -477,7 +478,7 @@ public interface IntList extends IntCollection
 	 * @throws IndexOutOfBoundsException	 if the index is out of range
 	 *                                       (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
-	int removeByIndex(int index);
+	long removeByIndex(int index);
 
 
 	// Search Operations
@@ -497,7 +498,7 @@ public interface IntList extends IntCollection
 	 * @throws NullPointerException if the specified element is null and this
 	 *                              list does not permit null elements (optional)
 	 */
-	int indexOf(int o);
+	int indexOf(long o);
 
 	/**
 	 * Returns the index of the last occurrence of the specified element
@@ -514,7 +515,7 @@ public interface IntList extends IntCollection
 	 * @throws NullPointerException if the specified element is null and this
 	 *                              list does not permit null elements (optional)
 	 */
-	int lastIndexOf(int o);
+	int lastIndexOf(long o);
 
 
 	// List Iterators
@@ -526,7 +527,7 @@ public interface IntList extends IntCollection
 	 * @return a list iterator over the elements in this list (in proper
 	 *         sequence)
 	 */
-	IntListIterator listIterator();
+	LongListIterator listIterator();
 
 	/**
 	 * Returns a list iterator of the elements in this list (in proper
@@ -543,7 +544,7 @@ public interface IntList extends IntCollection
 	 * @throws IndexOutOfBoundsException if the index is out of range
 	 *                                   (<tt>index &lt; 0 || index &gt; size()</tt>)
 	 */
-	IntListIterator listIterator(int index);
+	LongListIterator listIterator(int index);
 
 	// View
 
@@ -581,6 +582,6 @@ public interface IntList extends IntCollection
 	 *                                   (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
 	 *                                   fromIndex &gt; toIndex</tt>)
 	 */
-	IntList subList(int fromIndex, int toIndex);
+	LongList subList(int fromIndex, int toIndex);
 }
 

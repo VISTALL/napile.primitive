@@ -678,7 +678,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			}
 			while(t != null);
 		}
-		Entry< V> e = new Entry<V>(key, value, parent);
+		Entry<V> e = new Entry<V>(key, value, parent);
 		if(cmp < 0)
 		{
 			parent.left = e;
@@ -785,7 +785,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry< V> lastEntry()
+	public IntObjectMap.Entry<V> lastEntry()
 	{
 		return exportEntry(getLastEntry());
 	}
@@ -1058,7 +1058,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 *                                  does not permit null keys
 	 * @throws IllegalArgumentException {@inheritDoc}
 	 */
-	public SortedIntObjectMap< V> subMap(int fromKey, int toKey)
+	public SortedIntObjectMap<V> subMap(int fromKey, int toKey)
 	{
 		return subMap(fromKey, true, toKey, false);
 	}
@@ -1484,7 +1484,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * Return SimpleImmutableEntry for entry, or null if null
 	 */
-	static <V> IntObjectMap.Entry< V> exportEntry(TreeIntObjectMap.Entry<V> e)
+	static <V> IntObjectMap.Entry<V> exportEntry(TreeIntObjectMap.Entry<V> e)
 	{
 		return e == null ? null : new AbstractIntObjectMap.SimpleImmutableEntry<V>(e);
 	}
@@ -1643,7 +1643,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			{
 				return absLowest();
 			}
-			TreeIntObjectMap.Entry< V> e = m.getHigherEntry(key);
+			TreeIntObjectMap.Entry<V> e = m.getHigherEntry(key);
 			return (e == null || tooHigh(e.key)) ? null : e;
 		}
 
@@ -1670,7 +1670,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		/**
 		 * Returns the absolute high fence for ascending traversal
 		 */
-		final TreeIntObjectMap.Entry< V> absHighFence()
+		final TreeIntObjectMap.Entry<V> absHighFence()
 		{
 			return (toEnd ? null : (hiInclusive ? m.getHigherEntry(hi) : m.getCeilingEntry(hi)));
 		}
@@ -1806,7 +1806,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		public final IntObjectMap.Entry<V> pollFirstEntry()
 		{
-			TreeIntObjectMap.Entry< V> e = subLowest();
+			TreeIntObjectMap.Entry<V> e = subLowest();
 			IntObjectMap.Entry<V> result = exportEntry(e);
 			if(e != null)
 			{
@@ -1817,7 +1817,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		public final IntObjectMap.Entry<V> pollLastEntry()
 		{
-			TreeIntObjectMap.Entry< V> e = subHighest();
+			TreeIntObjectMap.Entry<V> e = subHighest();
 			IntObjectMap.Entry<V> result = exportEntry(e);
 			if(e != null)
 			{
@@ -1827,7 +1827,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		}
 
 		// Views
-		transient NavigableIntObjectMap< V> descendingMapView = null;
+		transient NavigableIntObjectMap<V> descendingMapView = null;
 		transient EntrySetView entrySetView = null;
 		transient KeySet navigableKeySetView = null;
 
@@ -1916,7 +1916,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 				{
 					return false;
 				}
-				IntObjectMap.Entry< V> entry = (IntObjectMap.Entry<V>) o;
+				IntObjectMap.Entry<V> entry = (IntObjectMap.Entry<V>) o;
 				int key = entry.getKey();
 				if(!inRange(key))
 				{
@@ -2256,9 +2256,9 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return new DescendingSubMap<V>(m, fromStart, lo, loInclusive, false, fromKey, inclusive);
 		}
 
-		public NavigableIntObjectMap< V> descendingMap()
+		public NavigableIntObjectMap<V> descendingMap()
 		{
-			NavigableIntObjectMap< V> mv = descendingMapView;
+			NavigableIntObjectMap<V> mv = descendingMapView;
 			return (mv != null) ? mv : (descendingMapView = new AscendingSubMap<V>(m, fromStart, lo, loInclusive, toEnd, hi, hiInclusive));
 		}
 
@@ -2726,7 +2726,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		// point to successor.
 		if(p.left != null && p.right != null)
 		{
-			Entry< V> s = successor(p);
+			Entry<V> s = successor(p);
 			p.key = s.key;
 			p.value = s.value;
 			p = s;
@@ -2962,7 +2962,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 * @param defaultVal if non-null, this default value is used for
 	 *                   each value in the map.  If null, each value is read from
 	 *                   iterator or stream, as described above.
-	 * @throws java.io.IOException			propagated from stream reads. This cannot
+	 * @throws java.io.IOException	propagated from stream reads. This cannot
 	 *                                occur if str is null.
 	 * @throws ClassNotFoundException propagated from readObject.
 	 *                                This cannot occur if str is null.
@@ -3021,14 +3021,14 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		{
 			if(defaultVal == null)
 			{
-				Iterator<IntObjectMap.Entry<V>> iterator = (Iterator)it;
+				Iterator<IntObjectMap.Entry<V>> iterator = (Iterator) it;
 				IntObjectMap.Entry<V> entry = iterator.next();
 				key = entry.getKey();
 				value = entry.getValue();
 			}
 			else
 			{
-				IntIterator iterator = (IntIterator)it;
+				IntIterator iterator = (IntIterator) it;
 				key = iterator.next();
 				value = defaultVal;
 			}

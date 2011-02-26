@@ -636,8 +636,8 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 						// in list, but all preceding ones need to be
 						// cloned.
 						++modCount;
-						HashEntry< V> newFirst = e.next;
-						for(HashEntry< V> p = first; p != e; p = p.next)
+						HashEntry<V> newFirst = e.next;
+						for(HashEntry<V> p = first; p != e; p = p.next)
 						{
 							newFirst = new HashEntry<V>(p.key, p.hash, newFirst, p.value);
 						}
@@ -1466,7 +1466,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 				HashEntry<V>[] tab = seg.table;
 				for(int i = 0; i < tab.length; ++i)
 				{
-					for(HashEntry< V> e = tab[i]; e != null; e = e.next)
+					for(HashEntry<V> e = tab[i]; e != null; e = e.next)
 					{
 						s.writeInt(e.key);
 						s.writeObject(e.value);

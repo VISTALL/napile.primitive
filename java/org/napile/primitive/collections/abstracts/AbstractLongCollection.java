@@ -26,8 +26,8 @@ package org.napile.primitive.collections.abstracts;
 
 import java.util.Arrays;
 
-import org.napile.primitive.collections.IntCollection;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.collections.LongCollection;
+import org.napile.primitive.iterators.LongIterator;
 
 /**
  * This class provides a skeletal implementation of the <tt>Collection</tt>
@@ -59,16 +59,16 @@ import org.napile.primitive.iterators.IntIterator;
  * @author Josh Bloch
  * @author Neal Gafter
  * @version %I%, %G%
- * @see IntCollection
+ * @see LongCollection
  * @since 1.2
  */
-public abstract class AbstractIntCollection implements IntCollection
+public abstract class AbstractLongCollection implements LongCollection
 {
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	protected AbstractIntCollection()
+	protected AbstractLongCollection()
 	{
 	}
 
@@ -79,7 +79,7 @@ public abstract class AbstractIntCollection implements IntCollection
 	 *
 	 * @return an iterator over the elements contained in this collection
 	 */
-	public abstract IntIterator iterator();
+	public abstract LongIterator iterator();
 
 	public abstract int size();
 
@@ -88,6 +88,7 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * <p/>
 	 * <p>This implementation returns <tt>size() == 0</tt>.
 	 */
+	@Override
 	public boolean isEmpty()
 	{
 		return size() == 0;
@@ -102,9 +103,10 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean contains(int o)
+	@Override
+	public boolean contains(long o)
 	{
-		IntIterator e = iterator();
+		LongIterator e = iterator();
 		while(e.hasNext())
 		{
 			if(o == e.next())
@@ -138,11 +140,11 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * return list.toArray();
 	 * }</pre>
 	 */
-	public int[] toArray()
+	public long[] toArray()
 	{
 		// Estimate size of array; be prepared to see more or fewer elements
-		int[] r = new int[size()];
-		IntIterator it = iterator();
+		long[] r = new long[size()];
+		LongIterator it = iterator();
 		for(int i = 0; i < r.length; i++)
 		{
 			if(!it.hasNext())	// fewer elements than expected
@@ -181,12 +183,13 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws ArrayStoreException  {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public int[] toArray(int[] a)
+	@Override
+	public long[] toArray(long[] a)
 	{
 		// Estimate size of array; be prepared to see more or fewer elements
 		int size = size();
-		int[] r = a.length >= size ? a : new int[size];
-		IntIterator it = iterator();
+		long[] r = a.length >= size ? a : new long[size];
+		LongIterator it = iterator();
 
 		for(int i = 0; i < r.length; i++)
 		{
@@ -214,7 +217,7 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @return array containing the elements in the given array, plus any
 	 *         further elements returned by the iterator, trimmed to size
 	 */
-	private static int[] finishToArray(int[] r, IntIterator it)
+	private static long[] finishToArray(long[] r, LongIterator it)
 	{
 		int i = r.length;
 		while(it.hasNext())
@@ -253,7 +256,8 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 * @throws IllegalStateException		 {@inheritDoc}
 	 */
-	public boolean add(int e)
+	@Override
+	public boolean add(long e)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -274,9 +278,10 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 */
-	public boolean remove(int o)
+	@Override
+	public boolean remove(long o)
 	{
-		IntIterator e = iterator();
+		LongIterator e = iterator();
 		while(e.hasNext())
 		{
 			if(o == e.next())
@@ -302,11 +307,12 @@ public abstract class AbstractIntCollection implements IntCollection
 	 *
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
-	 * @see #contains(int)
+	 * @see #contains(long)
 	 */
-	public boolean containsAll(IntCollection c)
+	@Override
+	public boolean containsAll(LongCollection c)
 	{
-		IntIterator e = c.iterator();
+		LongIterator e = c.iterator();
 		while(e.hasNext())
 		{
 			if(!contains(e.next()))
@@ -332,12 +338,13 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 * @throws IllegalStateException		 {@inheritDoc}
-	 * @see #add(int)
+	 * @see #add(long)
 	 */
-	public boolean addAll(IntCollection c)
+	@Override
+	public boolean addAll(LongCollection c)
 	{
 		boolean modified = false;
-		IntIterator e = c.iterator();
+		LongIterator e = c.iterator();
 		while(e.hasNext())
 		{
 			if(add(e.next()))
@@ -365,13 +372,14 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	public boolean removeAll(IntCollection c)
+	@Override
+	public boolean removeAll(LongCollection c)
 	{
 		boolean modified = false;
-		IntIterator e = iterator();
+		LongIterator e = iterator();
 		while(e.hasNext())
 		{
 			if(c.contains(e.next()))
@@ -400,13 +408,14 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	public boolean retainAll(IntCollection c)
+	@Override
+	public boolean retainAll(LongCollection c)
 	{
 		boolean modified = false;
-		IntIterator e = iterator();
+		LongIterator e = iterator();
 		while(e.hasNext())
 		{
 			if(!c.contains(e.next()))
@@ -433,9 +442,10 @@ public abstract class AbstractIntCollection implements IntCollection
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 */
+	@Override
 	public void clear()
 	{
-		IntIterator e = iterator();
+		LongIterator e = iterator();
 		while(e.hasNext())
 		{
 			e.next();
@@ -456,19 +466,18 @@ public abstract class AbstractIntCollection implements IntCollection
 	 *
 	 * @return a string representation of this collection
 	 */
+	@Override
 	public String toString()
 	{
-		IntIterator i = iterator();
+		LongIterator i = iterator();
 		if(!i.hasNext())
-		{
 			return "[]";
-		}
 
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
 		for(; ;)
 		{
-			int e = i.next();
+			long e = i.next();
 			sb.append(e);
 			if(!i.hasNext())
 			{

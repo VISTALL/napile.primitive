@@ -30,8 +30,8 @@ package org.napile.primitive.comparators;
  * as {@link Collections#sort(List, Comparator) Collections.sort} or {@link
  * Arrays#sort(Object[], Comparator) Arrays.sort}) to allow precise control
  * over the sort order.  Comparators can also be used to control the order of
- * certain data structures (such as {@link SortedIntSet sorted sets} or {@link
- * SortedIntObjectMap sorted maps}), or to provide an ordering for collections of
+ * certain data structures (such as {@link SortedLongSet sorted sets} or {@link
+ * SortedLongObjectMap sorted maps}), or to provide an ordering for collections of
  * objects that don't have a {@link Comparable natural ordering}.<p>
  * <p/>
  * The ordering imposed by a comparator <tt>c</tt> on a set of elements
@@ -56,11 +56,11 @@ package org.napile.primitive.comparators;
  * true (and the size of the tree set will increase) because {@code a} and
  * {@code b} are not equivalent from the tree set's perspective, even though
  * this is contrary to the specification of the
- * {@link IntSet#add Set.add} method.<p>
+ * {@link LongSet#add Set.add} method.<p>
  * <p/>
  * Note: It is generally a good idea for comparators to also implement
  * <tt>java.io.Serializable</tt>, as they may be used as ordering methods in
- * serializable data structures (like {@link TreeIntSet}, {@link TreeIntObjectMap}).  In
+ * serializable data structures (like {@link TreeLongSet}, {@link TreeLongObjectMap}).  In
  * order for the data structure to serialize successfully, the comparator (if
  * provided) must implement <tt>Serializable</tt>.<p>
  * <p/>
@@ -92,7 +92,7 @@ package org.napile.primitive.comparators;
  * @see java.io.Serializable
  * @since 1.2
  */
-public interface IntComparator
+public interface LongComparator
 {
 	/**
 	 * Compares its two arguments for order.  Returns a negative integer,
@@ -132,7 +132,7 @@ public interface IntComparator
 	 * @throws ClassCastException if the arguments' types prevent them from
 	 *                            being compared by this comparator.
 	 */
-	int compare(int o1, int o2);
+	int compare(long o1, long o2);
 
 	/**
 	 * Indicates whether some other object is &quot;equal to&quot; this

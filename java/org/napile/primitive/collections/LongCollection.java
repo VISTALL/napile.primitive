@@ -25,7 +25,7 @@
 package org.napile.primitive.collections;
 
 import org.napile.primitive.Container;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.iterators.LongIterator;
 
 /**
  * The root interface in the <i>collection hierarchy</i>.  A collection
@@ -58,7 +58,7 @@ import org.napile.primitive.iterators.IntIterator;
  * support the operation.  If this is the case, these methods may, but are not
  * required to, throw an <tt>UnsupportedOperationException</tt> if the
  * invocation would have no effect on the collection.  For example, invoking
- * the {@link #addAll(IntCollection)} method on an unmodifiable collection may,
+ * the {@link #addAll(LongCollection)} method on an unmodifiable collection may,
  * but is not required to, throw the exception if the collection to be added
  * is empty.
  * <p/>
@@ -86,7 +86,7 @@ import org.napile.primitive.iterators.IntIterator;
  * <p/>
  * <p>Many methods in Collections Framework interfaces are defined in
  * terms of the {@link Object#equals(Object) equals} method.  For example,
- * the specification for the {@link #contains(int) contains(int o)}
+ * the specification for the {@link #contains(long) contains(int o)}
  * method says: "returns <tt>true</tt> if and only if this collection
  * contains at least one element <tt>e</tt> such that
  * <tt>(o==null ? e==null : o.equals(e))</tt>."  This specification should
@@ -119,8 +119,7 @@ import org.napile.primitive.iterators.IntIterator;
  * @see	 org.napile.primitive.Containers
  * @since 1.2
  */
-
-public interface IntCollection extends Container
+public interface LongCollection extends Container
 {
 	// Query Operations
 
@@ -154,7 +153,7 @@ public interface IntCollection extends Container
 	 * @throws NullPointerException if the specified element is null and this
 	 *                              collection does not permit null elements (optional)
 	 */
-	boolean contains(int o);
+	boolean contains(long o);
 
 	/**
 	 * Returns an iterator over the elements in this collection.  There are no
@@ -164,7 +163,7 @@ public interface IntCollection extends Container
 	 *
 	 * @return an <tt>Iterator</tt> over the elements in this collection
 	 */
-	IntIterator iterator();
+	LongIterator iterator();
 
 	/**
 	 * Returns an array containing all of the elements in this collection.
@@ -182,7 +181,7 @@ public interface IntCollection extends Container
 	 *
 	 * @return an array containing all of the elements in this collection
 	 */
-	int[] toArray();
+	long[] toArray();
 
 	/**
 	 * Returns an array containing all of the elements in this collection;
@@ -226,7 +225,7 @@ public interface IntCollection extends Container
 	 *                              this collection
 	 * @throws NullPointerException if the specified array is null
 	 */
-	int[] toArray(int[] a);
+	long[] toArray(long[] a);
 
 	// Modification Operations
 
@@ -263,7 +262,7 @@ public interface IntCollection extends Container
 	 * @throws IllegalStateException		 if the element cannot be added at this
 	 *                                       time due to insertion restrictions
 	 */
-	boolean add(int e);
+	boolean add(long e);
 
 	/**
 	 * Removes a single instance of the specified element from this
@@ -283,7 +282,7 @@ public interface IntCollection extends Container
 	 * @throws UnsupportedOperationException if the <tt>remove</tt> operation
 	 *                                       is not supported by this collection
 	 */
-	boolean remove(int o);
+	boolean remove(long o);
 
 
 	// Bulk Operations
@@ -301,9 +300,9 @@ public interface IntCollection extends Container
 	 * @throws NullPointerException if the specified collection contains one
 	 *                              or more null elements and this collection does not permit null
 	 *                              elements (optional), or if the specified collection is null
-	 * @see #contains(int)
+	 * @see #contains(long)
 	 */
-	boolean containsAll(IntCollection c);
+	boolean containsAll(LongCollection c);
 
 	/**
 	 * Adds all of the elements in the specified collection to this collection
@@ -327,9 +326,9 @@ public interface IntCollection extends Container
 	 *                                       collection
 	 * @throws IllegalStateException		 if not all the elements can be added at
 	 *                                       this time due to insertion restrictions
-	 * @see #add(int)
+	 * @see #add(long)
 	 */
-	boolean addAll(IntCollection c);
+	boolean addAll(LongCollection c);
 
 	/**
 	 * Removes all of this collection's elements that are also contained in the
@@ -348,10 +347,10 @@ public interface IntCollection extends Container
 	 * @throws NullPointerException		  if this collection contains one or more
 	 *                                       null elements and the specified collection does not support
 	 *                                       null elements (optional), or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean removeAll(IntCollection c);
+	boolean removeAll(LongCollection c);
 
 	/**
 	 * Retains only the elements in this collection that are contained in the
@@ -369,10 +368,10 @@ public interface IntCollection extends Container
 	 * @throws NullPointerException		  if this collection contains one or more
 	 *                                       null elements and the specified collection does not permit null
 	 *                                       elements (optional), or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean retainAll(IntCollection c);
+	boolean retainAll(LongCollection c);
 
 	/**
 	 * Removes all of the elements from this collection (optional operation).

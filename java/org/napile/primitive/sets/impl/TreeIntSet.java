@@ -109,12 +109,13 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
 
 	/**
 	 * Constructs a set backed by the specified navigable map.
+	 *
 	 * @param m
 	 */
 	@SuppressWarnings("unchecked")
 	public TreeIntSet(NavigableIntObjectMap<?> m)
 	{
-		this.m = (NavigableIntObjectMap<Object>)m;
+		this.m = (NavigableIntObjectMap<Object>) m;
 	}
 
 	/**
@@ -417,7 +418,8 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
 	}
 
 	/**
-	 * @throws java.util.NoSuchElementException {@inheritDoc}
+	 * @throws java.util.NoSuchElementException
+	 *          {@inheritDoc}
 	 */
 	public int first()
 	{
@@ -425,7 +427,8 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
 	}
 
 	/**
-	 * @throws java.util.NoSuchElementException {@inheritDoc}
+	 * @throws java.util.NoSuchElementException
+	 *          {@inheritDoc}
 	 */
 	public int last()
 	{
@@ -568,7 +571,7 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
 		TreeIntObjectMap<Object> tm;
 		if(c == null)
 		{
-			tm = new TreeIntObjectMap< Object>();
+			tm = new TreeIntObjectMap<Object>();
 		}
 		else
 		{

@@ -39,8 +39,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.napile.primitive.collections.IntCollection;
 import org.napile.primitive.Comparators;
+import org.napile.primitive.collections.IntCollection;
 import org.napile.primitive.comparators.IntComparator;
 import org.napile.primitive.iterators.IntIterator;
 import org.napile.primitive.maps.CNavigableIntObjectMap;
@@ -401,7 +401,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	/**
 	 * compareAndSet head node
 	 */
-	private boolean casHead(HeadIndex<V> cmp, HeadIndex< V> val)
+	private boolean casHead(HeadIndex<V> cmp, HeadIndex<V> val)
 	{
 		return headUpdater.compareAndSet(this, cmp, val);
 	}
@@ -587,7 +587,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		/**
 		 * Creates index node with given values.
 		 */
-		Index(Node<V> node, Index<V> down, Index< V> right)
+		Index(Node<V> node, Index<V> down, Index<V> right)
 		{
 			this.node = node;
 			this.down = down;
@@ -2766,7 +2766,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 		KeySet(CNavigableIntObjectMap<?> map)
 		{
-			m = (CNavigableIntObjectMap<Object>)map;
+			m = (CNavigableIntObjectMap<Object>) map;
 		}
 
 		public int size()
@@ -2921,7 +2921,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 	static final class Values<E> extends AbstractCollection<E>
 	{
-		private final CNavigableIntObjectMap< E> m;
+		private final CNavigableIntObjectMap<E> m;
 
 		Values(CNavigableIntObjectMap<E> map)
 		{
@@ -2932,7 +2932,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		{
 			if(m instanceof CTreeIntObjectMap)
 			{
-				return ((CTreeIntObjectMap< E>) m).valueIterator();
+				return ((CTreeIntObjectMap<E>) m).valueIterator();
 			}
 			else
 			{
@@ -2971,7 +2971,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		}
 	}
 
-	static final class EntrySet<K1, V1> extends AbstractSet<Entry< V1>>
+	static final class EntrySet<K1, V1> extends AbstractSet<Entry<V1>>
 	{
 		private final CNavigableIntObjectMap<V1> m;
 
@@ -3199,7 +3199,8 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			{
 				return m.findFirst();
 			}
-			else */if(loInclusive)
+			else */
+			if(loInclusive)
 			{
 				return m.findNear(lo, m.GT | m.EQ);
 			}
@@ -3219,7 +3220,8 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			{
 				return m.findLast();
 			}
-			else */if(hiInclusive)
+			else */
+			if(hiInclusive)
 			{
 				return m.findNear(hi, m.LT | m.EQ);
 			}

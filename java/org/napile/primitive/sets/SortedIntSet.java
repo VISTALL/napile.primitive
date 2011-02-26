@@ -208,7 +208,8 @@ public interface SortedIntSet extends IntSet
 	 * Returns the first (lowest) element currently in this set.
 	 *
 	 * @return the first (lowest) element currently in this set
-	 * @throws java.util.NoSuchElementException if this set is empty
+	 * @throws java.util.NoSuchElementException
+	 *          if this set is empty
 	 */
 	int first();
 
@@ -216,7 +217,8 @@ public interface SortedIntSet extends IntSet
 	 * Returns the last (highest) element currently in this set.
 	 *
 	 * @return the last (highest) element currently in this set
-	 * @throws java.util.NoSuchElementException if this set is empty
+	 * @throws java.util.NoSuchElementException
+	 *          if this set is empty
 	 */
 	int last();
 }

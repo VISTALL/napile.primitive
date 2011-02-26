@@ -197,22 +197,22 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	public HashIntObjectMap(int initialCapacity, float loadFactor)
 	{
-		if (initialCapacity < 0)
+		if(initialCapacity < 0)
 		{
 			throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
 		}
-		if (initialCapacity > MAXIMUM_CAPACITY)
+		if(initialCapacity > MAXIMUM_CAPACITY)
 		{
 			initialCapacity = MAXIMUM_CAPACITY;
 		}
-		if (loadFactor <= 0 || Float.isNaN(loadFactor))
+		if(loadFactor <= 0 || Float.isNaN(loadFactor))
 		{
 			throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
 		}
 
 		// Find a power of 2 >= initialCapacity
 		int capacity = 1;
-		while (capacity < initialCapacity)
+		while(capacity < initialCapacity)
 		{
 			capacity <<= 1;
 		}
@@ -339,10 +339,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	public V get(int key)
 	{
 		int hash = hash(key);
-		for (Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
+		for(Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
 		{
 			int k;
-			if (e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && ((k = e.key) == key))
 			{
 				return e.value;
 			}
@@ -371,10 +371,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	final Entry<V> getEntry(int key)
 	{
 		int hash = hash(key);
-		for (Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
+		for(Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
 		{
 			int k;
-			if (e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && ((k = e.key) == key))
 			{
 				return e;
 			}
@@ -399,10 +399,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		for (Entry<V> e = table[i]; e != null; e = e.next)
+		for(Entry<V> e = table[i]; e != null; e = e.next)
 		{
 			int k;
-			if (e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && ((k = e.key) == key))
 			{
 				V oldValue = e.value;
 				e.value = value;
@@ -432,10 +432,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		 * clone or deserialize.  It will only happen for construction if the
 		 * input Map is a sorted map whose ordering is inconsistent w/ equals.
 		 */
-		for (Entry<V> e = table[i]; e != null; e = e.next)
+		for(Entry<V> e = table[i]; e != null; e = e.next)
 		{
 			int k;
-			if (e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && ((k = e.key) == key))
 			{
 				e.value = value;
 				return;
@@ -447,7 +447,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 	private void putAllForCreate(IntObjectMap<? extends V> m)
 	{
-		for (Iterator<? extends IntObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<? extends IntObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
 		{
 			IntObjectMap.Entry<? extends V> e = i.next();
 			putForCreate(e.getKey(), e.getValue());
@@ -472,7 +472,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	{
 		Entry<V>[] oldTable = table;
 		int oldCapacity = oldTable.length;
-		if (oldCapacity == MAXIMUM_CAPACITY)
+		if(oldCapacity == MAXIMUM_CAPACITY)
 		{
 			threshold = Integer.MAX_VALUE;
 			return;
@@ -491,10 +491,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	{
 		Entry[] src = table;
 		int newCapacity = newTable.length;
-		for (int j = 0; j < src.length; j++)
+		for(int j = 0; j < src.length; j++)
 		{
 			Entry<V> e = src[j];
-			if (e != null)
+			if(e != null)
 			{
 				src[j] = null;
 				do
@@ -505,7 +505,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 					newTable[i] = e;
 					e = next;
 				}
-				while (e != null);
+				while(e != null);
 			}
 		}
 	}
@@ -521,7 +521,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	public void putAll(IntObjectMap<? extends V> m)
 	{
 		int numKeysToBeAdded = m.size();
-		if (numKeysToBeAdded == 0)
+		if(numKeysToBeAdded == 0)
 		{
 			return;
 		}
@@ -535,25 +535,25 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 				 * By using the conservative calculation, we subject ourself
 				 * to at most one extra resize.
 				 */
-		if (numKeysToBeAdded > threshold)
+		if(numKeysToBeAdded > threshold)
 		{
 			int targetCapacity = (int) (numKeysToBeAdded / loadFactor + 1);
-			if (targetCapacity > MAXIMUM_CAPACITY)
+			if(targetCapacity > MAXIMUM_CAPACITY)
 			{
 				targetCapacity = MAXIMUM_CAPACITY;
 			}
 			int newCapacity = table.length;
-			while (newCapacity < targetCapacity)
+			while(newCapacity < targetCapacity)
 			{
 				newCapacity <<= 1;
 			}
-			if (newCapacity > table.length)
+			if(newCapacity > table.length)
 			{
 				resize(newCapacity);
 			}
 		}
 
-		for (Iterator<? extends IntObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<? extends IntObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
 		{
 			IntObjectMap.Entry<? extends V> e = i.next();
 			put(e.getKey(), e.getValue());
@@ -585,17 +585,17 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
 		Entry<V> prev = table[i];
-		Entry< V> e = prev;
+		Entry<V> e = prev;
 
-		while (e != null)
+		while(e != null)
 		{
-			Entry< V> next = e.next;
+			Entry<V> next = e.next;
 			int k;
-			if (e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && ((k = e.key) == key))
 			{
 				modCount++;
 				size--;
-				if (prev == e)
+				if(prev == e)
 				{
 					table[i] = next;
 				}
@@ -618,7 +618,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	final Entry<V> removeMapping(Object o)
 	{
-		if (!(o instanceof IntObjectMap.Entry))
+		if(!(o instanceof IntObjectMap.Entry))
 		{
 			return null;
 		}
@@ -630,14 +630,14 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		Entry<V> prev = table[i];
 		Entry<V> e = prev;
 
-		while (e != null)
+		while(e != null)
 		{
 			Entry<V> next = e.next;
-			if (e.hash == hash && e.equals(entry))
+			if(e.hash == hash && e.equals(entry))
 			{
 				modCount++;
 				size--;
-				if (prev == e)
+				if(prev == e)
 				{
 					table[i] = next;
 				}
@@ -663,7 +663,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	{
 		modCount++;
 		Entry[] tab = table;
-		for (int i = 0; i < tab.length; i++)
+		for(int i = 0; i < tab.length; i++)
 		{
 			tab[i] = null;
 		}
@@ -680,17 +680,17 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	public boolean containsValue(Object value)
 	{
-		if (value == null)
+		if(value == null)
 		{
 			return containsNullValue();
 		}
 
 		Entry[] tab = table;
-		for (int i = 0; i < tab.length; i++)
+		for(int i = 0; i < tab.length; i++)
 		{
-			for (Entry e = tab[i]; e != null; e = e.next)
+			for(Entry e = tab[i]; e != null; e = e.next)
 			{
-				if (value.equals(e.value))
+				if(value.equals(e.value))
 				{
 					return true;
 				}
@@ -705,11 +705,11 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	private boolean containsNullValue()
 	{
 		Entry[] tab = table;
-		for (int i = 0; i < tab.length; i++)
+		for(int i = 0; i < tab.length; i++)
 		{
-			for (Entry e = tab[i]; e != null; e = e.next)
+			for(Entry e = tab[i]; e != null; e = e.next)
 			{
-				if (e.value == null)
+				if(e.value == null)
 				{
 					return true;
 				}
@@ -731,7 +731,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		{
 			result = (HashIntObjectMap<V>) super.clone();
 		}
-		catch (CloneNotSupportedException e)
+		catch(CloneNotSupportedException e)
 		{
 			// assert false;
 		}
@@ -755,7 +755,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		/**
 		 * Creates new entry.
 		 */
-		Entry(int h, int k, V v, Entry< V> n)
+		Entry(int h, int k, V v, Entry<V> n)
 		{
 			value = v;
 			next = n;
@@ -782,18 +782,18 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public final boolean equals(Object o)
 		{
-			if (!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof IntObjectMap.Entry))
 			{
 				return false;
 			}
 			IntObjectMap.Entry e = (IntObjectMap.Entry) o;
 			int k1 = getKey();
 			int k2 = e.getKey();
-			if (k1 == k2)
+			if(k1 == k2)
 			{
 				Object v1 = getValue();
 				Object v2 = e.getValue();
-				if (v1 == v2 || (v1 != null && v1.equals(v2)))
+				if(v1 == v2 || (v1 != null && v1.equals(v2)))
 				{
 					return true;
 				}
@@ -840,7 +840,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	{
 		Entry<V> e = table[bucketIndex];
 		table[bucketIndex] = new Entry<V>(hash, key, value, e);
-		if (size++ >= threshold)
+		if(size++ >= threshold)
 		{
 			resize(2 * table.length);
 		}
@@ -856,7 +856,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	void createEntry(int hash, int key, V value, int bucketIndex)
 	{
-		Entry< V> e = table[bucketIndex];
+		Entry<V> e = table[bucketIndex];
 		table[bucketIndex] = new Entry<V>(hash, key, value, e);
 		size++;
 	}
@@ -871,10 +871,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		HashIterator()
 		{
 			expectedModCount = modCount;
-			if (size > 0)
+			if(size > 0)
 			{ // advance to first entry
 				Entry[] t = table;
-				while (index < t.length && (next = t[index++]) == null)
+				while(index < t.length && (next = t[index++]) == null)
 				{
 					;
 				}
@@ -888,20 +888,20 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		final Entry<V> nextEntry()
 		{
-			if (modCount != expectedModCount)
+			if(modCount != expectedModCount)
 			{
 				throw new ConcurrentModificationException();
 			}
 			Entry<V> e = next;
-			if (e == null)
+			if(e == null)
 			{
 				throw new NoSuchElementException();
 			}
 
-			if ((next = e.next) == null)
+			if((next = e.next) == null)
 			{
 				Entry[] t = table;
-				while (index < t.length && (next = t[index++]) == null)
+				while(index < t.length && (next = t[index++]) == null)
 				{
 					;
 				}
@@ -912,11 +912,11 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public void remove()
 		{
-			if (current == null)
+			if(current == null)
 			{
 				throw new IllegalStateException();
 			}
-			if (modCount != expectedModCount)
+			if(modCount != expectedModCount)
 			{
 				throw new ConcurrentModificationException();
 			}
@@ -927,7 +927,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		}
 	}
 
- 	private abstract class HashIntIterator implements IntIterator
+	private abstract class HashIntIterator implements IntIterator
 	{
 		Entry<V> next;	// next entry to return
 		int expectedModCount;	// For fast-fail
@@ -937,10 +937,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		HashIntIterator()
 		{
 			expectedModCount = modCount;
-			if (size > 0)
+			if(size > 0)
 			{ // advance to first entry
 				Entry[] t = table;
-				while (index < t.length && (next = t[index++]) == null)
+				while(index < t.length && (next = t[index++]) == null)
 				{
 					;
 				}
@@ -954,20 +954,20 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		final Entry<V> nextEntry()
 		{
-			if (modCount != expectedModCount)
+			if(modCount != expectedModCount)
 			{
 				throw new ConcurrentModificationException();
 			}
 			Entry<V> e = next;
-			if (e == null)
+			if(e == null)
 			{
 				throw new NoSuchElementException();
 			}
 
-			if ((next = e.next) == null)
+			if((next = e.next) == null)
 			{
 				Entry[] t = table;
-				while (index < t.length && (next = t[index++]) == null)
+				while(index < t.length && (next = t[index++]) == null)
 				{
 					;
 				}
@@ -978,11 +978,11 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public void remove()
 		{
-			if (current == null)
+			if(current == null)
 			{
 				throw new IllegalStateException();
 			}
-			if (modCount != expectedModCount)
+			if(modCount != expectedModCount)
 			{
 				throw new ConcurrentModificationException();
 			}
@@ -1011,7 +1011,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 	private final class EntryIterator extends HashIterator<IntObjectMap.Entry<V>>
 	{
-		public IntObjectMap.Entry< V> next()
+		public IntObjectMap.Entry<V> next()
 		{
 			return nextEntry();
 		}
@@ -1163,7 +1163,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public boolean contains(Object o)
 		{
-			if (!(o instanceof Map.Entry))
+			if(!(o instanceof Map.Entry))
 			{
 				return false;
 			}
@@ -1213,9 +1213,9 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		s.writeInt(size);
 
 		// Write out keys and values (alternating)
-		if (i != null)
+		if(i != null)
 		{
-			while (i.hasNext())
+			while(i.hasNext())
 			{
 				IntObjectMap.Entry<V> e = i.next();
 				s.writeInt(e.getKey());
@@ -1245,7 +1245,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		int size = s.readInt();
 
 		// Read the keys and values, and put the mappings in the HashMap
-		for (int i = 0; i < size; i++)
+		for(int i = 0; i < size; i++)
 		{
 			int key = s.readInt();
 			V value = (V) s.readObject();

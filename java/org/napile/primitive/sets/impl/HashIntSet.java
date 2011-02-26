@@ -248,7 +248,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 			newSet.map = (HashIntObjectMap<Object>) map.clone();
 			return newSet;
 		}
-		catch (CloneNotSupportedException e)
+		catch(CloneNotSupportedException e)
 		{
 			throw new InternalError();
 		}
@@ -277,7 +277,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 		s.writeInt(map.size());
 
 		// Write out all elements in the proper order.
-		for (IntIterator i = map.keySet().iterator(); i.hasNext();)
+		for(IntIterator i = map.keySet().iterator(); i.hasNext();)
 		{
 			s.writeObject(i.next());
 		}
@@ -302,7 +302,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 		int size = s.readInt();
 
 		// Read in all elements in the proper order.
-		for (int i = 0; i < size; i++)
+		for(int i = 0; i < size; i++)
 		{
 			int e = s.readInt();
 			map.put(e, PRESENT);

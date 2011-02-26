@@ -27,8 +27,11 @@ import java.util.RandomAccess;
 import java.util.Set;
 
 import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.iterators.LongIterator;
 import org.napile.primitive.lists.IntList;
+import org.napile.primitive.lists.LongList;
 import org.napile.primitive.lists.abstracts.AbstractIntList;
+import org.napile.primitive.lists.abstracts.AbstractLongList;
 import org.napile.primitive.maps.IntObjectMap;
 import org.napile.primitive.maps.abstracts.AbstractIntObjectMap;
 import org.napile.primitive.sets.IntSet;
@@ -43,10 +46,12 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
 public class Containers
 {
 	public static final IntIterator EMPTY_INT_ITERATOR = new EmptyIntIterator();
+	public static final LongIterator EMPTY_LONG_ITERATOR = new EmptyLongIterator();
 	//
 	public static final Container EMPTY_CONTAINER = new EmptyContainer();
 	//
 	public static final IntList EMPTY_INT_LIST = new EmptyIntList();
+	public static final LongList EMPTY_LONG_LIST = new EmptyLongList();
 	//
 	public static final IntSet EMPTY_INT_SET = new EmptyIntSet();
 	//
@@ -54,6 +59,7 @@ public class Containers
 
 	/**
 	 * Return empty instance of IntObjectMap
+	 *
 	 * @param <V>
 	 * @return
 	 */
@@ -68,14 +74,31 @@ public class Containers
 		return new SingletonIntList(t);
 	}
 
+	public static LongList singletonLongList(long t)
+	{
+		return new SingletonLongList(t);
+	}
+
 	/**
 	 * Return simple singleton of iterator if param
+	 *
 	 * @param e
 	 * @return
 	 */
 	public static IntIterator singletonIntIterator(final int e)
 	{
 		return new SingletonIntIterator(e);
+	}
+
+	/**
+	 * Return simple singleton of iterator if param
+	 *
+	 * @param e
+	 * @return
+	 */
+	public static LongIterator singletonLongIterator(final long e)
+	{
+		return new SingletonLongIterator(e);
 	}
 
 	private static class SingletonIntIterator implements IntIterator
@@ -96,6 +119,40 @@ public class Containers
 
 		@Override
 		public int next()
+		{
+			if(_hasNext)
+			{
+				_hasNext = false;
+				return _value;
+			}
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void remove()
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private static class SingletonLongIterator implements LongIterator
+	{
+		private boolean _hasNext = true;
+		private final long _value;
+
+		public SingletonLongIterator(long value)
+		{
+			_value = value;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			return _hasNext;
+		}
+
+		@Override
+		public long next()
 		{
 			if(_hasNext)
 			{
@@ -150,6 +207,44 @@ public class Containers
 		}
 	}
 
+	private static class SingletonLongList extends AbstractLongList implements RandomAccess, Serializable
+	{
+		private final long element;
+
+		SingletonLongList(long obj)
+		{
+			element = obj;
+		}
+
+		@Override
+		public LongIterator iterator()
+		{
+			return singletonLongIterator(element);
+		}
+
+		@Override
+		public int size()
+		{
+			return 1;
+		}
+
+		@Override
+		public boolean contains(long obj)
+		{
+			return element == obj;
+		}
+
+		@Override
+		public long get(int index)
+		{
+			if(index != 0)
+			{
+				throw new IndexOutOfBoundsException("Index: " + index + ", Size: 1");
+			}
+			return element;
+		}
+	}
+
 	private static class EmptyIntIterator implements IntIterator
 	{
 		@Override
@@ -160,6 +255,27 @@ public class Containers
 
 		@Override
 		public int next()
+		{
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void remove()
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private static class EmptyLongIterator implements LongIterator
+	{
+		@Override
+		public boolean hasNext()
+		{
+			return false;
+		}
+
+		@Override
+		public long next()
 		{
 			throw new NoSuchElementException();
 		}
@@ -304,6 +420,33 @@ public class Containers
 
 		@Override
 		public int get(int index)
+		{
+			throw new IndexOutOfBoundsException("Index: " + index);
+		}
+
+		// Preserves singleton property
+		private Object readResolve()
+		{
+			return EMPTY_INT_LIST;
+		}
+	}
+
+	private static class EmptyLongList extends AbstractLongList implements RandomAccess, Serializable
+	{
+		@Override
+		public int size()
+		{
+			return 0;
+		}
+
+		@Override
+		public boolean contains(long obj)
+		{
+			return false;
+		}
+
+		@Override
+		public long get(int index)
 		{
 			throw new IndexOutOfBoundsException("Index: " + index);
 		}
