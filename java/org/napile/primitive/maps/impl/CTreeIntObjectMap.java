@@ -2752,11 +2752,10 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	static final <E> List<E> toList(Collection<E> c)
 	{
 		// Using size() here would be a pessimization.
-		List<E> list = new ArrayList<E>(c);
+		List<E> list = new ArrayList<E>(c.size());
 		for(E e : c)
-		{
 			list.add(e);
-		}
+
 		return list;
 	}
 
