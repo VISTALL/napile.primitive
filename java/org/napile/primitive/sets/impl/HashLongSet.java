@@ -25,10 +25,13 @@
 package org.napile.primitive.sets.impl;
 
 import org.napile.primitive.collections.IntCollection;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.collections.LongCollection;
+import org.napile.primitive.iterators.LongIterator;
 import org.napile.primitive.maps.impl.HashIntObjectMap;
+import org.napile.primitive.maps.impl.HashLongObjectMap;
 import org.napile.primitive.sets.IntSet;
-import org.napile.primitive.sets.abstracts.AbstractIntSet;
+import org.napile.primitive.sets.LongSet;
+import org.napile.primitive.sets.abstracts.AbstractLongSet;
 
 /**
  * This class implements the <tt>Set</tt> interface, backed by a hash table
@@ -87,9 +90,9 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * @see	 HashIntObjectMap
  * @since 1.2
  */
-public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, java.io.Serializable
+public class HashLongSet extends AbstractLongSet implements LongSet, Cloneable, java.io.Serializable
 {
-	private transient HashIntObjectMap<Object> map;
+	private transient HashLongObjectMap<Object> map;
 
 	// Dummy value to associate with an Object in the backing Map
 	private static final Object PRESENT = new Object();
@@ -98,9 +101,9 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * Constructs a new, empty set; the backing <tt>HashMap</tt> instance has
 	 * default initial capacity (16) and load factor (0.75).
 	 */
-	public HashIntSet()
+	public HashLongSet()
 	{
-		map = new HashIntObjectMap<Object>();
+		map = new HashLongObjectMap<Object>();
 	}
 
 	/**
@@ -112,9 +115,9 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @param c the collection whose elements are to be placed into this set
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public HashIntSet(IntCollection c)
+	public HashLongSet(LongCollection c)
 	{
-		map = new HashIntObjectMap<Object>(Math.max((int) (c.size() / .75f) + 1, 16));
+		map = new HashLongObjectMap<Object>(Math.max((int) (c.size() / .75f) + 1, 16));
 		addAll(c);
 	}
 
@@ -127,9 +130,9 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @throws IllegalArgumentException if the initial capacity is less
 	 *                                  than zero, or if the load factor is nonpositive
 	 */
-	public HashIntSet(int initialCapacity, float loadFactor)
+	public HashLongSet(int initialCapacity, float loadFactor)
 	{
-		map = new HashIntObjectMap<Object>(initialCapacity, loadFactor);
+		map = new HashLongObjectMap<Object>(initialCapacity, loadFactor);
 	}
 
 	/**
@@ -140,9 +143,9 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @throws IllegalArgumentException if the initial capacity is less
 	 *                                  than zero
 	 */
-	public HashIntSet(int initialCapacity)
+	public HashLongSet(int initialCapacity)
 	{
-		map = new HashIntObjectMap<Object>(initialCapacity);
+		map = new HashLongObjectMap<Object>(initialCapacity);
 	}
 
 	/**
@@ -152,7 +155,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @return an Iterator over the elements in this set
 	 * @see ConcurrentModificationException
 	 */
-	public IntIterator iterator()
+	public LongIterator iterator()
 	{
 		return map.keySet().iterator();
 	}
@@ -186,7 +189,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @param o element whose presence in this set is to be tested
 	 * @return <tt>true</tt> if this set contains the specified element
 	 */
-	public boolean contains(int o)
+	public boolean contains(long o)
 	{
 		return map.containsKey(o);
 	}
@@ -203,7 +206,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @return <tt>true</tt> if this set did not already contain the specified
 	 *         element
 	 */
-	public boolean add(int e)
+	public boolean add(long e)
 	{
 		return map.put(e, PRESENT) == null;
 	}
@@ -220,7 +223,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @param o object to be removed from this set, if present
 	 * @return <tt>true</tt> if the set contained the specified element
 	 */
-	public boolean remove(int o)
+	public boolean remove(long o)
 	{
 		return map.remove(o) == PRESENT;
 	}
@@ -244,8 +247,8 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	{
 		try
 		{
-			HashIntSet newSet = (HashIntSet) super.clone();
-			newSet.map = (HashIntObjectMap<Object>) map.clone();
+			HashLongSet newSet = (HashLongSet) super.clone();
+			newSet.map = (HashLongObjectMap<Object>) map.clone();
 			return newSet;
 		}
 		catch(CloneNotSupportedException e)
@@ -277,9 +280,9 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 		s.writeInt(map.size());
 
 		// Write out all elements in the proper order.
-		for(IntIterator i = map.keySet().iterator(); i.hasNext();)
+		for(LongIterator i = map.keySet().iterator(); i.hasNext();)
 		{
-			s.writeObject(i.next());
+			s.writeLong(i.next());
 		}
 	}
 
@@ -296,7 +299,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 		int capacity = s.readInt();
 		float loadFactor = s.readFloat();
 		//map = (((HashIntSet) this) instanceof LinkedHashSet ? new LinkedHashMap<E, Object>(capacity, loadFactor) : new HashMap<E, Object>(capacity, loadFactor));
-		map = new HashIntObjectMap<Object>(capacity, loadFactor);
+		map = new HashLongObjectMap<Object>(capacity, loadFactor);
 
 		// Read in size
 		int size = s.readInt();
@@ -304,7 +307,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 		// Read in all elements in the proper order.
 		for(int i = 0; i < size; i++)
 		{
-			int e = s.readInt();
+			long e = s.readLong();
 			map.put(e, PRESENT);
 		}
 	}

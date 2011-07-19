@@ -101,6 +101,16 @@ public class Containers
 		return new SingletonLongIterator(e);
 	}
 
+	public static int hashCode(int val)
+	{
+		return val;
+	}
+
+	public static int hashCode(long val)
+	{
+		return (int)(val ^ (val >>> 32));
+	}
+
 	private static class SingletonIntIterator implements IntIterator
 	{
 		private boolean _hasNext = true;

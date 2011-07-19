@@ -24,6 +24,7 @@
  */
 package org.napile.primitive.sets.abstracts;
 
+import org.napile.primitive.Containers;
 import org.napile.primitive.collections.LongCollection;
 import org.napile.primitive.collections.abstracts.AbstractLongCollection;
 import org.napile.primitive.iterators.LongIterator;
@@ -143,7 +144,7 @@ public abstract class AbstractLongSet extends AbstractLongCollection implements 
 			long obj = i.next();
 			h += obj;
 		}
-		return h;
+		return Containers.hashCode(h);
 	}
 
 	/**

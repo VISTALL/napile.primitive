@@ -650,7 +650,6 @@ public class ArrayLongList extends AbstractLongList implements LongList, RandomA
 		{
 			throw new ConcurrentModificationException();
 		}
-
 	}
 
 	/**

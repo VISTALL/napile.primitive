@@ -27,11 +27,12 @@ package org.napile.primitive.sets.impl;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.napile.primitive.collections.IntCollection;
+import org.napile.primitive.collections.LongCollection;
 import org.napile.primitive.iterators.IntIterator;
-import org.napile.primitive.lists.impl.CArrayIntList;
+import org.napile.primitive.iterators.LongIterator;
+import org.napile.primitive.lists.impl.CArrayLongList;
 import org.napile.primitive.sets.IntSet;
-import org.napile.primitive.sets.abstracts.AbstractIntSet;
+import org.napile.primitive.sets.abstracts.AbstractLongSet;
 
 /**
  * A {@link java.util.Set} that uses an internal {@link CopyOnWriteArrayList}
@@ -60,8 +61,8 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * class Handler { void handle(); ... }
  *
  * class X {
- *    private final CopyOnWriteArraySet&lt;Handler&gt; handlers
- *       = new CopyOnWriteArraySet&lt;Handler&gt;();
+ *    private final CArrayLongSet&lt;Handler&gt; handlers
+ *       = new CArrayLongSet&lt;Handler&gt;();
  *    public void addHandler(Handler h) { handlers.add(h); }
  *
  *    private long internalState;
@@ -80,19 +81,19 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * Java Collections Framework</a>.
  *
  * @author Doug Lea
- * @see CArrayIntList
+ * @see CArrayLongList
  * @since 1.5
  */
-public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
+public class CArrayLongSet extends AbstractLongSet implements java.io.Serializable
 {
-	private final CArrayIntList al;
+	private final CArrayLongList al;
 
 	/**
 	 * Creates an empty set.
 	 */
-	public CArrayIntSet()
+	public CArrayLongSet()
 	{
-		al = new CArrayIntList();
+		al = new CArrayLongList();
 	}
 
 	/**
@@ -102,9 +103,9 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @param c the collection of elements to initially contain
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public CArrayIntSet(IntCollection c)
+	public CArrayLongSet(LongCollection c)
 	{
-		al = new CArrayIntList();
+		this();
 		al.addAllAbsent(c);
 	}
 
@@ -158,7 +159,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 *
 	 * @return an array containing all the elements in this set
 	 */
-	public int[] toArray()
+	public long[] toArray()
 	{
 		return al.toArray();
 	}
@@ -205,7 +206,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 *                              set
 	 * @throws NullPointerException if the specified array is null
 	 */
-	public int[] toArray(int[] a)
+	public long[] toArray(long[] a)
 	{
 		return al.toArray(a);
 	}
@@ -231,7 +232,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @param o object to be removed from this set, if present
 	 * @return <tt>true</tt> if this set contained the specified element
 	 */
-	public boolean remove(int o)
+	public boolean remove(long o)
 	{
 		return al.remove(o);
 	}
@@ -248,7 +249,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @return <tt>true</tt> if this set did not already contain the specified
 	 *         element
 	 */
-	public boolean add(int e)
+	public boolean add(long e)
 	{
 		return al.addIfAbsent(e);
 	}
@@ -264,7 +265,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @throws NullPointerException if the specified collection is null
 	 * @see #contains(int)
 	 */
-	public boolean containsAll(IntCollection c)
+	public boolean containsAll(LongCollection c)
 	{
 		return al.containsAll(c);
 	}
@@ -280,9 +281,9 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @param c collection containing elements to be added to this set
 	 * @return <tt>true</tt> if this set changed as a result of the call
 	 * @throws NullPointerException if the specified collection is null
-	 * @see #add(int)
+	 * @see #add(long)
 	 */
-	public boolean addAll(IntCollection c)
+	public boolean addAll(LongCollection c)
 	{
 		return al.addAllAbsent(c) > 0;
 	}
@@ -300,9 +301,9 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @throws NullPointerException if this set contains a null element and the
 	 *                              specified collection does not permit null elements (optional),
 	 *                              or if the specified collection is null
-	 * @see #remove(int)
+	 * @see #remove(long)
 	 */
-	public boolean removeAll(IntCollection c)
+	public boolean removeAll(LongCollection c)
 	{
 		return al.removeAll(c);
 	}
@@ -322,9 +323,9 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @throws NullPointerException if this set contains a null element and the
 	 *                              specified collection does not permit null elements (optional),
 	 *                              or if the specified collection is null
-	 * @see #remove(int)
+	 * @see #remove(long)
 	 */
-	public boolean retainAll(IntCollection c)
+	public boolean retainAll(LongCollection c)
 	{
 		return al.retainAll(c);
 	}
@@ -340,7 +341,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 *
 	 * @return an iterator over the elements in this set
 	 */
-	public IntIterator iterator()
+	public LongIterator iterator()
 	{
 		return al.iterator();
 	}
@@ -378,7 +379,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 		// for small sets, which CopyOnWriteArraySets should be.
 
 		//  Use a single snapshot of underlying array
-		int[] elements = al.toArray();
+		long[] elements = al.toArray();
 		int len = elements.length;
 		// Mark matched elements to avoid re-checking
 		boolean[] matched = new boolean[len];

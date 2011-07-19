@@ -35,7 +35,6 @@ import org.napile.primitive.iterators.IntIterator;
 import org.napile.primitive.iterators.IntListIterator;
 import org.napile.primitive.lists.IntList;
 import org.napile.primitive.lists.abstracts.AbstractIntList;
-import sun.misc.Unsafe;
 
 /**
  * A thread-safe variant of {@link ArrayIntList} in which all mutative
@@ -78,7 +77,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
 	/**
 	 * The lock protecting all mutators
 	 */
-	transient final ReentrantLock lock = new ReentrantLock();
+	private transient final ReentrantLock lock = new ReentrantLock();
 
 	/**
 	 * The array, accessed only via getArray/setArray.
@@ -295,7 +294,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
 		try
 		{
 			CArrayIntList c = (CArrayIntList) (super.clone());
-			c.resetLock();
+			//TODO [VISTALL] c.resetLock();
 			return c;
 		}
 		catch(CloneNotSupportedException e)
@@ -433,7 +432,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
 	 * Appends the specified element to the end of this list.
 	 *
 	 * @param e element to be appended to this list
-	 * @return <tt>true</tt> (as specified by {@link java.util.Collection#add})
+	 * @return <tt>true</tt> (as specified by {@link IntCollection#add(int})
 	 */
 	public boolean add(int e)
 	{
@@ -990,7 +989,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
 		s.defaultReadObject();
 
 		// bind to new lock
-		resetLock();
+		//TODO [VISTALL] resetLock();
 
 		// Read in array length and allocate array
 		int len = s.readInt();
@@ -1547,26 +1546,4 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
 			throw new UnsupportedOperationException();
 		}
 	}
-
-	// Support for resetting lock while deserializing
-	private static final Unsafe unsafe = Unsafe.getUnsafe();
-	private static final long lockOffset;
-
-	static
-	{
-		try
-		{
-			lockOffset = unsafe.objectFieldOffset(CArrayIntList.class.getDeclaredField("lock"));
-		}
-		catch(Exception ex)
-		{
-			throw new Error(ex);
-		}
-	}
-
-	private void resetLock()
-	{
-		unsafe.putObjectVolatile(this, lockOffset, new ReentrantLock());
-	}
-
 }

@@ -18,8 +18,8 @@
  */
 package org.napile.primitive;
 
-import org.napile.primitive.maps.IntObjectMap;
-import org.napile.primitive.maps.impl.HashIntObjectMap;
+import org.napile.primitive.maps.LongObjectMap;
+import org.napile.primitive.maps.impl.HashLongObjectMap;
 
 /**
  * @author: VISTALL
@@ -29,11 +29,13 @@ public class TestMap
 {
 	public static void main(String... ar)
 	{
-		IntObjectMap<String> map = new HashIntObjectMap <String>();
-		for(int i = 0; i < 10000; i ++)
+		//IntObjectMap<String> map = new HashIntObjectMap <String>();
+		LongObjectMap<String> map = new HashLongObjectMap<String>();
+		for(int i = 0; i < 200; i ++)
 			map.put(i, "VISTALL:" + i);
+		map.put(Long.MAX_VALUE, "Test");
 
-		for(IntObjectMap.Entry<String> entry : map.entrySet())
+		for(LongObjectMap.Entry<String> entry : map.entrySet())
 		{
 			System.out.println(entry.getKey() + " " + entry.getValue());
 		}

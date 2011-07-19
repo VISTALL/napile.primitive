@@ -37,10 +37,12 @@ import java.util.Set;
 
 import org.napile.primitive.Containers;
 import org.napile.primitive.iterators.IntIterator;
+import org.napile.primitive.iterators.LongIterator;
 import org.napile.primitive.maps.IntObjectMap;
-import org.napile.primitive.maps.abstracts.AbstractIntObjectMap;
-import org.napile.primitive.sets.IntSet;
-import org.napile.primitive.sets.abstracts.AbstractIntSet;
+import org.napile.primitive.maps.LongObjectMap;
+import org.napile.primitive.maps.abstracts.AbstractLongObjectMap;
+import org.napile.primitive.sets.LongSet;
+import org.napile.primitive.sets.abstracts.AbstractLongSet;
 
 /**
  * Hash table based implementation of the <tt>Map</tt> interface.  This
@@ -128,14 +130,14 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * @author Arthur van Hoff
  * @author Neal Gafter
  * @version %I%, %G%
- * @see	 IntObjectMap
- * @see	 TreeIntObjectMap
+ * @see	 LongObjectMap
+ * @see	 TreeLongObjectMap
  * @see Object#hashCode()
- * @see IntCollection
+ * @see LongCollection
  * @since 1.2
  */
 @SuppressWarnings("unchecked")
-public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntObjectMap<V>, Cloneable, Serializable
+public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements LongObjectMap<V>, Cloneable, Serializable
 {
 	/**
 	 * The default initial capacity - MUST be a power of two.
@@ -196,7 +198,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * @throws IllegalArgumentException if the initial capacity is negative
 	 *                                  or the load factor is nonpositive
 	 */
-	public HashIntObjectMap(int initialCapacity, float loadFactor)
+	public HashLongObjectMap(int initialCapacity, float loadFactor)
 	{
 		if(initialCapacity < 0)
 		{
@@ -231,7 +233,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * @param initialCapacity the initial capacity.
 	 * @throws IllegalArgumentException if the initial capacity is negative.
 	 */
-	public HashIntObjectMap(int initialCapacity)
+	public HashLongObjectMap(int initialCapacity)
 	{
 		this(initialCapacity, DEFAULT_LOAD_FACTOR);
 	}
@@ -240,7 +242,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * Constructs an empty <tt>HashMap</tt> with the default initial capacity
 	 * (16) and the default load factor (0.75).
 	 */
-	public HashIntObjectMap()
+	public HashLongObjectMap()
 	{
 		this.loadFactor = DEFAULT_LOAD_FACTOR;
 		threshold = (int) (DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
@@ -257,7 +259,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * @param m the map whose mappings are to be placed in this map
 	 * @throws NullPointerException if the specified map is null
 	 */
-	public HashIntObjectMap(IntObjectMap<? extends V> m)
+	public HashLongObjectMap(LongObjectMap<? extends V> m)
 	{
 		this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);
 		putAllForCreate(m);
@@ -283,7 +285,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * otherwise encounter collisions for hashCodes that do not differ
 	 * in lower bits. Note: Null keys always map to hash 0, thus index 0.
 	 */
-	static int hash(int value)
+	static int hash(long value)
 	{
 		int h = Containers.hashCode(value);
 		// This function ensures that hashCodes that differ only by
@@ -333,18 +335,22 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * <p>A return value of {@code null} does not <i>necessarily</i>
 	 * indicate that the map contains no mapping for the key; it's also
 	 * possible that the map explicitly maps the key to {@code null}.
-	 * The {@link #containsKey(int)} operation may be used to
+	 * The {@link #containsKey(long)} operation may be used to
 	 * distinguish these two cases.
 	 *
-	 * @see #put(int, Object)
+	 * @see #put(long, Object)
 	 */
-	public V get(int key)
+	public V get(long key)
 	{
 		int hash = hash(key);
 		for(Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
-			if(e.hash == hash && e.key == key)
+		{
+			long k;
+			if(e.hash == hash && ((k = e.key) == key))
+			{
 				return e.value;
-
+			}
+		}
 		return null;
 	}
 
@@ -371,7 +377,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		int hash = hash(key);
 		for(Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
 		{
-			int k;
+			long k;
 			if(e.hash == hash && ((k = e.key) == key))
 			{
 				return e;
@@ -393,13 +399,13 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 *         (A <tt>null</tt> return can also indicate that the map
 	 *         previously associated <tt>null</tt> with <tt>key</tt>.)
 	 */
-	public V put(int key, V value)
+	public V put(long key, V value)
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
 		for(Entry<V> e = table[i]; e != null; e = e.next)
 		{
-			int k;
+			long k;
 			if(e.hash == hash && ((k = e.key) == key))
 			{
 				V oldValue = e.value;
@@ -420,7 +426,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * check for comodification, etc.  It calls createEntry rather than
 	 * addEntry.
 	 */
-	private void putForCreate(int key, V value)
+	private void putForCreate(long key, V value)
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
@@ -432,7 +438,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		 */
 		for(Entry<V> e = table[i]; e != null; e = e.next)
 		{
-			int k;
+			long k;
 			if(e.hash == hash && ((k = e.key) == key))
 			{
 				e.value = value;
@@ -443,11 +449,11 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		createEntry(hash, key, value, i);
 	}
 
-	private void putAllForCreate(IntObjectMap<? extends V> m)
+	private void putAllForCreate(LongObjectMap<? extends V> m)
 	{
-		for(Iterator<? extends IntObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<? extends LongObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
 		{
-			IntObjectMap.Entry<? extends V> e = i.next();
+			LongObjectMap.Entry<? extends V> e = i.next();
 			putForCreate(e.getKey(), e.getValue());
 		}
 	}
@@ -567,7 +573,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 *         (A <tt>null</tt> return can also indicate that the map
 	 *         previously associated <tt>null</tt> with <tt>key</tt>.)
 	 */
-	public V remove(int key)
+	public V remove(long key)
 	{
 		Entry<V> e = removeEntryForKey(key);
 		return (e == null ? null : e.value);
@@ -578,7 +584,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * in the HashMap.  Returns null if the HashMap contains no mapping
 	 * for this key.
 	 */
-	final Entry<V> removeEntryForKey(int key)
+	final Entry<V> removeEntryForKey(long key)
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
@@ -588,7 +594,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		while(e != null)
 		{
 			Entry<V> next = e.next;
-			int k;
+			long k;
 			if(e.hash == hash && ((k = e.key) == key))
 			{
 				modCount++;
@@ -616,14 +622,14 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	final Entry<V> removeMapping(Object o)
 	{
-		if(!(o instanceof IntObjectMap.Entry))
+		if(!(o instanceof LongObjectMap.Entry))
 		{
 			return null;
 		}
 
-		IntObjectMap.Entry<V> entry = (IntObjectMap.Entry<V>) o;
-		Object key = entry.getKey();
-		int hash = (key == null) ? 0 : hash(key.hashCode());
+		LongObjectMap.Entry<V> entry = (LongObjectMap.Entry<V>) o;
+		long key = entry.getKey();
+		int hash = hash(key);
 		int i = indexFor(hash, table.length);
 		Entry<V> prev = table[i];
 		Entry<V> e = prev;
@@ -724,10 +730,10 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	public Object clone()
 	{
-		HashIntObjectMap<V> result = null;
+		HashLongObjectMap<V> result = null;
 		try
 		{
-			result = (HashIntObjectMap<V>) super.clone();
+			result = (HashLongObjectMap<V>) super.clone();
 		}
 		catch(CloneNotSupportedException e)
 		{
@@ -743,9 +749,9 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		return result;
 	}
 
-	static class Entry<V> implements IntObjectMap.Entry<V>
+	static class Entry<V> implements LongObjectMap.Entry<V>
 	{
-		final int key;
+		final long key;
 		V value;
 		Entry<V> next;
 		final int hash;
@@ -753,7 +759,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		/**
 		 * Creates new entry.
 		 */
-		Entry(int h, int k, V v, Entry<V> n)
+		Entry(int h, long k, V v, Entry<V> n)
 		{
 			value = v;
 			next = n;
@@ -761,7 +767,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 			hash = h;
 		}
 
-		public final int getKey()
+		public final long getKey()
 		{
 			return key;
 		}
@@ -780,13 +786,13 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public final boolean equals(Object o)
 		{
-			if(!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof LongObjectMap.Entry))
 			{
 				return false;
 			}
-			IntObjectMap.Entry e = (IntObjectMap.Entry) o;
-			int k1 = getKey();
-			int k2 = e.getKey();
+			LongObjectMap.Entry e = (LongObjectMap.Entry) o;
+			long k1 = getKey();
+			long k2 = e.getKey();
 			if(k1 == k2)
 			{
 				Object v1 = getValue();
@@ -801,7 +807,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public final int hashCode()
 		{
-			return key ^ (value == null ? 0 : value.hashCode());
+			return (int)(key ^ (value == null ? 0 : value.hashCode()));
 		}
 
 		public final String toString()
@@ -814,7 +820,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		 * overwritten by an invocation of put(k,v) for a key k that's already
 		 * in the HashMap.
 		 */
-		void recordAccess(HashIntObjectMap<V> m)
+		void recordAccess(HashLongObjectMap<V> m)
 		{
 		}
 
@@ -822,7 +828,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		 * This method is invoked whenever the entry is
 		 * removed from the table.
 		 */
-		void recordRemoval(HashIntObjectMap<V> m)
+		void recordRemoval(HashLongObjectMap<V> m)
 		{
 		}
 	}
@@ -834,7 +840,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * <p/>
 	 * Subclass overrides this to alter the behavior of put method.
 	 */
-	void addEntry(int hash, int key, V value, int bucketIndex)
+	void addEntry(int hash, long key, V value, int bucketIndex)
 	{
 		Entry<V> e = table[bucketIndex];
 		table[bucketIndex] = new Entry<V>(hash, key, value, e);
@@ -852,7 +858,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * Subclass overrides this to alter the behavior of HashMap(Map),
 	 * clone, and readObject.
 	 */
-	void createEntry(int hash, int key, V value, int bucketIndex)
+	void createEntry(int hash, long key, V value, int bucketIndex)
 	{
 		Entry<V> e = table[bucketIndex];
 		table[bucketIndex] = new Entry<V>(hash, key, value, e);
@@ -918,21 +924,21 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 			{
 				throw new ConcurrentModificationException();
 			}
-			int k = current.key;
+			long k = current.key;
 			current = null;
-			HashIntObjectMap.this.removeEntryForKey(k);
+			HashLongObjectMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
 		}
 	}
 
-	private abstract class HashIntIterator implements IntIterator
+	private abstract class HashLongIterator implements LongIterator
 	{
 		Entry<V> next;	// next entry to return
 		int expectedModCount;	// For fast-fail
 		int index;		// current slot
 		Entry<V> current;	// current entry
 
-		HashIntIterator()
+		HashLongIterator()
 		{
 			expectedModCount = modCount;
 			if(size > 0)
@@ -984,9 +990,9 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 			{
 				throw new ConcurrentModificationException();
 			}
-			int k = current.key;
+			long k = current.key;
 			current = null;
-			HashIntObjectMap.this.removeEntryForKey(k);
+			HashLongObjectMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
 		}
 	}
@@ -999,24 +1005,24 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		}
 	}
 
-	private final class KeyIterator extends HashIntIterator
+	private final class KeyIterator extends HashLongIterator
 	{
-		public int next()
+		public long next()
 		{
 			return nextEntry().getKey();
 		}
 	}
 
-	private final class EntryIterator extends HashIterator<IntObjectMap.Entry<V>>
+	private final class EntryIterator extends HashIterator<LongObjectMap.Entry<V>>
 	{
-		public IntObjectMap.Entry<V> next()
+		public LongObjectMap.Entry<V> next()
 		{
 			return nextEntry();
 		}
 	}
 
 	// Subclass overrides these to alter behavior of views' iterator() method
-	IntIterator newKeyIterator()
+	LongIterator newKeyIterator()
 	{
 		return new KeyIterator();
 	}
@@ -1026,7 +1032,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		return new ValueIterator();
 	}
 
-	Iterator<IntObjectMap.Entry<V>> newEntryIterator()
+	Iterator<LongObjectMap.Entry<V>> newEntryIterator()
 	{
 		return new EntryIterator();
 	}
@@ -1034,7 +1040,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 	// Views
 
-	private transient Set<IntObjectMap.Entry<V>> entrySet = null;
+	private transient Set<LongObjectMap.Entry<V>> entrySet = null;
 
 	/**
 	 * Returns a {@link Set} view of the keys contained in this map.
@@ -1049,15 +1055,15 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 * operations.  It does not support the <tt>add</tt> or <tt>addAll</tt>
 	 * operations.
 	 */
-	public IntSet keySet()
+	public LongSet keySet()
 	{
-		IntSet ks = keySet;
+		LongSet ks = keySet;
 		return (ks != null ? ks : (keySet = new KeySet()));
 	}
 
-	private final class KeySet extends AbstractIntSet
+	private final class KeySet extends AbstractLongSet
 	{
-		public IntIterator iterator()
+		public LongIterator iterator()
 		{
 			return newKeyIterator();
 		}
@@ -1074,12 +1080,12 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public boolean remove(int o)
 		{
-			return HashIntObjectMap.this.removeEntryForKey(o) != null;
+			return HashLongObjectMap.this.removeEntryForKey(o) != null;
 		}
 
 		public void clear()
 		{
-			HashIntObjectMap.this.clear();
+			HashLongObjectMap.this.clear();
 		}
 	}
 
@@ -1121,7 +1127,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public void clear()
 		{
-			HashIntObjectMap.this.clear();
+			HashLongObjectMap.this.clear();
 		}
 	}
 
@@ -1141,20 +1147,20 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	public Set<IntObjectMap.Entry<V>> entrySet()
+	public Set<LongObjectMap.Entry<V>> entrySet()
 	{
 		return entrySet0();
 	}
 
-	private Set<IntObjectMap.Entry<V>> entrySet0()
+	private Set<LongObjectMap.Entry<V>> entrySet0()
 	{
-		Set<IntObjectMap.Entry<V>> es = entrySet;
+		Set<LongObjectMap.Entry<V>> es = entrySet;
 		return es != null ? es : (entrySet = new EntrySet());
 	}
 
-	private final class EntrySet extends AbstractSet<IntObjectMap.Entry<V>>
+	private final class EntrySet extends AbstractSet<LongObjectMap.Entry<V>>
 	{
-		public Iterator<IntObjectMap.Entry<V>> iterator()
+		public Iterator<LongObjectMap.Entry<V>> iterator()
 		{
 			return newEntryIterator();
 		}
@@ -1182,7 +1188,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 		public void clear()
 		{
-			HashIntObjectMap.this.clear();
+			HashLongObjectMap.this.clear();
 		}
 	}
 
@@ -1199,7 +1205,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 	 */
 	private void writeObject(java.io.ObjectOutputStream s) throws IOException
 	{
-		Iterator<IntObjectMap.Entry<V>> i = (size > 0) ? entrySet0().iterator() : null;
+		Iterator<LongObjectMap.Entry<V>> i = (size > 0) ? entrySet0().iterator() : null;
 
 		// Write out the threshold, loadfactor, and any hidden stuff
 		s.defaultWriteObject();
@@ -1215,8 +1221,8 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		{
 			while(i.hasNext())
 			{
-				IntObjectMap.Entry<V> e = i.next();
-				s.writeInt(e.getKey());
+				LongObjectMap.Entry<V> e = i.next();
+				s.writeLong(e.getKey());
 				s.writeObject(e.getValue());
 			}
 		}
@@ -1245,7 +1251,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 		// Read the keys and values, and put the mappings in the HashMap
 		for(int i = 0; i < size; i++)
 		{
-			int key = s.readInt();
+			long key = s.readLong();
 			V value = (V) s.readObject();
 			putForCreate(key, value);
 		}
