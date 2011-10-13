@@ -1,6 +1,6 @@
-/**
+/*
  * Primitive Collection Framework for Java
- * Copyright (C) 2010 Napile.org
+ * Copyright (C) 2011 napile.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,27 +16,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.napile.primitive;
 
-import org.napile.primitive.maps.IntObjectMap;
-import org.napile.primitive.maps.impl.CHashIntObjectMap;
+package org.napile;
 
 /**
  * @author VISTALL
- * @date  20:31/18.12.2010
+ * @date 22:45/13.10.2011
  */
-public class TestMap
+public class HashUtils
 {
-	public static void main(String... ar)
+	public static int hashCode(int val)
 	{
-		//IntObjectMap<String> map = new HashIntObjectMap <String>();
-		IntObjectMap<Long> map = new CHashIntObjectMap<Long>();
-		for(int i = 0; i < (Integer.MAX_VALUE & 0xFFFF); i++)
-			map.put(i, (long)i);
+		return val;
+	}
 
-		System.out.println(map.size());
+	public static int hashCode(long val)
+	{
+		return (int)(val ^ (val >>> 32));
+	}
 
-	//	for(IntObjectMap.Entry<Long> entry : map.entrySet())
-	//		System.out.println(entry.getKey() + " " + entry.getValue());
+	public static int hashCode(Object val)
+	{
+		return val == null ? 0 : val.hashCode();
 	}
 }

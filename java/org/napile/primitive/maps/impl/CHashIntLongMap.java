@@ -1,49 +1,41 @@
 /*
- * Copyright (c) 1997, 2007, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Primitive Collection Framework for Java
+ * Copyright (C) 2011 napile.org
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License.
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.napile.primitive.maps.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.AbstractCollection;
 import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.napile.pair.primitive.IntObjectPair;
-import org.napile.pair.primitive.impl.IntObjectPairImpl;
+import org.napile.pair.primitive.IntLongPair;
+import org.napile.pair.primitive.impl.IntLongPairImpl;
+import org.napile.primitive.Variables;
+import org.napile.primitive.collections.LongCollection;
+import org.napile.primitive.collections.abstracts.AbstractLongCollection;
 import org.napile.primitive.iterators.IntIterator;
-import org.napile.primitive.maps.CIntObjectMap;
-import org.napile.primitive.maps.IntObjectMap;
-import org.napile.primitive.maps.abstracts.AbstractIntObjectMap;
+import org.napile.primitive.iterators.LongIterator;
+import org.napile.primitive.maps.CIntLongMap;
+import org.napile.primitive.maps.IntLongMap;
+import org.napile.primitive.maps.abstracts.AbstractIntLongMap;
 import org.napile.primitive.sets.IntSet;
 import org.napile.primitive.sets.abstracts.AbstractIntSet;
 
@@ -68,7 +60,7 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * removal of only some entries.  Similarly, Iterators and
  * Enumerations return elements reflecting the state of the hash table
  * at some point at or since the creation of the iterator/enumeration.
- * They do <em>not</em> throw {@link ConcurrentModificationException}.
+ * They do <em>not</em> throw {@link java.util.ConcurrentModificationException}.
  * However, iterators are designed to be used by only one thread at a time.
  * <p/>
  * <p> The allowed concurrency among update operations is guided by
@@ -90,21 +82,20 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * constructors.
  * <p/>
  * <p>This class and its views and iterators implement all of the
- * <em>optional</em> methods of the {@link Map} and {@link Iterator}
+ * <em>optional</em> methods of the {@link java.util.Map} and {@link java.util.Iterator}
  * interfaces.
  * <p/>
- * <p> Like {@link Hashtable} but unlike {@link HashMap}, this class
+ * <p> Like {@link java.util.Hashtable} but unlike {@link java.util.HashMap}, this class
  * does <em>not</em> allow <tt>null</tt> to be used as a key or value.
  * <p/>
  * <p>This class is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @param <V> the type of mapped values
  * @author Doug Lea
  * @since 1.5
  */
-public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIntObjectMap<V>, Serializable
+public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, Serializable
 {
 
 	/*
@@ -170,11 +161,11 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	/**
 	 * The segments, each of which is a specialized hash table
 	 */
-	final Segment<V>[] segments;
+	final Segment[] segments;
 
 	transient IntSet keySet;
-	transient Set<IntObjectPair<V>> entrySet;
-	transient Collection<V> values;
+	transient Set<IntLongPair> entrySet;
+	transient LongCollection values;
 
 	/* ---------------- Small Utilities -------------- */
 
@@ -203,7 +194,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * @param hash the hash code for the key
 	 * @return the segment
 	 */
-	final Segment<V> segmentFor(int hash)
+	final Segment segmentFor(int hash)
 	{
 		return segments[(hash >>> segmentShift) & segmentMask];
 	}
@@ -222,14 +213,14 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * backup in case a null (pre-initialized) value is ever seen in
 	 * an unsynchronized access method.
 	 */
-	static final class HashEntry<V>
+	static final class HashEntry
 	{
 		final int key;
 		final int hash;
-		volatile V value;
-		final HashEntry<V> next;
+		volatile long value;
+		final HashEntry next;
 
-		HashEntry(int key, HashEntry<V> next, V value)
+		HashEntry(int key, HashEntry next, long value)
 		{
 			this.key = key;
 			this.hash = hash(key);
@@ -237,8 +228,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			this.value = value;
 		}
 
-		@SuppressWarnings("unchecked")
-		static <V> HashEntry<V>[] newArray(int i)
+		static HashEntry[] newArray(int i)
 		{
 			return new HashEntry[i];
 		}
@@ -249,7 +239,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * subclasses from ReentrantLock opportunistically, just to
 	 * simplify some locking and avoid separate construction.
 	 */
-	static final class Segment<V> extends ReentrantLock implements Serializable
+	static final class Segment extends ReentrantLock implements Serializable
 	{
 		/*
 				 * Segments maintain a table of entry lists that are ALWAYS
@@ -315,7 +305,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		/**
 		 * The per-segment table.
 		 */
-		transient volatile HashEntry<V>[] table;
+		transient volatile HashEntry[] table;
 
 		/**
 		 * The load factor for the hash table.  Even though this value
@@ -329,11 +319,10 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		Segment(int initialCapacity, float lf)
 		{
 			loadFactor = lf;
-			setTable(HashEntry.<V>newArray(initialCapacity));
+			setTable(HashEntry.newArray(initialCapacity));
 		}
 
-		@SuppressWarnings("unchecked")
-		static final <V> Segment<V>[] newArray(int i)
+		static Segment[] newArray(int i)
 		{
 			return new Segment[i];
 		}
@@ -342,7 +331,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		 * Sets table to new HashEntry array.
 		 * Call only while holding lock or in constructor.
 		 */
-		void setTable(HashEntry<V>[] newTable)
+		void setTable(HashEntry[] newTable)
 		{
 			threshold = (int) (newTable.length * loadFactor);
 			table = newTable;
@@ -351,9 +340,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		/**
 		 * Returns properly casted first entry of bin for given hash.
 		 */
-		HashEntry<V> getFirst(int hash)
+		HashEntry getFirst(int hash)
 		{
-			HashEntry<V>[] tab = table;
+			HashEntry[] tab = table;
 			return tab[hash & (tab.length - 1)];
 		}
 
@@ -364,7 +353,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		 * its table assignment, which is legal under memory model
 		 * but is not known to ever occur.
 		 */
-		V readValueUnderLock(HashEntry<V> e)
+		long readValueUnderLock(HashEntry e)
 		{
 			lock();
 			try
@@ -379,32 +368,28 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 		/* Specialized implementations of map methods */
 
-		V get(int key, int hash)
+		long get(int key, int hash)
 		{
 			if(count != 0)
 			{ // read-volatile
-				HashEntry<V> e = getFirst(hash);
+				HashEntry e = getFirst(hash);
 				while(e != null)
 				{
 					if(e.key == key)
 					{
-						V v = e.value;
-						if(v != null)
-							return v;
-
-						return readValueUnderLock(e); // recheck
+						return e.value;
 					}
 					e = e.next;
 				}
 			}
-			return null;
+			return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 		}
 
 		boolean containsKey(int key, int hash)
 		{
 			if(count != 0)
 			{ // read-volatile
-				HashEntry<V> e = getFirst(hash);
+				HashEntry e = getFirst(hash);
 				while(e != null)
 				{
 					if(e.key == key)
@@ -415,22 +400,18 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			return false;
 		}
 
-		boolean containsValue(Object value)
+		boolean containsValue(long value)
 		{
 			if(count != 0)
 			{ // read-volatile
-				HashEntry<V>[] tab = table;
+				HashEntry[] tab = table;
 				int len = tab.length;
 				for(int i = 0; i < len; i++)
 				{
-					for(HashEntry<V> e = tab[i]; e != null; e = e.next)
+					for(HashEntry e = tab[i]; e != null; e = e.next)
 					{
-						V v = e.value;
-						if(v == null) // recheck
-						{
-							v = readValueUnderLock(e);
-						}
-						if(value.equals(v))
+						long v = e.value;
+						if(value == v)
 						{
 							return true;
 						}
@@ -440,17 +421,17 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			return false;
 		}
 
-		boolean replace(int key, int hash, V oldValue, V newValue)
+		boolean replace(int key, int hash, long oldValue, long newValue)
 		{
 			lock();
 			try
 			{
-				HashEntry<V> e = getFirst(hash);
+				HashEntry e = getFirst(hash);
 				while(e != null && (key != e.key))
 					e = e.next;
 
 				boolean replaced = false;
-				if(e != null && oldValue.equals(e.value))
+				if(e != null && oldValue == e.value)
 				{
 					replaced = true;
 					e.value = newValue;
@@ -463,18 +444,18 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			}
 		}
 
-		V replace(int key, int hash, V newValue)
+		long replace(int key, int hash, long newValue)
 		{
 			lock();
 			try
 			{
-				HashEntry<V> e = getFirst(hash);
+				HashEntry e = getFirst(hash);
 				while(e != null && key != e.key)
 				{
 					e = e.next;
 				}
 
-				V oldValue = null;
+				long oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 				if(e != null)
 				{
 					oldValue = e.value;
@@ -489,7 +470,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		}
 
 
-		V put(int key, int hash, V value, boolean onlyIfAbsent)
+		long put(int key, int hash, long value, boolean onlyIfAbsent)
 		{
 			lock();
 			try
@@ -499,16 +480,16 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 				{
 					rehash();
 				}
-				HashEntry<V>[] tab = table;
+				HashEntry[] tab = table;
 				int index = hash & (tab.length - 1);
-				HashEntry<V> first = tab[index];
-				HashEntry<V> e = first;
+				HashEntry first = tab[index];
+				HashEntry e = first;
 				while(e != null && key != e.key)
 				{
 					e = e.next;
 				}
 
-				V oldValue;
+				long oldValue;
 				if(e != null)
 				{
 					oldValue = e.value;
@@ -519,9 +500,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 				}
 				else
 				{
-					oldValue = null;
+					oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 					++modCount;
-					tab[index] = new HashEntry<V>(key, first, value);
+					tab[index] = new HashEntry(key, first, value);
 					count = c; // write-volatile
 				}
 				return oldValue;
@@ -534,7 +515,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 		void rehash()
 		{
-			HashEntry<V>[] oldTable = table;
+			HashEntry[] oldTable = table;
 			int oldCapacity = oldTable.length;
 			if(oldCapacity >= MAXIMUM_CAPACITY)
 			{
@@ -555,18 +536,18 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 						 * right now.
 						 */
 
-			HashEntry<V>[] newTable = HashEntry.newArray(oldCapacity << 1);
+			HashEntry[] newTable = HashEntry.newArray(oldCapacity << 1);
 			threshold = (int) (newTable.length * loadFactor);
 			int sizeMask = newTable.length - 1;
 			for(int i = 0; i < oldCapacity; i++)
 			{
 				// We need to guarantee that any existing reads of old Map can
 				//  proceed. So we cannot yet null out each bin.
-				HashEntry<V> e = oldTable[i];
+				HashEntry e = oldTable[i];
 
 				if(e != null)
 				{
-					HashEntry<V> next = e.next;
+					HashEntry next = e.next;
 					int idx = e.hash & sizeMask;
 
 					//  Single node on list
@@ -578,9 +559,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 					else
 					{
 						// Reuse trailing consecutive sequence at same slot
-						HashEntry<V> lastRun = e;
+						HashEntry lastRun = e;
 						int lastIdx = idx;
-						for(HashEntry<V> last = next; last != null; last = last.next)
+						for(HashEntry last = next; last != null; last = last.next)
 						{
 							int k = last.hash & sizeMask;
 							if(k != lastIdx)
@@ -592,11 +573,11 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 						newTable[lastIdx] = lastRun;
 
 						// Clone all remaining nodes
-						for(HashEntry<V> p = e; p != lastRun; p = p.next)
+						for(HashEntry p = e; p != lastRun; p = p.next)
 						{
 							int k = p.hash & sizeMask;
-							HashEntry<V> n = newTable[k];
-							newTable[k] = new HashEntry<V>(p.key, n, p.value);
+							HashEntry n = newTable[k];
+							newTable[k] = new HashEntry(p.key, n, p.value);
 						}
 					}
 				}
@@ -604,41 +585,104 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			table = newTable;
 		}
 
-		/**
-		 * Remove; match on key only if value null, else match both.
-		 */
-		V remove(int key, int hash, Object value)
+		long remove(int key, int hash)
 		{
 			lock();
 			try
 			{
 				int c = count - 1;
-				HashEntry<V>[] tab = table;
+				HashEntry[] tab = table;
 				int index = hash & (tab.length - 1);
-				HashEntry<V> first = tab[index];
-				HashEntry<V> e = first;
+				HashEntry first = tab[index];
+				HashEntry e = first;
 				while(e != null && key != e.key)
 					e = e.next;
 
-				V oldValue = null;
+				long oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 				if(e != null)
 				{
-					V v = e.value;
-					if(value == null || value.equals(v))
+					oldValue = e.value;
+					// All entries following removed node can stay
+					// in list, but all preceding ones need to be
+					// cloned.
+					++modCount;
+					HashEntry newFirst = e.next;
+					for(HashEntry p = first; p != e; p = p.next)
+						newFirst = new HashEntry(p.key, newFirst, p.value);
+					tab[index] = newFirst;
+					count = c; // write-volatile
+				}
+				return oldValue;
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+
+		boolean removeTrueIfRemoved(int key, int hash)
+		{
+			lock();
+			try
+			{
+				int c = count - 1;
+				HashEntry[] tab = table;
+				int index = hash & (tab.length - 1);
+				HashEntry first = tab[index];
+				HashEntry e = first;
+				while(e != null && key != e.key)
+					e = e.next;
+
+				if(e != null)
+				{
+					// All entries following removed node can stay
+					// in list, but all preceding ones need to be
+					// cloned.
+					++modCount;
+					HashEntry newFirst = e.next;
+					for(HashEntry p = first; p != e; p = p.next)
+						newFirst = new HashEntry(p.key, newFirst, p.value);
+					tab[index] = newFirst;
+					count = c; // write-volatile
+				}
+				return e != null;
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+
+		boolean removeWithValue(int key, int hash, long value)
+		{
+			lock();
+			try
+			{
+				int c = count - 1;
+				HashEntry[] tab = table;
+				int index = hash & (tab.length - 1);
+				HashEntry first = tab[index];
+				HashEntry e = first;
+				while(e != null && key != e.key)
+					e = e.next;
+
+				if(e != null)
+				{
+					long v = e.value;
+					if(value == v)
 					{
-						oldValue = v;
 						// All entries following removed node can stay
 						// in list, but all preceding ones need to be
 						// cloned.
 						++modCount;
-						HashEntry<V> newFirst = e.next;
-						for(HashEntry<V> p = first; p != e; p = p.next)
-							newFirst = new HashEntry<V>(p.key, newFirst, p.value);
+						HashEntry newFirst = e.next;
+						for(HashEntry p = first; p != e; p = p.next)
+							newFirst = new HashEntry(p.key, newFirst, p.value);
 						tab[index] = newFirst;
 						count = c; // write-volatile
 					}
 				}
-				return oldValue;
+				return e != null;
 			}
 			finally
 			{
@@ -653,7 +697,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 				lock();
 				try
 				{
-					HashEntry<V>[] tab = table;
+					HashEntry[] tab = table;
 					for(int i = 0; i < tab.length; i++)
 					{
 						tab[i] = null;
@@ -688,7 +732,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *                                  negative or the load factor or concurrencyLevel are
 	 *                                  nonpositive.
 	 */
-	public CHashIntObjectMap(int initialCapacity, float loadFactor, int concurrencyLevel)
+	public CHashIntLongMap(int initialCapacity, float loadFactor, int concurrencyLevel)
 	{
 		if(!(loadFactor > 0) || initialCapacity < 0 || concurrencyLevel <= 0)
 		{
@@ -729,7 +773,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 		for(int i = 0; i < this.segments.length; ++i)
 		{
-			this.segments[i] = new Segment<V>(cap, loadFactor);
+			this.segments[i] = new Segment(cap, loadFactor);
 		}
 	}
 
@@ -746,7 +790,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *                                  elements is negative or the load factor is nonpositive
 	 * @since 1.6
 	 */
-	public CHashIntObjectMap(int initialCapacity, float loadFactor)
+	public CHashIntLongMap(int initialCapacity, float loadFactor)
 	{
 		this(initialCapacity, loadFactor, DEFAULT_CONCURRENCY_LEVEL);
 	}
@@ -760,7 +804,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * @throws IllegalArgumentException if the initial capacity of
 	 *                                  elements is negative.
 	 */
-	public CHashIntObjectMap(int initialCapacity)
+	public CHashIntLongMap(int initialCapacity)
 	{
 		this(initialCapacity, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
 	}
@@ -769,7 +813,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * Creates a new, empty map with a default initial capacity (16),
 	 * load factor (0.75) and concurrencyLevel (16).
 	 */
-	public CHashIntObjectMap()
+	public CHashIntLongMap()
 	{
 		this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
 	}
@@ -782,7 +826,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *
 	 * @param m the map
 	 */
-	public CHashIntObjectMap(IntObjectMap<? extends V> m)
+	public CHashIntLongMap(IntLongMap m)
 	{
 		this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
 		putAll(m);
@@ -795,7 +839,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 */
 	public boolean isEmpty()
 	{
-		final Segment<V>[] segments = this.segments;
+		final Segment[] segments = this.segments;
 		/*
 				 * We keep track of per-segment modCounts to avoid ABA
 				 * problems in which an element in one segment was added and
@@ -839,7 +883,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 */
 	public int size()
 	{
-		final Segment<V>[] segments = this.segments;
+		final Segment[] segments = this.segments;
 		long sum = 0;
 		long check = 0;
 		int[] mc = new int[segments.length];
@@ -909,7 +953,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public V get(int key)
+	public long get(int key)
 	{
 		int hash = hash(key);
 		return segmentFor(hash).get(key, hash);
@@ -941,16 +985,11 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *         specified value
 	 * @throws NullPointerException if the specified value is null
 	 */
-	public boolean containsValue(Object value)
+	public boolean containsValue(long value)
 	{
-		if(value == null)
-		{
-			throw new NullPointerException();
-		}
-
 		// See explanation of modCount use above
 
-		final Segment<V>[] segments = this.segments;
+		final Segment[] segments = this.segments;
 		int[] mc = new int[segments.length];
 
 		// Try a few times without locking
@@ -1025,10 +1064,8 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *         <tt>null</tt> if there was no mapping for <tt>key</tt>
 	 * @throws NullPointerException if the specified key or value is null
 	 */
-	public V put(int key, V value)
+	public long put(int key, long value)
 	{
-		if(value == null)
-			throw new NullPointerException();
 		int hash = hash(key);
 		return segmentFor(hash).put(key, hash, value, false);
 	}
@@ -1040,11 +1077,8 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *         or <tt>null</tt> if there was no mapping for the key
 	 * @throws NullPointerException if the specified key or value is null
 	 */
-	public V putIfAbsent(int key, V value)
+	public long putIfAbsent(int key, long value)
 	{
-		if(value == null)
-			throw new NullPointerException();
-
 		int hash = hash(key);
 		return segmentFor(hash).put(key, hash, value, true);
 	}
@@ -1056,9 +1090,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *
 	 * @param m mappings to be stored in this map
 	 */
-	public void putAll(IntObjectMap<? extends V> m)
+	public void putAll(IntLongMap m)
 	{
-		for(IntObjectPair<? extends V> e : m.entrySet())
+		for(IntLongPair e : m.entrySet())
 		{
 			put(e.getKey(), e.getValue());
 		}
@@ -1073,10 +1107,10 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *         <tt>null</tt> if there was no mapping for <tt>key</tt>
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public V remove(int key)
+	public long remove(int key)
 	{
 		int hash = hash(key);
-		return segmentFor(hash).remove(key, hash, null);
+		return segmentFor(hash).remove(key, hash);
 	}
 
 	/**
@@ -1084,13 +1118,10 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public boolean remove(int key, Object value)
+	public boolean remove(int key, long value)
 	{
-		if(value == null)
-			return false;
-
 		int hash = hash(key);
-		return segmentFor(hash).remove(key, hash, value) != null;
+		return segmentFor(hash).removeWithValue(key, hash, value);
 	}
 
 	/**
@@ -1098,12 +1129,8 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *
 	 * @throws NullPointerException if any of the arguments are null
 	 */
-	public boolean replace(int key, V oldValue, V newValue)
+	public boolean replace(int key, long oldValue, long newValue)
 	{
-		if(oldValue == null || newValue == null)
-		{
-			throw new NullPointerException();
-		}
 		int hash = hash(key);
 		return segmentFor(hash).replace(key, hash, oldValue, newValue);
 	}
@@ -1115,11 +1142,8 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 *         or <tt>null</tt> if there was no mapping for the key
 	 * @throws NullPointerException if the specified key or value is null
 	 */
-	public V replace(int key, V value)
+	public long replace(int key, long value)
 	{
-		if(value == null)
-			throw new NullPointerException();
-
 		int hash = hash(key);
 		return segmentFor(hash).replace(key, hash, value);
 	}
@@ -1135,7 +1159,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	}
 
 	/**
-	 * Returns a {@link Set} view of the keys contained in this map.
+	 * Returns a {@link java.util.Set} view of the keys contained in this map.
 	 * The set is backed by the map, so changes to the map are
 	 * reflected in the set, and vice-versa.  The set supports element
 	 * removal, which removes the corresponding mapping from this map,
@@ -1145,7 +1169,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * <tt>addAll</tt> operations.
 	 * <p/>
 	 * <p>The view's <tt>iterator</tt> is a "weakly consistent" iterator
-	 * that will never throw {@link ConcurrentModificationException},
+	 * that will never throw {@link java.util.ConcurrentModificationException},
 	 * and guarantees to traverse elements as they existed upon
 	 * construction of the iterator, and may (but is not guaranteed to)
 	 * reflect any modifications subsequent to construction.
@@ -1157,7 +1181,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	}
 
 	/**
-	 * Returns a {@link Collection} view of the values contained in this map.
+	 * Returns a {@link java.util.Collection} view of the values contained in this map.
 	 * The collection is backed by the map, so changes to the map are
 	 * reflected in the collection, and vice-versa.  The collection
 	 * supports element removal, which removes the corresponding
@@ -1167,19 +1191,19 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * support the <tt>add</tt> or <tt>addAll</tt> operations.
 	 * <p/>
 	 * <p>The view's <tt>iterator</tt> is a "weakly consistent" iterator
-	 * that will never throw {@link ConcurrentModificationException},
+	 * that will never throw {@link java.util.ConcurrentModificationException},
 	 * and guarantees to traverse elements as they existed upon
 	 * construction of the iterator, and may (but is not guaranteed to)
 	 * reflect any modifications subsequent to construction.
 	 */
-	public Collection<V> values()
+	public LongCollection values()
 	{
-		Collection<V> vs = values;
+		LongCollection vs = values;
 		return (vs != null) ? vs : (values = new Values());
 	}
 
 	/**
-	 * Returns a {@link Set} view of the mappings contained in this map.
+	 * Returns a {@link java.util.Set} view of the mappings contained in this map.
 	 * The set is backed by the map, so changes to the map are
 	 * reflected in the set, and vice-versa.  The set supports element
 	 * removal, which removes the corresponding mapping from the map,
@@ -1189,14 +1213,14 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * <tt>addAll</tt> operations.
 	 * <p/>
 	 * <p>The view's <tt>iterator</tt> is a "weakly consistent" iterator
-	 * that will never throw {@link ConcurrentModificationException},
+	 * that will never throw {@link java.util.ConcurrentModificationException},
 	 * and guarantees to traverse elements as they existed upon
 	 * construction of the iterator, and may (but is not guaranteed to)
 	 * reflect any modifications subsequent to construction.
 	 */
-	public Set<IntObjectPair<V>> entrySet()
+	public Set<IntLongPair> entrySet()
 	{
-		Set<IntObjectPair<V>> es = entrySet;
+		Set<IntLongPair> es = entrySet;
 		return (es != null) ? es : (entrySet = new EntrySet());
 	}
 
@@ -1207,9 +1231,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	{
 		int nextSegmentIndex;
 		int nextTableIndex;
-		HashEntry<V>[] currentTable;
-		HashEntry<V> nextEntry;
-		HashEntry<V> lastReturned;
+		HashEntry[] currentTable;
+		HashEntry nextEntry;
+		HashEntry lastReturned;
 
 		HashIterator()
 		{
@@ -1235,7 +1259,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 			while(nextSegmentIndex >= 0)
 			{
-				Segment<V> seg = segments[nextSegmentIndex--];
+				Segment seg = segments[nextSegmentIndex--];
 				if(seg.count != 0)
 				{
 					currentTable = seg.table;
@@ -1256,7 +1280,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			return nextEntry != null;
 		}
 
-		HashEntry<V> nextEntry()
+		HashEntry nextEntry()
 		{
 			if(nextEntry == null)
 			{
@@ -1273,7 +1297,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			{
 				throw new IllegalStateException();
 			}
-			CHashIntObjectMap.this.remove(lastReturned.key);
+			CHashIntLongMap.this.remove(lastReturned.key);
 			lastReturned = null;
 		}
 	}
@@ -1286,9 +1310,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		}
 	}
 
-	final class ValueIterator extends HashIterator implements Iterator<V>
+	final class ValueIterator extends HashIterator implements LongIterator
 	{
-		public V next()
+		public long next()
 		{
 			return super.nextEntry().value;
 		}
@@ -1298,9 +1322,9 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 	 * Custom Entry class used by EntryIterator.next(), that relays
 	 * setValue changes to the underlying map.
 	 */
-	final class WriteThroughEntry extends IntObjectPairImpl<V>
+	final class WriteThroughEntry extends IntLongPairImpl
 	{
-		WriteThroughEntry(int k, V v)
+		WriteThroughEntry(int k, long v)
 		{
 			super(k, v);
 		}
@@ -1314,24 +1338,19 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		 * removed in which case the put will re-establish). We do not
 		 * and cannot guarantee more.
 		 */
-		@Override
-		public V setValue(V value)
+		public long setValue(long value)
 		{
-			if(value == null)
-			{
-				throw new NullPointerException();
-			}
-			V v = super.setValue(value);
-			CHashIntObjectMap.this.put(getKey(), value);
+			long v = super.setValue(value);
+			CHashIntLongMap.this.put(getKey(), value);
 			return v;
 		}
 	}
 
-	final class EntryIterator extends HashIterator implements Iterator<IntObjectPair<V>>
+	final class EntryIterator extends HashIterator implements Iterator<IntLongPair>
 	{
-		public IntObjectPair<V> next()
+		public IntLongPair next()
 		{
-			HashEntry<V> e = super.nextEntry();
+			HashEntry e = super.nextEntry();
 			return new WriteThroughEntry(e.key, e.value);
 		}
 	}
@@ -1345,84 +1364,85 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 		public int size()
 		{
-			return CHashIntObjectMap.this.size();
+			return CHashIntLongMap.this.size();
 		}
 
 		public boolean contains(int o)
 		{
-			return CHashIntObjectMap.this.containsKey(o);
+			return CHashIntLongMap.this.containsKey(o);
 		}
 
 		public boolean remove(int o)
 		{
-			return CHashIntObjectMap.this.remove(o) != null;
+			int hash = hash(o);
+			return segmentFor(hash).removeTrueIfRemoved(o, hash);
 		}
 
 		public void clear()
 		{
-			CHashIntObjectMap.this.clear();
+			CHashIntLongMap.this.clear();
 		}
 	}
 
-	final class Values extends AbstractCollection<V>
+	final class Values extends AbstractLongCollection
 	{
-		public Iterator<V> iterator()
+		public LongIterator iterator()
 		{
 			return new ValueIterator();
 		}
 
 		public int size()
 		{
-			return CHashIntObjectMap.this.size();
+			return CHashIntLongMap.this.size();
 		}
 
-		public boolean contains(Object o)
+		public boolean contains(long o)
 		{
-			return CHashIntObjectMap.this.containsValue(o);
+			return CHashIntLongMap.this.containsValue(o);
 		}
 
 		public void clear()
 		{
-			CHashIntObjectMap.this.clear();
+			CHashIntLongMap.this.clear();
 		}
 	}
 
-	final class EntrySet extends AbstractSet<IntObjectPair<V>>
+	final class EntrySet extends AbstractSet<IntLongPair>
 	{
-		public Iterator<IntObjectPair<V>> iterator()
+		public Iterator<IntLongPair> iterator()
 		{
 			return new EntryIterator();
 		}
 
 		public boolean contains(Object o)
 		{
-			if(!(o instanceof IntObjectPair))
+			if(!(o instanceof IntLongPair))
 			{
 				return false;
 			}
-			IntObjectPair<?> e = (IntObjectPair<?>) o;
-			V v = CHashIntObjectMap.this.get(e.getKey());
-			return v != null && v.equals(e.getValue());
+			IntLongPair e = (IntLongPair) o;
+			long v = CHashIntLongMap.this.get(e.getKey());
+			return v == e.getValue();
 		}
 
 		public boolean remove(Object o)
 		{
-			if(!(o instanceof IntObjectPair))
+			if(!(o instanceof IntLongPair))
 			{
 				return false;
 			}
-			IntObjectPair<?> e = (IntObjectPair<?>) o;
-			return CHashIntObjectMap.this.remove(e.getKey(), e.getValue());
+			IntLongPair e = (IntLongPair) o;
+			return CHashIntLongMap.this.remove(e.getKey(), e.getValue());
 		}
 
 		public int size()
 		{
-			return CHashIntObjectMap.this.size();
+			return CHashIntLongMap.this.size();
 		}
 
 		public void clear()
 		{
-			CHashIntObjectMap.this.clear();
+			CHashIntLongMap.this.clear();
 		}
 	}
 
@@ -1443,14 +1463,14 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 		for(int k = 0; k < segments.length; ++k)
 		{
-			Segment<V> seg = segments[k];
+			Segment seg = segments[k];
 			seg.lock();
 			try
 			{
-				HashEntry<V>[] tab = seg.table;
+				HashEntry[] tab = seg.table;
 				for(int i = 0; i < tab.length; ++i)
 				{
-					for(HashEntry<V> e = tab[i]; e != null; e = e.next)
+					for(HashEntry e = tab[i]; e != null; e = e.next)
 					{
 						s.writeInt(e.key);
 						s.writeObject(e.value);
@@ -1488,16 +1508,12 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 			try
 			{
 				int key = s.readInt();
-				V value = (V) s.readObject();
+				long value = s.readLong();
 				put(key, value);
 			}
 			catch(IOException e)
 			{
 				break;
-			}
-			catch(ClassNotFoundException e)
-			{
-				e.printStackTrace();
 			}
 		}
 	}

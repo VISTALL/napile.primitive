@@ -31,14 +31,13 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.napile.primitive.Containers;
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.HashUtils;
+import org.napile.pair.primitive.LongObjectPair;
+import org.napile.pair.primitive.impl.LongObjectPairImpl;
 import org.napile.primitive.iterators.LongIterator;
-import org.napile.primitive.maps.IntObjectMap;
 import org.napile.primitive.maps.LongObjectMap;
 import org.napile.primitive.maps.abstracts.AbstractLongObjectMap;
 import org.napile.primitive.sets.LongSet;
@@ -97,12 +96,6 @@ import org.napile.primitive.sets.abstracts.AbstractLongSet;
  * structural modification.)  This is typically accomplished by
  * synchronizing on some object that naturally encapsulates the map.
  * <p/>
- * If no such object exists, the map should be "wrapped" using the
- * {@link Collections#synchronizedMap Collections.synchronizedMap}
- * method.  This is best done at creation time, to prevent accidental
- * unsynchronized access to the map:<pre>
- *   Map m = Collections.synchronizedMap(new HashMap(...));</pre>
- * <p/>
  * <p>The iterators returned by all of this class's "collection view methods"
  * are <i>fail-fast</i>: if the map is structurally modified at any time after
  * the iterator is created, in any way except through the iterator's own
@@ -133,7 +126,7 @@ import org.napile.primitive.sets.abstracts.AbstractLongSet;
  * @see	 LongObjectMap
  * @see	 TreeLongObjectMap
  * @see Object#hashCode()
- * @see LongCollection
+ * @see org.napile.primitive.collections.LongCollection
  * @since 1.2
  */
 @SuppressWarnings("unchecked")
@@ -287,7 +280,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 */
 	static int hash(long value)
 	{
-		int h = Containers.hashCode(value);
+		int h = HashUtils.hashCode(value);
 		// This function ensures that hashCodes that differ only by
 		// constant multiples at each bit position have a bounded
 		// number of collisions (approximately 8 at default load factor).
@@ -345,10 +338,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		int hash = hash(key);
 		for(Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
 		{
-			long k;
-			if(e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && (e.getKey() == key))
 			{
-				return e.value;
+				return e.getValue();
 			}
 		}
 		return null;
@@ -362,7 +354,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 * @return <tt>true</tt> if this map contains a mapping for the specified
 	 *         key.
 	 */
-	public boolean containsKey(int key)
+	public boolean containsKey(long key)
 	{
 		return getEntry(key) != null;
 	}
@@ -372,13 +364,12 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 * HashMap.  Returns null if the HashMap contains no mapping
 	 * for the key.
 	 */
-	final Entry<V> getEntry(int key)
+	final Entry<V> getEntry(long key)
 	{
 		int hash = hash(key);
 		for(Entry<V> e = table[indexFor(hash, table.length)]; e != null; e = e.next)
 		{
-			long k;
-			if(e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && (e.getKey() == key))
 			{
 				return e;
 			}
@@ -405,11 +396,10 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		int i = indexFor(hash, table.length);
 		for(Entry<V> e = table[i]; e != null; e = e.next)
 		{
-			long k;
-			if(e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && (e.getKey() == key))
 			{
-				V oldValue = e.value;
-				e.value = value;
+				V oldValue = e.getValue();
+				e.setValue(value);
 				e.recordAccess(this);
 				return oldValue;
 			}
@@ -438,10 +428,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		 */
 		for(Entry<V> e = table[i]; e != null; e = e.next)
 		{
-			long k;
-			if(e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && (e.getKey() == key))
 			{
-				e.value = value;
+				e.setValue(value);
 				return;
 			}
 		}
@@ -451,9 +440,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 
 	private void putAllForCreate(LongObjectMap<? extends V> m)
 	{
-		for(Iterator<? extends LongObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<? extends LongObjectPair<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
 		{
-			LongObjectMap.Entry<? extends V> e = i.next();
+			LongObjectPair<? extends V> e = i.next();
 			putForCreate(e.getKey(), e.getValue());
 		}
 	}
@@ -522,7 +511,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 * @param m mappings to be stored in this map
 	 * @throws NullPointerException if the specified map is null
 	 */
-	public void putAll(IntObjectMap<? extends V> m)
+	public void putAll(LongObjectMap<? extends V> m)
 	{
 		int numKeysToBeAdded = m.size();
 		if(numKeysToBeAdded == 0)
@@ -557,9 +546,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 			}
 		}
 
-		for(Iterator<? extends IntObjectMap.Entry<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<? extends LongObjectPair<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
 		{
-			IntObjectMap.Entry<? extends V> e = i.next();
+			LongObjectPair<? extends V> e = i.next();
 			put(e.getKey(), e.getValue());
 		}
 	}
@@ -576,7 +565,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	public V remove(long key)
 	{
 		Entry<V> e = removeEntryForKey(key);
-		return (e == null ? null : e.value);
+		return (e == null ? null : e.getValue());
 	}
 
 	/**
@@ -594,8 +583,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		while(e != null)
 		{
 			Entry<V> next = e.next;
-			long k;
-			if(e.hash == hash && ((k = e.key) == key))
+			if(e.hash == hash && (e.getKey() == key))
 			{
 				modCount++;
 				size--;
@@ -622,12 +610,12 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 */
 	final Entry<V> removeMapping(Object o)
 	{
-		if(!(o instanceof LongObjectMap.Entry))
+		if(!(o instanceof LongObjectPair))
 		{
 			return null;
 		}
 
-		LongObjectMap.Entry<V> entry = (LongObjectMap.Entry<V>) o;
+		LongObjectPair<V> entry = (LongObjectPair<V>) o;
 		long key = entry.getKey();
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
@@ -694,7 +682,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		{
 			for(Entry e = tab[i]; e != null; e = e.next)
 			{
-				if(value.equals(e.value))
+				if(value.equals(e.getValue()))
 				{
 					return true;
 				}
@@ -713,7 +701,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		{
 			for(Entry e = tab[i]; e != null; e = e.next)
 			{
-				if(e.value == null)
+				if(e.getValue() == null)
 				{
 					return true;
 				}
@@ -749,10 +737,8 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		return result;
 	}
 
-	static class Entry<V> implements LongObjectMap.Entry<V>
+	static class Entry<V> extends LongObjectPairImpl<V>
 	{
-		final long key;
-		V value;
 		Entry<V> next;
 		final int hash;
 
@@ -761,58 +747,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		 */
 		Entry(int h, long k, V v, Entry<V> n)
 		{
-			value = v;
+			super(k, v);
 			next = n;
-			key = k;
 			hash = h;
-		}
-
-		public final long getKey()
-		{
-			return key;
-		}
-
-		public final V getValue()
-		{
-			return value;
-		}
-
-		public final V setValue(V newValue)
-		{
-			V oldValue = value;
-			value = newValue;
-			return oldValue;
-		}
-
-		public final boolean equals(Object o)
-		{
-			if(!(o instanceof LongObjectMap.Entry))
-			{
-				return false;
-			}
-			LongObjectMap.Entry e = (LongObjectMap.Entry) o;
-			long k1 = getKey();
-			long k2 = e.getKey();
-			if(k1 == k2)
-			{
-				Object v1 = getValue();
-				Object v2 = e.getValue();
-				if(v1 == v2 || (v1 != null && v1.equals(v2)))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
-		public final int hashCode()
-		{
-			return (int)(key ^ (value == null ? 0 : value.hashCode()));
-		}
-
-		public final String toString()
-		{
-			return getKey() + "=" + getValue();
 		}
 
 		/**
@@ -890,7 +827,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 			return next != null;
 		}
 
-		final Entry<V> nextEntry()
+		final LongObjectPair<V> nextEntry()
 		{
 			if(modCount != expectedModCount)
 			{
@@ -924,7 +861,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 			{
 				throw new ConcurrentModificationException();
 			}
-			long k = current.key;
+			long k = current.getKey();
 			current = null;
 			HashLongObjectMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
@@ -990,7 +927,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 			{
 				throw new ConcurrentModificationException();
 			}
-			long k = current.key;
+			long k = current.getKey();
 			current = null;
 			HashLongObjectMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
@@ -1001,7 +938,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	{
 		public V next()
 		{
-			return nextEntry().value;
+			return nextEntry().getValue();
 		}
 	}
 
@@ -1013,9 +950,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		}
 	}
 
-	private final class EntryIterator extends HashIterator<LongObjectMap.Entry<V>>
+	private final class EntryIterator extends HashIterator<LongObjectPair<V>>
 	{
-		public LongObjectMap.Entry<V> next()
+		public LongObjectPair<V> next()
 		{
 			return nextEntry();
 		}
@@ -1032,7 +969,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		return new ValueIterator();
 	}
 
-	Iterator<LongObjectMap.Entry<V>> newEntryIterator()
+	Iterator<LongObjectPair<V>> newEntryIterator()
 	{
 		return new EntryIterator();
 	}
@@ -1040,7 +977,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 
 	// Views
 
-	private transient Set<LongObjectMap.Entry<V>> entrySet = null;
+	private transient Set<LongObjectPair<V>> entrySet = null;
 
 	/**
 	 * Returns a {@link Set} view of the keys contained in this map.
@@ -1147,31 +1084,31 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	public Set<LongObjectMap.Entry<V>> entrySet()
+	public Set<LongObjectPair<V>> entrySet()
 	{
 		return entrySet0();
 	}
 
-	private Set<LongObjectMap.Entry<V>> entrySet0()
+	private Set<LongObjectPair<V>> entrySet0()
 	{
-		Set<LongObjectMap.Entry<V>> es = entrySet;
+		Set<LongObjectPair<V>> es = entrySet;
 		return es != null ? es : (entrySet = new EntrySet());
 	}
 
-	private final class EntrySet extends AbstractSet<LongObjectMap.Entry<V>>
+	private final class EntrySet extends AbstractSet<LongObjectPair<V>>
 	{
-		public Iterator<LongObjectMap.Entry<V>> iterator()
+		public Iterator<LongObjectPair<V>> iterator()
 		{
 			return newEntryIterator();
 		}
 
 		public boolean contains(Object o)
 		{
-			if(!(o instanceof Map.Entry))
+			if(!(o instanceof LongObjectPair))
 			{
 				return false;
 			}
-			IntObjectMap.Entry<V> e = (IntObjectMap.Entry<V>) o;
+			LongObjectPair<V> e = (LongObjectPair<V>) o;
 			Entry<V> candidate = getEntry(e.getKey());
 			return candidate != null && candidate.equals(e);
 		}
@@ -1205,7 +1142,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 	 */
 	private void writeObject(java.io.ObjectOutputStream s) throws IOException
 	{
-		Iterator<LongObjectMap.Entry<V>> i = (size > 0) ? entrySet0().iterator() : null;
+		Iterator<LongObjectPair<V>> i = (size > 0) ? entrySet0().iterator() : null;
 
 		// Write out the threshold, loadfactor, and any hidden stuff
 		s.defaultWriteObject();
@@ -1221,7 +1158,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 		{
 			while(i.hasNext())
 			{
-				LongObjectMap.Entry<V> e = i.next();
+				LongObjectPair<V> e = i.next();
 				s.writeLong(e.getKey());
 				s.writeObject(e.getValue());
 			}

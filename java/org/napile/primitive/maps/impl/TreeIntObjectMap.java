@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.napile.pair.primitive.IntObjectPair;
+import org.napile.pair.primitive.impl.ImmutableIntObjectPairImpl;
 import org.napile.primitive.Comparators;
 import org.napile.primitive.comparators.IntComparator;
 import org.napile.primitive.iterators.IntIterator;
@@ -777,7 +779,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> firstEntry()
+	public IntObjectPair<V> firstEntry()
 	{
 		return exportEntry(getFirstEntry());
 	}
@@ -785,7 +787,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> lastEntry()
+	public IntObjectPair<V> lastEntry()
 	{
 		return exportEntry(getLastEntry());
 	}
@@ -793,10 +795,10 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> pollFirstEntry()
+	public IntObjectPair<V> pollFirstEntry()
 	{
 		Entry<V> p = getFirstEntry();
-		IntObjectMap.Entry<V> result = exportEntry(p);
+		IntObjectPair<V> result = exportEntry(p);
 		if(p != null)
 		{
 			deleteEntry(p);
@@ -807,10 +809,10 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> pollLastEntry()
+	public IntObjectPair<V> pollLastEntry()
 	{
 		Entry<V> p = getLastEntry();
-		IntObjectMap.Entry<V> result = exportEntry(p);
+		IntObjectPair<V> result = exportEntry(p);
 		if(p != null)
 		{
 			deleteEntry(p);
@@ -825,7 +827,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 *                              does not permit null keys
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> lowerEntry(int key)
+	public IntObjectPair<V> lowerEntry(int key)
 	{
 		return exportEntry(getLowerEntry(key));
 	}
@@ -849,7 +851,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 *                              does not permit null keys
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> floorEntry(int key)
+	public IntObjectPair<V> floorEntry(int key)
 	{
 		return exportEntry(getFloorEntry(key));
 	}
@@ -873,7 +875,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 *                              does not permit null keys
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> ceilingEntry(int key)
+	public IntObjectPair<V> ceilingEntry(int key)
 	{
 		return exportEntry(getCeilingEntry(key));
 	}
@@ -897,7 +899,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 *                              does not permit null keys
 	 * @since 1.6
 	 */
-	public IntObjectMap.Entry<V> higherEntry(int key)
+	public IntObjectPair<V> higherEntry(int key)
 	{
 		return exportEntry(getHigherEntry(key));
 	}
@@ -997,7 +999,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 * <tt>clear</tt> operations.  It does not support the
 	 * <tt>add</tt> or <tt>addAll</tt> operations.
 	 */
-	public Set<IntObjectMap.Entry<V>> entrySet()
+	public Set<IntObjectPair<V>> entrySet()
 	{
 		EntrySet es = entrySet;
 		return (es != null) ? es : (entrySet = new EntrySet());
@@ -1125,20 +1127,20 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		}
 	}
 
-	class EntrySet extends AbstractSet<IntObjectMap.Entry<V>>
+	class EntrySet extends AbstractSet<IntObjectPair<V>>
 	{
-		public Iterator<IntObjectMap.Entry<V>> iterator()
+		public Iterator<IntObjectPair<V>> iterator()
 		{
 			return new EntryIterator(getFirstEntry());
 		}
 
 		public boolean contains(Object o)
 		{
-			if(!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof IntObjectPair))
 			{
 				return false;
 			}
-			IntObjectMap.Entry<V> entry = (IntObjectMap.Entry<V>) o;
+			IntObjectPair<V> entry = (IntObjectPair<V>) o;
 			V value = entry.getValue();
 			Entry<V> p = getEntry(entry.getKey());
 			return p != null && valEquals(p.getValue(), value);
@@ -1146,11 +1148,11 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		public boolean remove(Object o)
 		{
-			if(!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof IntObjectPair))
 			{
 				return false;
 			}
-			IntObjectMap.Entry<V> entry = (IntObjectMap.Entry<V>) o;
+			IntObjectPair<V> entry = (IntObjectPair<V>) o;
 			V value = entry.getValue();
 			Entry<V> p = getEntry(entry.getKey());
 			if(p != null && valEquals(p.getValue(), value))
@@ -1280,13 +1282,13 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		public int pollFirst()
 		{
-			IntObjectMap.Entry<?> e = m.pollFirstEntry();
+			IntObjectPair<?> e = m.pollFirstEntry();
 			return e == null ? null : e.getKey();
 		}
 
 		public int pollLast()
 		{
-			IntObjectMap.Entry<?> e = m.pollLastEntry();
+			IntObjectPair<?> e = m.pollLastEntry();
 			return e == null ? null : e.getKey();
 		}
 
@@ -1407,7 +1409,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		}
 	}
 
-	final class EntryIterator extends PrivateEntryIterator implements Iterator<IntObjectMap.Entry<V>>
+	final class EntryIterator extends PrivateEntryIterator implements Iterator<IntObjectPair<V>>
 	{
 		EntryIterator(Entry<V> first)
 		{
@@ -1415,7 +1417,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		}
 
 		@Override
-		public IntObjectMap.Entry<V> next()
+		public IntObjectPair<V> next()
 		{
 			return nextEntry();
 		}
@@ -1484,9 +1486,9 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	/**
 	 * Return SimpleImmutableEntry for entry, or null if null
 	 */
-	static <V> IntObjectMap.Entry<V> exportEntry(TreeIntObjectMap.Entry<V> e)
+	static <V> IntObjectPair<V> exportEntry(Entry<V> e)
 	{
-		return e == null ? null : new AbstractIntObjectMap.SimpleImmutableEntry<V>(e);
+		return e == null ? null : new ImmutableIntObjectPairImpl<V>(e.getKey(), e.getValue());
 	}
 
 	/**
@@ -1744,7 +1746,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return !inRange(key) ? null : m.remove(key);
 		}
 
-		public final IntObjectMap.Entry<V> ceilingEntry(int key)
+		public final IntObjectPair<V> ceilingEntry(int key)
 		{
 			return exportEntry(subCeiling(key));
 		}
@@ -1754,7 +1756,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return keyOrNull(subCeiling(key));
 		}
 
-		public final IntObjectMap.Entry<V> higherEntry(int key)
+		public final IntObjectPair<V> higherEntry(int key)
 		{
 			return exportEntry(subHigher(key));
 		}
@@ -1764,7 +1766,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return keyOrNull(subHigher(key));
 		}
 
-		public final IntObjectMap.Entry<V> floorEntry(int key)
+		public final IntObjectPair<V> floorEntry(int key)
 		{
 			return exportEntry(subFloor(key));
 		}
@@ -1774,7 +1776,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return keyOrNull(subFloor(key));
 		}
 
-		public final IntObjectMap.Entry<V> lowerEntry(int key)
+		public final IntObjectPair<V> lowerEntry(int key)
 		{
 			return exportEntry(subLower(key));
 		}
@@ -1794,20 +1796,20 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return key(subHighest());
 		}
 
-		public final IntObjectMap.Entry<V> firstEntry()
+		public final IntObjectPair<V> firstEntry()
 		{
 			return exportEntry(subLowest());
 		}
 
-		public final IntObjectMap.Entry<V> lastEntry()
+		public final IntObjectPair<V> lastEntry()
 		{
 			return exportEntry(subHighest());
 		}
 
-		public final IntObjectMap.Entry<V> pollFirstEntry()
+		public final IntObjectPair<V> pollFirstEntry()
 		{
 			TreeIntObjectMap.Entry<V> e = subLowest();
-			IntObjectMap.Entry<V> result = exportEntry(e);
+			IntObjectPair<V> result = exportEntry(e);
 			if(e != null)
 			{
 				m.deleteEntry(e);
@@ -1815,10 +1817,10 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return result;
 		}
 
-		public final IntObjectMap.Entry<V> pollLastEntry()
+		public final IntObjectPair<V> pollLastEntry()
 		{
 			TreeIntObjectMap.Entry<V> e = subHighest();
-			IntObjectMap.Entry<V> result = exportEntry(e);
+			IntObjectPair<V> result = exportEntry(e);
 			if(e != null)
 			{
 				m.deleteEntry(e);
@@ -1864,7 +1866,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		// View classes
 
-		abstract class EntrySetView extends AbstractSet<Entry<V>>
+		abstract class EntrySetView extends AbstractSet<IntObjectPair<V>>
 		{
 			private transient int size = -1, sizeModCount;
 
@@ -1896,11 +1898,11 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 			public boolean contains(Object o)
 			{
-				if(!(o instanceof IntObjectMap.Entry))
+				if(!(o instanceof IntObjectPair))
 				{
 					return false;
 				}
-				IntObjectMap.Entry<V> entry = (IntObjectMap.Entry<V>) o;
+				IntObjectPair<V> entry = (IntObjectPair<V>) o;
 				int key = entry.getKey();
 				if(!inRange(key))
 				{
@@ -1916,7 +1918,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 				{
 					return false;
 				}
-				IntObjectMap.Entry<V> entry = (IntObjectMap.Entry<V>) o;
+				IntObjectPair<V> entry = (IntObjectPair<V>) o;
 				int key = entry.getKey();
 				if(!inRange(key))
 				{
@@ -2024,14 +2026,14 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		}
 
-		final class SubMapEntryIterator extends SubMapIterator implements Iterator<IntObjectMap.Entry<V>>
+		final class SubMapEntryIterator extends SubMapIterator implements Iterator<IntObjectPair<V>>
 		{
 			SubMapEntryIterator(TreeIntObjectMap.Entry<V> first, TreeIntObjectMap.Entry<V> fence)
 			{
 				super(first, fence);
 			}
 
-			public IntObjectMap.Entry<V> next()
+			public IntObjectPair<V> next()
 			{
 				return nextEntry();
 			}
@@ -2060,14 +2062,14 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			}
 		}
 
-		final class DescendingSubMapEntryIterator extends SubMapIterator implements Iterator<IntObjectMap.Entry<V>>
+		final class DescendingSubMapEntryIterator extends SubMapIterator implements Iterator<IntObjectPair<V>>
 		{
 			DescendingSubMapEntryIterator(TreeIntObjectMap.Entry<V> last, TreeIntObjectMap.Entry<V> fence)
 			{
 				super(last, fence);
 			}
 
-			public IntObjectMap.Entry<V> next()
+			public IntObjectPair<V> next()
 			{
 				return prevEntry();
 			}
@@ -2163,13 +2165,13 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		final class AscendingEntrySetView extends EntrySetView
 		{
-			public Iterator<IntObjectMap.Entry<V>> iterator()
+			public Iterator<IntObjectPair<V>> iterator()
 			{
 				return new SubMapEntryIterator(absLowest(), absHighFence());
 			}
 		}
 
-		public Set<IntObjectMap.Entry<V>> entrySet()
+		public Set<IntObjectPair<V>> entrySet()
 		{
 			EntrySetView es = entrySetView;
 			return (es != null) ? es : new AscendingEntrySetView();
@@ -2274,13 +2276,13 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		final class DescendingEntrySetView extends EntrySetView
 		{
-			public Iterator<IntObjectMap.Entry<V>> iterator()
+			public Iterator<IntObjectPair<V>> iterator()
 			{
 				return new DescendingSubMapEntryIterator(absHighest(), absLowFence());
 			}
 		}
 
-		public Set<Entry<V>> entrySet()
+		public Set<IntObjectPair<V>> entrySet()
 		{
 			EntrySetView es = entrySetView;
 			return (es != null) ? es : new DescendingEntrySetView();
@@ -2337,7 +2339,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			return new AscendingSubMap<V>(TreeIntObjectMap.this, fromStart, fromKey, true, toEnd, toKey, false);
 		}
 
-		public Set<IntObjectMap.Entry<V>> entrySet()
+		public Set<IntObjectPair<V>> entrySet()
 		{
 			throw new InternalError();
 		}
@@ -2384,7 +2386,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 	 * user (see Map.Entry).
 	 */
 
-	static final class Entry<V> implements IntObjectMap.Entry<V>
+	static final class Entry<V> implements IntObjectPair<V>
 	{
 		int key;
 		V value;
@@ -2440,11 +2442,11 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 
 		public boolean equals(Object o)
 		{
-			if(!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof IntObjectPair))
 			{
 				return false;
 			}
-			IntObjectMap.Entry<?> e = (IntObjectMap.Entry<?>) o;
+			IntObjectPair<?> e = (IntObjectPair<?>) o;
 
 			return valEquals(key, e.getKey()) && valEquals(value, e.getValue());
 		}
@@ -2888,9 +2890,9 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		s.writeInt(size);
 
 		// Write out keys and values (alternating)
-		for(Iterator<IntObjectMap.Entry<V>> i = entrySet().iterator(); i.hasNext();)
+		for(Iterator<IntObjectPair<V>> i = entrySet().iterator(); i.hasNext();)
 		{
-			IntObjectMap.Entry<V> e = i.next();
+			IntObjectPair<V> e = i.next();
 			s.writeInt(e.getKey());
 			s.writeObject(e.getValue());
 		}
@@ -3021,8 +3023,8 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		{
 			if(defaultVal == null)
 			{
-				Iterator<IntObjectMap.Entry<V>> iterator = (Iterator) it;
-				IntObjectMap.Entry<V> entry = iterator.next();
+				Iterator<IntObjectPair<V>> iterator = (Iterator) it;
+				IntObjectPair<V> entry = iterator.next();
 				key = entry.getKey();
 				value = entry.getValue();
 			}

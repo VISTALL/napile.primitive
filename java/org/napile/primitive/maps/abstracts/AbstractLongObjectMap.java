@@ -30,9 +30,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.napile.primitive.iterators.IntIterator;
+import org.napile.pair.primitive.LongObjectPair;
 import org.napile.primitive.iterators.LongIterator;
-import org.napile.primitive.maps.IntObjectMap;
 import org.napile.primitive.maps.LongObjectMap;
 import org.napile.primitive.sets.LongSet;
 import org.napile.primitive.sets.abstracts.AbstractIntSet;
@@ -120,12 +119,12 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public boolean containsValue(Object value)
 	{
-		Iterator<Entry<V>> i = entrySet().iterator();
+		Iterator<LongObjectPair<V>> i = entrySet().iterator();
 		if(value == null)
 		{
 			while(i.hasNext())
 			{
-				Entry<V> e = i.next();
+				LongObjectPair<V> e = i.next();
 				if(e.getValue() == null)
 				{
 					return true;
@@ -136,7 +135,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		{
 			while(i.hasNext())
 			{
-				Entry<V> e = i.next();
+				LongObjectPair<V> e = i.next();
 				if(value.equals(e.getValue()))
 				{
 					return true;
@@ -161,10 +160,10 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public boolean containsKey(long key)
 	{
-		Iterator<Entry<V>> i = entrySet().iterator();
+		Iterator<LongObjectPair<V>> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			Entry<V> e = i.next();
+			LongObjectPair<V> e = i.next();
 			if(key == e.getKey())
 			{
 				return true;
@@ -188,10 +187,10 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public V get(long key)
 	{
-		Iterator<Entry<V>> i = entrySet().iterator();
+		Iterator<LongObjectPair<V>> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			Entry<V> e = i.next();
+			LongObjectPair<V> e = i.next();
 			if(key == e.getKey())
 			{
 				return e.getValue();
@@ -243,12 +242,12 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public V remove(long key)
 	{
-		Iterator<Entry<V>> i = entrySet().iterator();
-		Entry<V> correctEntry = null;
+		Iterator<LongObjectPair<V>> i = entrySet().iterator();
+		LongObjectPair<V> correctEntry = null;
 
 		while(correctEntry == null && i.hasNext())
 		{
-			Entry<V> e = i.next();
+			LongObjectPair<V> e = i.next();
 			if(key == e.getKey())
 			{
 				correctEntry = e;
@@ -286,7 +285,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public void putAll(LongObjectMap<? extends V> m)
 	{
-		for(Entry<? extends V> e : m.entrySet())
+		for(LongObjectPair<? extends V> e : m.entrySet())
 		{
 			put(e.getKey(), e.getValue());
 		}
@@ -345,7 +344,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 				{
 					return new LongIterator()
 					{
-						private Iterator<Entry<V>> i = entrySet().iterator();
+						private Iterator<LongObjectPair<V>> i = entrySet().iterator();
 
 						@Override
 						public boolean hasNext()
@@ -410,7 +409,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 				{
 					return new Iterator<V>()
 					{
-						private Iterator<Entry<V>> i = entrySet().iterator();
+						private Iterator<LongObjectPair<V>> i = entrySet().iterator();
 
 						@Override
 						public boolean hasNext()
@@ -448,7 +447,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		return values;
 	}
 
-	public abstract Set<Entry<V>> entrySet();
+	public abstract Set<LongObjectPair<V>> entrySet();
 
 
 	// Comparison and hashing
@@ -493,10 +492,10 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 
 		try
 		{
-			Iterator<Entry<V>> i = entrySet().iterator();
+			Iterator<LongObjectPair<V>> i = entrySet().iterator();
 			while(i.hasNext())
 			{
-				Entry<V> e = i.next();
+				LongObjectPair<V> e = i.next();
 				long key = e.getKey();
 				V value = e.getValue();
 				if(value == null)
@@ -547,7 +546,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	public int hashCode()
 	{
 		int h = 0;
-		Iterator<Entry<V>> i = entrySet().iterator();
+		Iterator<LongObjectPair<V>> i = entrySet().iterator();
 		while(i.hasNext())
 		{
 			h += i.next().hashCode();
@@ -569,7 +568,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public String toString()
 	{
-		Iterator<Entry<V>> i = entrySet().iterator();
+		Iterator<LongObjectPair<V>> i = entrySet().iterator();
 		if(!i.hasNext())
 		{
 			return "{}";
@@ -579,7 +578,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		sb.append('{');
 		for(; ;)
 		{
-			Entry<V> e = i.next();
+			LongObjectPair<V> e = i.next();
 			long key = e.getKey();
 			V value = e.getValue();
 			sb.append(key);
@@ -605,306 +604,5 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		result.keySet = null;
 		result.values = null;
 		return result;
-	}
-
-	/**
-	 * Utility method for SimpleEntry and SimpleImmutableEntry.
-	 * Test for equality, checking for nulls.
-	 */
-	private static boolean eq(long o1, long o2)
-	{
-		return o1 == o2;
-	}
-
-	private static boolean eq(Object o1, Object o2)
-	{
-		return o1 == null ? o2 == null : o1.equals(o2);
-	}
-
-	// Implementation Note: SimpleEntry and SimpleImmutableEntry
-	// are distinct unrelated classes, even though they share
-	// some code. Since you can't add or subtract final-ness
-	// of a field in a subclass, they can't share representations,
-	// and the amount of duplicated code is too small to warrant
-	// exposing a common abstract class.
-
-
-	/**
-	 * An Entry maintaining a key and a value.  The value may be
-	 * changed using the <tt>setValue</tt> method.  This class
-	 * facilitates the process of building custom map
-	 * implementations. For example, it may be convenient to return
-	 * arrays of <tt>SimpleEntry</tt> instances in method
-	 * <tt>Map.entrySet().toArray</tt>.
-	 *
-	 * @since 1.6
-	 */
-	public static class SimpleEntry<V> implements Entry<V>, java.io.Serializable
-	{
-		private static final long serialVersionUID = -8499721149061103585L;
-
-		private final long key;
-		private V value;
-
-		/**
-		 * Creates an entry representing a mapping from the specified
-		 * key to the specified value.
-		 *
-		 * @param key   the key represented by this entry
-		 * @param value the value represented by this entry
-		 */
-		public SimpleEntry(long key, V value)
-		{
-			this.key = key;
-			this.value = value;
-		}
-
-		/**
-		 * Creates an entry representing the same mapping as the
-		 * specified entry.
-		 *
-		 * @param entry the entry to copy
-		 */
-		public SimpleEntry(Entry<? extends V> entry)
-		{
-			this.key = entry.getKey();
-			this.value = entry.getValue();
-		}
-
-		/**
-		 * Returns the key corresponding to this entry.
-		 *
-		 * @return the key corresponding to this entry
-		 */
-		public long getKey()
-		{
-			return key;
-		}
-
-		/**
-		 * Returns the value corresponding to this entry.
-		 *
-		 * @return the value corresponding to this entry
-		 */
-		public V getValue()
-		{
-			return value;
-		}
-
-		/**
-		 * Replaces the value corresponding to this entry with the specified
-		 * value.
-		 *
-		 * @param value new value to be stored in this entry
-		 * @return the old value corresponding to the entry
-		 */
-		public V setValue(V value)
-		{
-			V oldValue = this.value;
-			this.value = value;
-			return oldValue;
-		}
-
-		/**
-		 * Compares the specified object with this entry for equality.
-		 * Returns {@code true} if the given object is also a map entry and
-		 * the two entries represent the same mapping.	More formally, two
-		 * entries {@code e1} and {@code e2} represent the same mapping
-		 * if<pre>
-		 *   (e1.getKey()==null ?
-		 *    e2.getKey()==null :
-		 *    e1.getKey().equals(e2.getKey()))
-		 *   &amp;&amp;
-		 *   (e1.getValue()==null ?
-		 *    e2.getValue()==null :
-		 *    e1.getValue().equals(e2.getValue()))</pre>
-		 * This ensures that the {@code equals} method works properly across
-		 * different implementations of the {@code Map.Entry} interface.
-		 *
-		 * @param o object to be compared for equality with this map entry
-		 * @return {@code true} if the specified object is equal to this map
-		 *         entry
-		 * @see #hashCode
-		 */
-		public boolean equals(Object o)
-		{
-			if(!(o instanceof LongObjectMap.Entry))
-			{
-				return false;
-			}
-			LongObjectMap.Entry e = (LongObjectMap.Entry) o;
-			return eq(key, e.getKey()) && eq(value, e.getValue());
-		}
-
-		/**
-		 * Returns the hash code value for this map entry.  The hash code
-		 * of a map entry {@code e} is defined to be: <pre>
-		 *   (e.getKey()==null   ? 0 : e.getKey().hashCode()) ^
-		 *   (e.getValue()==null ? 0 : e.getValue().hashCode())</pre>
-		 * This ensures that {@code e1.equals(e2)} implies that
-		 * {@code e1.hashCode()==e2.hashCode()} for any two Entries
-		 * {@code e1} and {@code e2}, as required by the general
-		 * contract of {@link Object#hashCode}.
-		 *
-		 * @return the hash code value for this map entry
-		 * @see #equals
-		 */
-		public int hashCode()
-		{
-			return (int)(key ^ (value == null ? 0 : value.hashCode()));
-		}
-
-		/**
-		 * Returns a String representation of this map entry.  This
-		 * implementation returns the string representation of this
-		 * entry's key followed by the equals character ("<tt>=</tt>")
-		 * followed by the string representation of this entry's value.
-		 *
-		 * @return a String representation of this map entry
-		 */
-		public String toString()
-		{
-			return key + "=" + value;
-		}
-
-	}
-
-	/**
-	 * An Entry maintaining an immutable key and value.  This class
-	 * does not support method <tt>setValue</tt>.  This class may be
-	 * convenient in methods that return thread-safe snapshots of
-	 * key-value mappings.
-	 *
-	 * @since 1.6
-	 */
-	public static class SimpleImmutableEntry<V> implements Entry<V>, java.io.Serializable
-	{
-		private static final long serialVersionUID = 7138329143949025153L;
-
-		private final long key;
-		private final V value;
-
-		/**
-		 * Creates an entry representing a mapping from the specified
-		 * key to the specified value.
-		 *
-		 * @param key   the key represented by this entry
-		 * @param value the value represented by this entry
-		 */
-		public SimpleImmutableEntry(long key, V value)
-		{
-			this.key = key;
-			this.value = value;
-		}
-
-		/**
-		 * Creates an entry representing the same mapping as the
-		 * specified entry.
-		 *
-		 * @param entry the entry to copy
-		 */
-		public SimpleImmutableEntry(Entry<? extends V> entry)
-		{
-			this.key = entry.getKey();
-			this.value = entry.getValue();
-		}
-
-		/**
-		 * Returns the key corresponding to this entry.
-		 *
-		 * @return the key corresponding to this entry
-		 */
-		public long getKey()
-		{
-			return key;
-		}
-
-		/**
-		 * Returns the value corresponding to this entry.
-		 *
-		 * @return the value corresponding to this entry
-		 */
-		public V getValue()
-		{
-			return value;
-		}
-
-		/**
-		 * Replaces the value corresponding to this entry with the specified
-		 * value (optional operation).  This implementation simply throws
-		 * <tt>UnsupportedOperationException</tt>, as this class implements
-		 * an <i>immutable</i> map entry.
-		 *
-		 * @param value new value to be stored in this entry
-		 * @return (Does not return)
-		 * @throws UnsupportedOperationException always
-		 */
-		public V setValue(V value)
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		/**
-		 * Compares the specified object with this entry for equality.
-		 * Returns {@code true} if the given object is also a map entry and
-		 * the two entries represent the same mapping.	More formally, two
-		 * entries {@code e1} and {@code e2} represent the same mapping
-		 * if<pre>
-		 *   (e1.getKey()==null ?
-		 *    e2.getKey()==null :
-		 *    e1.getKey().equals(e2.getKey()))
-		 *   &amp;&amp;
-		 *   (e1.getValue()==null ?
-		 *    e2.getValue()==null :
-		 *    e1.getValue().equals(e2.getValue()))</pre>
-		 * This ensures that the {@code equals} method works properly across
-		 * different implementations of the {@code Map.Entry} interface.
-		 *
-		 * @param o object to be compared for equality with this map entry
-		 * @return {@code true} if the specified object is equal to this map
-		 *         entry
-		 * @see #hashCode
-		 */
-		public boolean equals(Object o)
-		{
-			if(!(o instanceof Entry))
-			{
-				return false;
-			}
-			Entry e = (Entry) o;
-			return eq(key, e.getKey()) && eq(value, e.getValue());
-		}
-
-		/**
-		 * Returns the hash code value for this map entry.  The hash code
-		 * of a map entry {@code e} is defined to be: <pre>
-		 *   (e.getKey()==null   ? 0 : e.getKey().hashCode()) ^
-		 *   (e.getValue()==null ? 0 : e.getValue().hashCode())</pre>
-		 * This ensures that {@code e1.equals(e2)} implies that
-		 * {@code e1.hashCode()==e2.hashCode()} for any two Entries
-		 * {@code e1} and {@code e2}, as required by the general
-		 * contract of {@link Object#hashCode}.
-		 *
-		 * @return the hash code value for this map entry
-		 * @see #equals
-		 */
-		public int hashCode()
-		{
-			return (int)(key ^ (value == null ? 0 : value.hashCode()));
-		}
-
-		/**
-		 * Returns a String representation of this map entry.  This
-		 * implementation returns the string representation of this
-		 * entry's key followed by the equals character ("<tt>=</tt>")
-		 * followed by the string representation of this entry's value.
-		 *
-		 * @return a String representation of this map entry
-		 */
-		public String toString()
-		{
-			return key + "=" + value;
-		}
-
 	}
 }

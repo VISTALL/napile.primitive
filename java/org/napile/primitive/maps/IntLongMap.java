@@ -24,15 +24,13 @@
  */
 package org.napile.primitive.maps;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
-import org.napile.pair.primitive.LongObjectPair;
+import org.napile.pair.primitive.IntLongPair;
 import org.napile.primitive.Container;
 import org.napile.primitive.collections.IntCollection;
+import org.napile.primitive.collections.LongCollection;
 import org.napile.primitive.sets.IntSet;
-import org.napile.primitive.sets.LongSet;
 
 /**
  * An object that maps keys to values.  A map cannot contain duplicate keys;
@@ -72,7 +70,7 @@ import org.napile.primitive.sets.LongSet;
  * <tt>UnsupportedOperationException</tt> if this map does not support the
  * operation.  If this is the case, these methods may, but are not required
  * to, throw an <tt>UnsupportedOperationException</tt> if the invocation would
- * have no effect on the map.  For example, invoking the {@link #putAll(LongObjectMap)}
+ * have no effect on the map.  For example, invoking the {@link #putAll(IntLongMap)}
  * method on an unmodifiable map may, but is not required to, throw the
  * exception if the map whose mappings are to be "superimposed" is empty.
  * <p/>
@@ -96,7 +94,7 @@ import org.napile.primitive.sets.LongSet;
  * <p/>
  * <p>Many methods in Collections Framework interfaces are defined
  * in terms of the {@link Object#equals(Object) equals} method.  For
- * example, the specification for the {@link #containsKey(long)
+ * example, the specification for the {@link #containsKey(int)
  * containsKey(Object key)} method says: "returns <tt>true</tt> if and
  * only if this map contains a mapping for a key <tt>k</tt> such that
  * <tt>(key==null ? k==null : key.equals(k))</tt>." This specification should
@@ -111,16 +109,15 @@ import org.napile.primitive.sets.LongSet;
  * the specified behavior of underlying {@link Object} methods wherever the
  * implementor deems it appropriate.
  *
- * @param <V> the type of mapped values
  * @author Josh Bloch
- * @see org.napile.primitive.maps.impl.HashLongObjectMap
- * @see org.napile.primitive.maps.impl.TreeLongObjectMap
- * @see SortedLongObjectMap
- * @see LongCollection
- * @see LongSet
+ * @see org.napile.primitive.maps.impl.HashIntObjectMap
+ * @see org.napile.primitive.maps.impl.TreeIntObjectMap
+ * @see SortedIntObjectMap
+ * @see IntCollection
+ * @see IntSet
  * @since 1.2
  */
-public interface LongObjectMap<V> extends Container
+public interface IntLongMap extends Container
 {
 	// Query Operations
 
@@ -155,7 +152,7 @@ public interface LongObjectMap<V> extends Container
 	 * @throws NullPointerException if the specified key is null and this map
 	 *                              does not permit null keys (optional)
 	 */
-	boolean containsKey(long key);
+	boolean containsKey(int key);
 
 	/**
 	 * Returns <tt>true</tt> if this map maps one or more keys to the
@@ -173,7 +170,7 @@ public interface LongObjectMap<V> extends Container
 	 * @throws NullPointerException if the specified value is null and this
 	 *                              map does not permit null values (optional)
 	 */
-	boolean containsValue(Object value);
+	boolean containsValue(long value);
 
 	/**
 	 * Returns the value to which the specified key is mapped,
@@ -198,7 +195,7 @@ public interface LongObjectMap<V> extends Container
 	 * @throws NullPointerException if the specified key is null and this map
 	 *                              does not permit null keys (optional)
 	 */
-	V get(long key);
+	long get(int key);
 
 	// Modification Operations
 
@@ -207,7 +204,7 @@ public interface LongObjectMap<V> extends Container
 	 * (optional operation).  If the map previously contained a mapping for
 	 * the key, the old value is replaced by the specified value.  (A map
 	 * <tt>m</tt> is said to contain a mapping for a key <tt>k</tt> if and only
-	 * if {@link #containsKey(long) m.containsKey(k)} would return
+	 * if {@link #containsKey(int) m.containsKey(k)} would return
 	 * <tt>true</tt>.)
 	 *
 	 * @param key   key with which the specified value is to be associated
@@ -226,7 +223,7 @@ public interface LongObjectMap<V> extends Container
 	 * @throws IllegalArgumentException	  if some property of the specified key
 	 *                                       or value prevents it from being stored in this map
 	 */
-	V put(long key, V value);
+	long put(int key, long value);
 
 	/**
 	 * Removes the mapping for a key from this map if it is present
@@ -256,7 +253,7 @@ public interface LongObjectMap<V> extends Container
 	 * @throws NullPointerException		  if the specified key is null and this
 	 *                                       map does not permit null keys (optional)
 	 */
-	V remove(long key);
+	long remove(int key);
 
 
 	// Bulk Operations
@@ -264,7 +261,7 @@ public interface LongObjectMap<V> extends Container
 	/**
 	 * Copies all of the mappings from the specified map to this map
 	 * (optional operation).  The effect of this call is equivalent to that
-	 * of calling {@link #put(long, Object) put(k, v)} on this map once
+	 * of calling {@link #put(int, long) put(k, v)} on this map once
 	 * for each mapping from key <tt>k</tt> to value <tt>v</tt> in the
 	 * specified map.  The behavior of this operation is undefined if the
 	 * specified map is modified while the operation is in progress.
@@ -280,7 +277,7 @@ public interface LongObjectMap<V> extends Container
 	 * @throws IllegalArgumentException	  if some property of a key or value in
 	 *                                       the specified map prevents it from being stored in this map
 	 */
-	void putAll(LongObjectMap<? extends V> m);
+	void putAll(IntLongMap m);
 
 	/**
 	 * Removes all of the mappings from this map (optional operation).
@@ -295,7 +292,7 @@ public interface LongObjectMap<V> extends Container
 	// Views
 
 	/**
-	 * Returns a {@link LongSet} view of the keys contained in this map.
+	 * Returns a {@link IntSet} view of the keys contained in this map.
 	 * The set is backed by the map, so changes to the map are
 	 * reflected in the set, and vice-versa.  If the map is modified
 	 * while an iteration over the set is in progress (except through
@@ -309,7 +306,7 @@ public interface LongObjectMap<V> extends Container
 	 *
 	 * @return a set view of the keys contained in this map
 	 */
-	LongSet keySet();
+	IntSet keySet();
 
 	/**
 	 * Returns a {@link IntCollection} view of the values contained in this map.
@@ -326,7 +323,7 @@ public interface LongObjectMap<V> extends Container
 	 *
 	 * @return a collection view of the values contained in this map
 	 */
-	Collection<V> values();
+	LongCollection values();
 
 	/**
 	 * Returns a {@link Set} view of the mappings contained in this map.
@@ -344,7 +341,9 @@ public interface LongObjectMap<V> extends Container
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	Set<LongObjectPair<V>> entrySet();
+	Set<IntLongPair> entrySet();
+
+	// Comparison and hashing
 
 	/**
 	 * Compares the specified object with this map for equality.  Returns
@@ -369,7 +368,7 @@ public interface LongObjectMap<V> extends Container
 	 * {@link Object#hashCode}.
 	 *
 	 * @return the hash code value for this map
-	 * @see Map.Entry#hashCode()
+	 * @see IntLongPair#hashCode()
 	 * @see Object#equals(Object)
 	 * @see #equals(Object)
 	 */

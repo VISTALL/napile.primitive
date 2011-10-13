@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
+import org.napile.pair.primitive.IntObjectPair;
 import org.napile.primitive.comparators.IntComparator;
 import org.napile.primitive.sets.IntSet;
 
@@ -285,5 +286,5 @@ public interface SortedIntObjectMap<V> extends IntObjectMap<V>
 	 * @return a set view of the mappings contained in this map,
 	 *         sorted in ascending key order
 	 */
-	Set<IntObjectMap.Entry<V>> entrySet();
+	Set<IntObjectPair<V>> entrySet();
 }

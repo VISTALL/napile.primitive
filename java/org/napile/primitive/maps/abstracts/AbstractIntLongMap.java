@@ -1,38 +1,33 @@
 /*
- * Copyright (c) 1997, 2007, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Primitive Collection Framework for Java
+ * Copyright (C) 2011 napile.org
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License.
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.napile.primitive.maps.abstracts;
 
-import java.util.AbstractCollection;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
-import org.napile.pair.primitive.IntObjectPair;
+import org.napile.pair.primitive.IntLongPair;
+import org.napile.primitive.Variables;
+import org.napile.primitive.collections.LongCollection;
+import org.napile.primitive.collections.abstracts.AbstractLongCollection;
 import org.napile.primitive.iterators.IntIterator;
-import org.napile.primitive.maps.IntObjectMap;
+import org.napile.primitive.iterators.LongIterator;
+import org.napile.primitive.maps.IntLongMap;
 import org.napile.primitive.sets.IntSet;
 import org.napile.primitive.sets.abstracts.AbstractIntSet;
 
@@ -65,21 +60,20 @@ import org.napile.primitive.sets.abstracts.AbstractIntSet;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @param <V> the type of mapped values
  * @author Josh Bloch
  * @author Neal Gafter
  * @version %I%, %G%
- * @see IntObjectMap
- * @see IntObjectMap
+ * @see org.napile.primitive.maps.IntLongMap
+ * @see org.napile.primitive.maps.IntLongMap
  * @since 1.2
  */
-public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
+public abstract class AbstractIntLongMap implements IntLongMap
 {
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	protected AbstractIntObjectMap()
+	protected AbstractIntLongMap()
 	{
 	}
 
@@ -117,29 +111,15 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean containsValue(Object value)
+	public boolean containsValue(long value)
 	{
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
-		if(value == null)
+		Iterator<IntLongPair> i = entrySet().iterator();
+		while(i.hasNext())
 		{
-			while(i.hasNext())
+			IntLongPair e = i.next();
+			if(value == e.getValue())
 			{
-				IntObjectPair<V> e = i.next();
-				if(e.getValue() == null)
-				{
-					return true;
-				}
-			}
-		}
-		else
-		{
-			while(i.hasNext())
-			{
-				IntObjectPair<V> e = i.next();
-				if(value.equals(e.getValue()))
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 		return false;
@@ -160,14 +140,12 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public boolean containsKey(int key)
 	{
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
+		Iterator<IntLongPair> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			IntObjectPair<V> e = i.next();
+			IntLongPair e = i.next();
 			if(key == e.getKey())
-			{
 				return true;
-			}
 		}
 		return false;
 	}
@@ -185,19 +163,13 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public V get(int key)
+	public long get(int key)
 	{
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			IntObjectPair<V> e = i.next();
+		for(IntLongPair e : entrySet())
 			if(key == e.getKey())
-			{
 				return e.getValue();
-			}
-		}
 
-		return null;
+		return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 	}
 
 
@@ -214,7 +186,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public V put(int key, V value)
+	public long put(int key, long value)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -240,22 +212,20 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 */
-	public V remove(int key)
+	public long remove(int key)
 	{
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
-		IntObjectPair<V> correctEntry = null;
+		Iterator<IntLongPair> i = entrySet().iterator();
+		IntLongPair correctEntry = null;
 
 		while(correctEntry == null && i.hasNext())
 		{
-			IntObjectPair<V> e = i.next();
+			IntLongPair e = i.next();
 			if(key == e.getKey())
-			{
 				correctEntry = e;
-			}
 		}
 
 
-		V oldValue = null;
+		long oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 		if(correctEntry != null)
 		{
 			oldValue = correctEntry.getValue();
@@ -283,12 +253,10 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public void putAll(IntObjectMap<? extends V> m)
+	public void putAll(IntLongMap m)
 	{
-		for(IntObjectPair<? extends V> e : m.entrySet())
-		{
+		for(IntLongPair e : m.entrySet())
 			put(e.getKey(), e.getValue());
-		}
 	}
 
 	/**
@@ -316,12 +284,12 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * stateless, so there's no reason to create more than one of each.
 	 */
 	protected transient volatile IntSet keySet = null;
-	protected transient volatile Collection<V> values = null;
+	protected transient volatile LongCollection values = null;
 
 	/**
 	 * {@inheritDoc}
 	 * <p/>
-	 * <p>This implementation returns a set that subclasses {@link AbstractIntSet}.
+	 * <p>This implementation returns a set that subclasses {@link org.napile.primitive.sets.abstracts.AbstractIntSet}.
 	 * The subclass's iterator method returns a "wrapper object" over this
 	 * map's <tt>entrySet()</tt> iterator.  The <tt>size</tt> method
 	 * delegates to this map's <tt>size</tt> method and the
@@ -343,7 +311,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 				{
 					return new IntIterator()
 					{
-						private Iterator<IntObjectPair<V>> i = entrySet().iterator();
+						private Iterator<IntLongPair> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
@@ -364,12 +332,12 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 
 				public int size()
 				{
-					return AbstractIntObjectMap.this.size();
+					return AbstractIntLongMap.this.size();
 				}
 
 				public boolean contains(int k)
 				{
-					return AbstractIntObjectMap.this.containsKey(k);
+					return AbstractIntLongMap.this.containsKey(k);
 				}
 			};
 		}
@@ -380,7 +348,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * {@inheritDoc}
 	 * <p/>
 	 * <p>This implementation returns a collection that subclasses {@link
-	 * AbstractCollection}.  The subclass's iterator method returns a
+	 * java.util.AbstractCollection}.  The subclass's iterator method returns a
 	 * "wrapper object" over this map's <tt>entrySet()</tt> iterator.
 	 * The <tt>size</tt> method delegates to this map's <tt>size</tt>
 	 * method and the <tt>contains</tt> method delegates to this map's
@@ -391,24 +359,24 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same collection.
 	 */
-	public Collection<V> values()
+	public LongCollection values()
 	{
 		if(values == null)
 		{
-			values = new AbstractCollection<V>()
+			values = new AbstractLongCollection()
 			{
-				public Iterator<V> iterator()
+				public LongIterator iterator()
 				{
-					return new Iterator<V>()
+					return new LongIterator()
 					{
-						private Iterator<IntObjectPair<V>> i = entrySet().iterator();
+						private Iterator<IntLongPair> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
 							return i.hasNext();
 						}
 
-						public V next()
+						public long next()
 						{
 							return i.next().getValue();
 						}
@@ -422,19 +390,19 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 
 				public int size()
 				{
-					return AbstractIntObjectMap.this.size();
+					return AbstractIntLongMap.this.size();
 				}
 
-				public boolean contains(Object v)
+				public boolean contains(long v)
 				{
-					return AbstractIntObjectMap.this.containsValue(v);
+					return AbstractIntLongMap.this.containsValue(v);
 				}
 			};
 		}
 		return values;
 	}
 
-	public abstract Set<IntObjectPair<V>> entrySet();
+	public abstract Set<IntLongPair> entrySet();
 
 
 	// Comparison and hashing
@@ -467,11 +435,11 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 			return true;
 		}
 
-		if(!(o instanceof IntObjectMap))
+		if(!(o instanceof IntLongMap))
 		{
 			return false;
 		}
-		IntObjectMap<V> m = (IntObjectMap<V>) o;
+		IntLongMap m = (IntLongMap) o;
 		if(m.size() != size())
 		{
 			return false;
@@ -479,25 +447,15 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 
 		try
 		{
-			Iterator<IntObjectPair<V>> i = entrySet().iterator();
+			Iterator<IntLongPair> i = entrySet().iterator();
 			while(i.hasNext())
 			{
-				IntObjectPair<V> e = i.next();
+				IntLongPair e = i.next();
 				int key = e.getKey();
-				V value = e.getValue();
-				if(value == null)
+				long value = e.getValue();
+				if(value != m.get(key))
 				{
-					if(!(m.get(key) == null && m.containsKey(key)))
-					{
-						return false;
-					}
-				}
-				else
-				{
-					if(!value.equals(m.get(key)))
-					{
-						return false;
-					}
+					return false;
 				}
 			}
 		}
@@ -522,22 +480,19 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * {@link Object#hashCode}.
 	 * <p/>
 	 * <p>This implementation iterates over <tt>entrySet()</tt>, calling
-	 * {@link Map.Entry#hashCode hashCode()} on each element (entry) in the
+	 * {@link java.util.Map.Entry#hashCode hashCode()} on each element (entry) in the
 	 * set, and adding up the results.
 	 *
 	 * @return the hash code value for this map
-	 * @see Map.Entry#hashCode()
+	 * @see java.util.Map.Entry#hashCode()
 	 * @see Object#equals(Object)
-	 * @see Set#equals(Object)
+	 * @see java.util.Set#equals(Object)
 	 */
 	public int hashCode()
 	{
 		int h = 0;
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			h += i.next().hashCode();
-		}
+		for(IntLongPair intLongPair : entrySet())
+			h += intLongPair.hashCode();
 		return h;
 	}
 
@@ -555,7 +510,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	public String toString()
 	{
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
+		Iterator<IntLongPair> i = entrySet().iterator();
 		if(!i.hasNext())
 		{
 			return "{}";
@@ -565,12 +520,12 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 		sb.append('{');
 		for(; ;)
 		{
-			IntObjectPair<V> e = i.next();
+			IntLongPair e = i.next();
 			int key = e.getKey();
-			V value = e.getValue();
+			long value = e.getValue();
 			sb.append(key);
 			sb.append('=');
-			sb.append(value == this ? "(this Map)" : value);
+			sb.append(value);
 			if(!i.hasNext())
 			{
 				return sb.append('}').toString();
@@ -587,30 +542,9 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 */
 	protected Object clone() throws CloneNotSupportedException
 	{
-		AbstractIntObjectMap<V> result = (AbstractIntObjectMap<V>) super.clone();
+		AbstractIntLongMap result = (AbstractIntLongMap) super.clone();
 		result.keySet = null;
 		result.values = null;
 		return result;
 	}
-
-	/**
-	 * Utility method for SimpleEntry and SimpleImmutableEntry.
-	 * Test for equality, checking for nulls.
-	 */
-	private static boolean eq(int o1, int o2)
-	{
-		return o1 == o2;
-	}
-
-	private static boolean eq(Object o1, Object o2)
-	{
-		return o1 == null ? o2 == null : o1.equals(o2);
-	}
-
-	// Implementation Note: SimpleEntry and SimpleImmutableEntry
-	// are distinct unrelated classes, even though they share
-	// some code. Since you can't add or subtract final-ness
-	// of a field in a subclass, they can't share representations,
-	// and the amount of duplicated code is too small to warrant
-	// exposing a common abstract class.
 }

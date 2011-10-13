@@ -1,6 +1,6 @@
-/**
+/*
  * Primitive Collection Framework for Java
- * Copyright (C) 2010 Napile.org
+ * Copyright (C) 2011 napile.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,18 +21,22 @@ package org.napile.primitive;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
 
+import org.napile.pair.primitive.IntLongPair;
+import org.napile.pair.primitive.IntObjectPair;
+import org.napile.primitive.collections.LongCollection;
 import org.napile.primitive.iterators.IntIterator;
 import org.napile.primitive.iterators.LongIterator;
 import org.napile.primitive.lists.IntList;
 import org.napile.primitive.lists.LongList;
 import org.napile.primitive.lists.abstracts.AbstractIntList;
 import org.napile.primitive.lists.abstracts.AbstractLongList;
+import org.napile.primitive.maps.IntLongMap;
 import org.napile.primitive.maps.IntObjectMap;
+import org.napile.primitive.maps.abstracts.AbstractIntLongMap;
 import org.napile.primitive.maps.abstracts.AbstractIntObjectMap;
 import org.napile.primitive.sets.IntSet;
 import org.napile.primitive.sets.abstracts.AbstractIntSet;
@@ -56,6 +60,7 @@ public class Containers
 	public static final IntSet EMPTY_INT_SET = new EmptyIntSet();
 	//
 	public static final IntObjectMap EMPTY_INT_OBJECT_MAP = new EmptyIntObjectMap();
+	public static final IntLongMap EMPTY_INT_LONG_MAP = new EmptyIntLongMap();
 
 	/**
 	 * Return empty instance of IntObjectMap
@@ -99,16 +104,6 @@ public class Containers
 	public static LongIterator singletonLongIterator(final long e)
 	{
 		return new SingletonLongIterator(e);
-	}
-
-	public static int hashCode(int val)
-	{
-		return val;
-	}
-
-	public static int hashCode(long val)
-	{
-		return (int)(val ^ (val >>> 32));
 	}
 
 	private static class SingletonIntIterator implements IntIterator
@@ -342,7 +337,7 @@ public class Containers
 		}
 
 		@Override
-		public Set<IntObjectMap.Entry<Object>> entrySet()
+		public Set<IntObjectPair<Object>> entrySet()
 		{
 			return Collections.emptySet();
 		}
@@ -350,7 +345,76 @@ public class Containers
 		@Override
 		public boolean equals(Object o)
 		{
-			return (o instanceof Map) && ((Map) o).size() == 0;
+			return (o instanceof IntObjectMap) && ((IntObjectMap) o).size() == 0;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return 0;
+		}
+
+		// Preserves singleton property
+		private Object readResolve()
+		{
+			return EMPTY_INT_OBJECT_MAP;
+		}
+	}
+
+	private static class EmptyIntLongMap extends AbstractIntLongMap implements Serializable
+	{
+		@Override
+		public int size()
+		{
+			return 0;
+		}
+
+		@Override
+		public boolean isEmpty()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean containsKey(int key)
+		{
+			return false;
+		}
+
+		@Override
+		public boolean containsValue(long value)
+		{
+			return false;
+		}
+
+		@Override
+		public long get(int key)
+		{
+			return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		}
+
+		@Override
+		public IntSet keySet()
+		{
+			return EMPTY_INT_SET;
+		}
+
+		@Override
+		public LongCollection values()
+		{
+			return EMPTY_LONG_LIST;
+		}
+
+		@Override
+		public Set<IntLongPair> entrySet()
+		{
+			return Collections.emptySet();
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			return (o instanceof IntLongMap) && ((IntLongMap) o).size() == 0;
 		}
 
 		@Override

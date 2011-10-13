@@ -31,11 +31,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import org.napile.pair.primitive.IntObjectPair;
 import org.napile.primitive.collections.IntCollection;
 import org.napile.primitive.comparators.IntComparator;
 import org.napile.primitive.iterators.IntIterator;
 import org.napile.primitive.maps.CNavigableIntObjectMap;
-import org.napile.primitive.maps.IntObjectMap;
 import org.napile.primitive.maps.impl.CTreeIntObjectMap;
 import org.napile.primitive.sets.IntSet;
 import org.napile.primitive.sets.NavigableIntSet;
@@ -400,13 +400,13 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 
 	public int pollFirst()
 	{
-		IntObjectMap.Entry<Object> e = m.pollFirstEntry();
+		IntObjectPair<Object> e = m.pollFirstEntry();
 		return e == null ? null : e.getKey();
 	}
 
 	public int pollLast()
 	{
-		IntObjectMap.Entry<Object> e = m.pollLastEntry();
+		IntObjectPair<Object> e = m.pollLastEntry();
 		return e == null ? null : e.getKey();
 	}
 

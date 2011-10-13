@@ -24,6 +24,7 @@
  */
 package org.napile.primitive.maps;
 
+import org.napile.pair.primitive.IntObjectPair;
 import org.napile.primitive.sets.NavigableIntSet;
 
 /**
@@ -97,7 +98,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @throws NullPointerException if the specified key is null
 	 *                              and this map does not permit null keys
 	 */
-	IntObjectMap.Entry<V> lowerEntry(int key);
+	IntObjectPair<V> lowerEntry(int key);
 
 	/**
 	 * Returns the greatest key strictly less than the given key, or
@@ -126,7 +127,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @throws NullPointerException if the specified key is null
 	 *                              and this map does not permit null keys
 	 */
-	IntObjectMap.Entry<V> floorEntry(int key);
+	IntObjectPair<V> floorEntry(int key);
 
 	/**
 	 * Returns the greatest key less than or equal to the given key,
@@ -155,7 +156,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @throws NullPointerException if the specified key is null
 	 *                              and this map does not permit null keys
 	 */
-	IntObjectMap.Entry<V> ceilingEntry(int key);
+	IntObjectPair<V> ceilingEntry(int key);
 
 	/**
 	 * Returns the least key greater than or equal to the given key,
@@ -184,7 +185,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @throws NullPointerException if the specified key is null
 	 *                              and this map does not permit null keys
 	 */
-	IntObjectMap.Entry<V> higherEntry(int key);
+	IntObjectPair<V> higherEntry(int key);
 
 	/**
 	 * Returns the least key strictly greater than the given key, or
@@ -207,7 +208,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @return an entry with the least key,
 	 *         or {@code null} if this map is empty
 	 */
-	IntObjectMap.Entry<V> firstEntry();
+	IntObjectPair<V> firstEntry();
 
 	/**
 	 * Returns a key-value mapping associated with the greatest
@@ -216,7 +217,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @return an entry with the greatest key,
 	 *         or {@code null} if this map is empty
 	 */
-	IntObjectMap.Entry<V> lastEntry();
+	IntObjectPair<V> lastEntry();
 
 	/**
 	 * Removes and returns a key-value mapping associated with
@@ -225,7 +226,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @return the removed first entry of this map,
 	 *         or {@code null} if this map is empty
 	 */
-	IntObjectMap.Entry<V> pollFirstEntry();
+	IntObjectPair<V> pollFirstEntry();
 
 	/**
 	 * Removes and returns a key-value mapping associated with
@@ -234,7 +235,7 @@ public interface NavigableIntObjectMap<V> extends SortedIntObjectMap<V>
 	 * @return the removed last entry of this map,
 	 *         or {@code null} if this map is empty
 	 */
-	IntObjectMap.Entry<V> pollLastEntry();
+	IntObjectPair<V> pollLastEntry();
 
 	/**
 	 * Returns a reverse order view of the mappings contained in this map.

@@ -39,6 +39,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import org.napile.pair.primitive.IntObjectPair;
+import org.napile.pair.primitive.impl.ImmutableIntObjectPairImpl;
 import org.napile.primitive.Comparators;
 import org.napile.primitive.collections.IntCollection;
 import org.napile.primitive.comparators.IntComparator;
@@ -558,14 +560,14 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		 *
 		 * @return new entry or null
 		 */
-		AbstractIntObjectMap.SimpleImmutableEntry<V> createSnapshot()
+		IntObjectPair<V> createSnapshot()
 		{
 			V v = getValidValue();
 			if(v == null)
 			{
 				return null;
 			}
-			return new AbstractIntObjectMap.SimpleImmutableEntry<V>(key, v);
+			return new ImmutableIntObjectPairImpl<V>(key, v);
 		}
 	}
 
@@ -1334,7 +1336,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 *
 	 * @return null if empty, else snapshot of first entry
 	 */
-	IntObjectMap.Entry<V> doRemoveFirstEntry()
+	IntObjectPair<V> doRemoveFirstEntry()
 	{
 		for(; ;)
 		{
@@ -1364,7 +1366,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				findFirst(); // retry
 			}
 			clearIndexToFirst();
-			return new AbstractIntObjectMap.SimpleImmutableEntry<V>(n.key, (V) v);
+			return new ImmutableIntObjectPairImpl<V>(n.key, (V) v);
 		}
 	}
 
@@ -1511,7 +1513,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 *
 	 * @return null if empty, else snapshot of last entry
 	 */
-	IntObjectMap.Entry<V> doRemoveLastEntry()
+	IntObjectPair<V> doRemoveLastEntry()
 	{
 		for(; ;)
 		{
@@ -1570,7 +1572,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 						tryReduceLevel();
 					}
 				}
-				return new AbstractIntObjectMap.SimpleImmutableEntry<V>(key, (V) v);
+				return new ImmutableIntObjectPairImpl<V>(key, (V) v);
 			}
 		}
 	}
@@ -1639,7 +1641,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * @param rel the relation -- OR'ed combination of EQ, LT, GT
 	 * @return Entry fitting relation, or null if no such
 	 */
-	AbstractIntObjectMap.SimpleImmutableEntry<V> getNear(int key, int rel)
+	IntObjectPair<V> getNear(int key, int rel)
 	{
 		for(; ;)
 		{
@@ -1648,7 +1650,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			{
 				return null;
 			}
-			AbstractIntObjectMap.SimpleImmutableEntry<V> e = n.createSnapshot();
+			IntObjectPair<V> e = n.createSnapshot();
 			if(e != null)
 			{
 				return e;
@@ -1771,10 +1773,10 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			q = q.down;
 		}
 
-		Iterator<? extends IntObjectMap.Entry<? extends V>> it = map.entrySet().iterator();
+		Iterator<? extends IntObjectPair<? extends V>> it = map.entrySet().iterator();
 		while(it.hasNext())
 		{
-			IntObjectMap.Entry<? extends V> e = it.next();
+			IntObjectPair<? extends V> e = it.next();
 			int j = randomLevel();
 			if(j > h.level)
 			{
@@ -1980,9 +1982,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	public V put(int key, V value)
 	{
 		if(value == null)
-		{
 			throw new NullPointerException();
-		}
 		return doPut(key, value, false);
 	}
 
@@ -2160,14 +2160,14 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * construction of the iterator, and may (but is not guaranteed to)
 	 * reflect any modifications subsequent to construction.
 	 * <p/>
-	 * <p>The <tt>IntObjectMap.Entry</tt> elements returned by
+	 * <p>The <tt>IntObjectPair</tt> elements returned by
 	 * <tt>iterator.next()</tt> do <em>not</em> support the
 	 * <tt>setValue</tt> operation.
 	 *
 	 * @return a set view of the mappings contained in this map,
 	 *         sorted in ascending key order
 	 */
-	public Set<IntObjectMap.Entry<V>> entrySet()
+	public Set<IntObjectPair<V>> entrySet()
 	{
 		EntrySet es = entrySet;
 		return (es != null) ? es : (entrySet = new EntrySet(this));
@@ -2211,14 +2211,14 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		IntObjectMap<?> m = (IntObjectMap<?>) o;
 		try
 		{
-			for(IntObjectMap.Entry<V> e : this.entrySet())
+			for(IntObjectPair<V> e : this.entrySet())
 			{
 				if(!e.getValue().equals(m.get(e.getKey())))
 				{
 					return false;
 				}
 			}
-			for(IntObjectMap.Entry<?> e : m.entrySet())
+			for(IntObjectPair<?> e : m.entrySet())
 			{
 				int k = e.getKey();
 				Object v = e.getValue();
@@ -2446,7 +2446,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public IntObjectMap.Entry<V> lowerEntry(int key)
+	public IntObjectPair<V> lowerEntry(int key)
 	{
 		return getNear(key, LT);
 	}
@@ -2471,7 +2471,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public IntObjectMap.Entry<V> floorEntry(int key)
+	public IntObjectPair<V> floorEntry(int key)
 	{
 		return getNear(key, LT | EQ);
 	}
@@ -2496,7 +2496,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public IntObjectMap.Entry<V> ceilingEntry(int key)
+	public IntObjectPair<V> ceilingEntry(int key)
 	{
 		return getNear(key, GT | EQ);
 	}
@@ -2521,7 +2521,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException if the specified key is null
 	 */
-	public IntObjectMap.Entry<V> higherEntry(int key)
+	public IntObjectPair<V> higherEntry(int key)
 	{
 		return getNear(key, GT);
 	}
@@ -2543,7 +2543,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * The returned entry does <em>not</em> support
 	 * the <tt>Entry.setValue</tt> method.
 	 */
-	public IntObjectMap.Entry<V> firstEntry()
+	public IntObjectPair<V> firstEntry()
 	{
 		for(; ;)
 		{
@@ -2552,7 +2552,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			{
 				return null;
 			}
-			AbstractIntObjectMap.SimpleImmutableEntry<V> e = n.createSnapshot();
+			IntObjectPair<V> e = n.createSnapshot();
 			if(e != null)
 			{
 				return e;
@@ -2566,7 +2566,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * The returned entry does <em>not</em> support
 	 * the <tt>Entry.setValue</tt> method.
 	 */
-	public IntObjectMap.Entry<V> lastEntry()
+	public IntObjectPair<V> lastEntry()
 	{
 		for(; ;)
 		{
@@ -2575,7 +2575,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			{
 				return null;
 			}
-			AbstractIntObjectMap.SimpleImmutableEntry<V> e = n.createSnapshot();
+			IntObjectPair<V> e = n.createSnapshot();
 			if(e != null)
 			{
 				return e;
@@ -2589,7 +2589,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * The returned entry does <em>not</em> support
 	 * the <tt>Entry.setValue</tt> method.
 	 */
-	public IntObjectMap.Entry<V> pollFirstEntry()
+	public IntObjectPair<V> pollFirstEntry()
 	{
 		return doRemoveFirstEntry();
 	}
@@ -2600,7 +2600,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 	 * The returned entry does <em>not</em> support
 	 * the <tt>Entry.setValue</tt> method.
 	 */
-	public IntObjectMap.Entry<V> pollLastEntry()
+	public IntObjectPair<V> pollLastEntry()
 	{
 		return doRemoveLastEntry();
 	}
@@ -2713,14 +2713,14 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		}
 	}
 
-	final class EntryIterator extends Iter<IntObjectMap.Entry<V>> implements Iterator<IntObjectMap.Entry<V>>
+	final class EntryIterator extends Iter<IntObjectPair<V>> implements Iterator<IntObjectPair<V>>
 	{
-		public IntObjectMap.Entry<V> next()
+		public IntObjectPair<V> next()
 		{
 			Node<V> n = next;
 			V v = nextValue;
 			advance();
-			return new AbstractIntObjectMap.SimpleImmutableEntry<V>(n.key, v);
+			return new ImmutableIntObjectPairImpl<V>(n.key, v);
 		}
 	}
 
@@ -2736,7 +2736,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		return new ValueIterator();
 	}
 
-	Iterator<Entry<V>> entryIterator()
+	Iterator<IntObjectPair<V>> entryIterator()
 	{
 		return new EntryIterator();
 	}
@@ -2830,13 +2830,13 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 		public int pollFirst()
 		{
-			IntObjectMap.Entry<Object> e = m.pollFirstEntry();
+			IntObjectPair<Object> e = m.pollFirstEntry();
 			return e == null ? null : e.getKey();
 		}
 
 		public int pollLast()
 		{
-			IntObjectMap.Entry<Object> e = m.pollLastEntry();
+			IntObjectPair<Object> e = m.pollLastEntry();
 			return e == null ? null : e.getKey();
 		}
 
@@ -2970,7 +2970,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		}
 	}
 
-	static final class EntrySet<K1, V1> extends AbstractSet<Entry<V1>>
+	static final class EntrySet<V1> extends AbstractSet<IntObjectPair<V1>>
 	{
 		private final CNavigableIntObjectMap<V1> m;
 
@@ -2979,7 +2979,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			m = map;
 		}
 
-		public Iterator<IntObjectMap.Entry<V1>> iterator()
+		public Iterator<IntObjectPair<V1>> iterator()
 		{
 			if(m instanceof CTreeIntObjectMap)
 			{
@@ -2993,22 +2993,22 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 		public boolean contains(Object o)
 		{
-			if(!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof IntObjectPair))
 			{
 				return false;
 			}
-			IntObjectMap.Entry<V1> e = (IntObjectMap.Entry<V1>) o;
+			IntObjectPair<V1> e = (IntObjectPair<V1>) o;
 			V1 v = m.get(e.getKey());
 			return v != null && v.equals(e.getValue());
 		}
 
 		public boolean remove(Object o)
 		{
-			if(!(o instanceof IntObjectMap.Entry))
+			if(!(o instanceof IntObjectPair))
 			{
 				return false;
 			}
-			IntObjectMap.Entry<V1> e = (IntObjectMap.Entry<V1>) o;
+			IntObjectPair<V1> e = (IntObjectPair<V1>) o;
 			return m.remove(e.getKey(), e.getValue());
 		}
 
@@ -3106,7 +3106,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 		// Lazily initialized view holders
 		private transient KeySet keySetView;
-		private transient Set<Entry<V>> entrySetView;
+		private transient Set<IntObjectPair<V>> entrySetView;
 		private transient Collection<V> valuesView;
 
 		/**
@@ -3263,7 +3263,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			throw new NoSuchElementException();
 		}
 
-		private IntObjectMap.Entry<V> lowestEntry()
+		private IntObjectPair<V> lowestEntry()
 		{
 			for(; ;)
 			{
@@ -3272,7 +3272,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				{
 					return null;
 				}
-				IntObjectMap.Entry<V> e = n.createSnapshot();
+				IntObjectPair<V> e = n.createSnapshot();
 				if(e != null)
 				{
 					return e;
@@ -3280,7 +3280,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			}
 		}
 
-		private IntObjectMap.Entry<V> highestEntry()
+		private IntObjectPair<V> highestEntry()
 		{
 			for(; ;)
 			{
@@ -3289,7 +3289,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				{
 					return null;
 				}
-				IntObjectMap.Entry<V> e = n.createSnapshot();
+				IntObjectPair<V> e = n.createSnapshot();
 				if(e != null)
 				{
 					return e;
@@ -3297,7 +3297,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			}
 		}
 
-		private IntObjectMap.Entry<V> removeLowest()
+		private IntObjectPair<V> removeLowest()
 		{
 			for(; ;)
 			{
@@ -3314,12 +3314,12 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				V v = m.doRemove(k, null);
 				if(v != null)
 				{
-					return new AbstractIntObjectMap.SimpleImmutableEntry<V>(k, v);
+					return new ImmutableIntObjectPairImpl<V>(k, v);
 				}
 			}
 		}
 
-		private IntObjectMap.Entry<V> removeHighest()
+		private IntObjectPair<V> removeHighest()
 		{
 			for(; ;)
 			{
@@ -3336,7 +3336,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				V v = m.doRemove(k, null);
 				if(v != null)
 				{
-					return new AbstractIntObjectMap.SimpleImmutableEntry<V>(k, v);
+					return new ImmutableIntObjectPairImpl<V>(k, v);
 				}
 			}
 		}
@@ -3344,7 +3344,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		/**
 		 * Submap version of CTreeIntObjectMap.getNearEntry
 		 */
-		private IntObjectMap.Entry<V> getNearEntry(int key, int rel)
+		private IntObjectPair<V> getNearEntry(int key, int rel)
 		{
 			if(isDescending)
 			{ // adjust relation for direction
@@ -3376,7 +3376,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				V v = n.getValidValue();
 				if(v != null)
 				{
-					return new AbstractIntObjectMap.SimpleImmutableEntry<V>(k, v);
+					return new ImmutableIntObjectPairImpl<V>(k, v);
 				}
 			}
 		}
@@ -3638,7 +3638,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 		/* ----------------  Relational methods -------------- */
 
-		public IntObjectMap.Entry<V> ceilingEntry(int key)
+		public IntObjectPair<V> ceilingEntry(int key)
 		{
 			return getNearEntry(key, (m.GT | m.EQ));
 		}
@@ -3648,7 +3648,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			return getNearKey(key, (m.GT | m.EQ));
 		}
 
-		public IntObjectMap.Entry<V> lowerEntry(int key)
+		public IntObjectPair<V> lowerEntry(int key)
 		{
 			return getNearEntry(key, (m.LT));
 		}
@@ -3658,7 +3658,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			return getNearKey(key, (m.LT));
 		}
 
-		public IntObjectMap.Entry<V> floorEntry(int key)
+		public IntObjectPair<V> floorEntry(int key)
 		{
 			return getNearEntry(key, (m.LT | m.EQ));
 		}
@@ -3668,7 +3668,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			return getNearKey(key, (m.LT | m.EQ));
 		}
 
-		public IntObjectMap.Entry<V> higherEntry(int key)
+		public IntObjectPair<V> higherEntry(int key)
 		{
 			return getNearEntry(key, (m.GT));
 		}
@@ -3688,22 +3688,22 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			return isDescending ? lowestKey() : highestKey();
 		}
 
-		public IntObjectMap.Entry<V> firstEntry()
+		public IntObjectPair<V> firstEntry()
 		{
 			return isDescending ? highestEntry() : lowestEntry();
 		}
 
-		public IntObjectMap.Entry<V> lastEntry()
+		public IntObjectPair<V> lastEntry()
 		{
 			return isDescending ? lowestEntry() : highestEntry();
 		}
 
-		public IntObjectMap.Entry<V> pollFirstEntry()
+		public IntObjectPair<V> pollFirstEntry()
 		{
 			return isDescending ? removeHighest() : removeLowest();
 		}
 
-		public IntObjectMap.Entry<V> pollLastEntry()
+		public IntObjectPair<V> pollLastEntry()
 		{
 			return isDescending ? removeLowest() : removeHighest();
 		}
@@ -3728,9 +3728,9 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			return (vs != null) ? vs : (valuesView = new Values(this));
 		}
 
-		public Set<IntObjectMap.Entry<V>> entrySet()
+		public Set<IntObjectPair<V>> entrySet()
 		{
-			Set<IntObjectMap.Entry<V>> es = entrySetView;
+			Set<IntObjectPair<V>> es = entrySetView;
 			return (es != null) ? es : (entrySetView = new EntrySet(this));
 		}
 
@@ -3749,7 +3749,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			return new SubMapValueIterator();
 		}
 
-		Iterator<IntObjectMap.Entry<V>> entryIterator()
+		Iterator<IntObjectPair<V>> entryIterator()
 		{
 			return new SubMapEntryIterator();
 		}
@@ -3902,14 +3902,14 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 			}
 		}
 
-		final class SubMapEntryIterator extends SubMapIter<IntObjectMap.Entry<V>> implements Iterator<IntObjectMap.Entry<V>>
+		final class SubMapEntryIterator extends SubMapIter<IntObjectPair<V>> implements Iterator<IntObjectPair<V>>
 		{
-			public IntObjectMap.Entry<V> next()
+			public IntObjectPair<V> next()
 			{
 				Node<V> n = next;
 				V v = nextValue;
 				advance();
-				return new AbstractIntObjectMap.SimpleImmutableEntry<V>(n.key, v);
+				return new ImmutableIntObjectPairImpl<V>(n.key, v);
 			}
 		}
 	}

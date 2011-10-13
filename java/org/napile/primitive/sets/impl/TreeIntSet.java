@@ -24,6 +24,7 @@
  */
 package org.napile.primitive.sets.impl;
 
+import org.napile.pair.primitive.IntObjectPair;
 import org.napile.primitive.collections.IntCollection;
 import org.napile.primitive.comparators.IntComparator;
 import org.napile.primitive.iterators.IntIterator;
@@ -490,7 +491,7 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
 	 */
 	public int pollFirst()
 	{
-		IntObjectMap.Entry<?> e = m.pollFirstEntry();
+		IntObjectPair<?> e = m.pollFirstEntry();
 		return (e == null) ? null : e.getKey();
 	}
 
@@ -499,7 +500,7 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
 	 */
 	public int pollLast()
 	{
-		IntObjectMap.Entry<?> e = m.pollLastEntry();
+		IntObjectPair<?> e = m.pollLastEntry();
 		return (e == null) ? null : e.getKey();
 	}
 
