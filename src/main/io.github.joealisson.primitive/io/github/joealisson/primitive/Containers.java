@@ -25,6 +25,8 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
 
+import io.github.joealisson.primitive.maps.LongObjectMap;
+import io.github.joealisson.primitive.maps.abstracts.AbstractLongObjectMap;
 import io.github.joealisson.primitive.pair.IntLongPair;
 import io.github.joealisson.primitive.pair.IntObjectPair;
 import io.github.joealisson.primitive.collections.LongCollection;
@@ -38,8 +40,11 @@ import io.github.joealisson.primitive.maps.IntLongMap;
 import io.github.joealisson.primitive.maps.IntObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntObjectMap;
+import io.github.joealisson.primitive.pair.LongObjectPair;
 import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.sets.LongSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
+import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
 
 /**
  * @author VISTALL
@@ -57,10 +62,14 @@ public class Containers
 	public static final LongList EMPTY_LONG_LIST = new EmptyLongList();
 	//
 	public static final IntSet EMPTY_INT_SET = new EmptyIntSet();
+	public static final LongSet EMPTY_LONG_SET = new EmptyLongSet();
 	//
 	@SuppressWarnings("rawtypes")
-	public static final IntObjectMap EMPTY_INT_OBJECT_MAP = new EmptyIntObjectMap();
+	private static final IntObjectMap EMPTY_INT_OBJECT_MAP = new EmptyIntObjectMap();
 	public static final IntLongMap EMPTY_INT_LONG_MAP = new EmptyIntLongMap();
+
+	@SuppressWarnings("rawtypes")
+	private static final LongObjectMap EMPTY_LONG_OBJECT_MAP = new EmptyLongObjectMap();
 
 	/**
 	 * Return empty instance of IntObjectMap
@@ -72,6 +81,11 @@ public class Containers
 	public static <V> IntObjectMap<V> emptyIntObjectMap()
 	{
 		return EMPTY_INT_OBJECT_MAP;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> LongObjectMap<T> emptyLongObjectMap() {
+		return EMPTY_LONG_OBJECT_MAP;
 	}
 
 	public static IntList singletonIntList(int t)
@@ -296,7 +310,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyIntObjectMap extends AbstractIntObjectMap<Object> implements Serializable
+	private static class EmptyIntObjectMap<T> extends AbstractIntObjectMap<T> implements Serializable
 	{
 		public static final long serialVersionUID = -5514480375351672864L;
 
@@ -325,7 +339,7 @@ public class Containers
 		}
 
 		@Override
-		public Object get(int key)
+		public T get(int key)
 		{
 			return null;
 		}
@@ -337,13 +351,13 @@ public class Containers
 		}
 
 		@Override
-		public Collection<Object> values()
+		public Collection<T> values()
 		{
 			return Collections.emptySet();
 		}
 
 		@Override
-		public Set<IntObjectPair<Object>> entrySet()
+		public Set<IntObjectPair<T>> entrySet()
 		{
 			return Collections.emptySet();
 		}
@@ -364,6 +378,77 @@ public class Containers
 		private Object readResolve()
 		{
 			return EMPTY_INT_OBJECT_MAP;
+		}
+	}
+
+	private static class EmptyLongObjectMap<T> extends AbstractLongObjectMap<T> implements Serializable {
+
+		private static final long serialVersionUID = -7578467527233523710L;
+
+		@Override
+		public int size()
+		{
+			return 0;
+		}
+
+		@Override
+		public boolean isEmpty()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean containsKey(long key)
+		{
+			return false;
+		}
+
+		@Override
+		public boolean containsValue(Object value)
+		{
+			return false;
+		}
+
+		@Override
+		public T get(long key)
+		{
+			return null;
+		}
+
+		@Override
+		public LongSet keySet()
+		{
+			return EMPTY_LONG_SET;
+		}
+
+		@Override
+		public Collection<T> values()
+		{
+			return Collections.emptySet();
+		}
+
+		@Override
+		public Set<LongObjectPair<T>> entrySet()
+		{
+			return Collections.emptySet();
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			return (o instanceof LongObjectMap) && ((LongObjectMap) o).size() == 0;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return 0;
+		}
+
+		// Preserves singleton property
+		private Object readResolve()
+		{
+			return EMPTY_LONG_OBJECT_MAP;
 		}
 	}
 
@@ -488,6 +573,36 @@ public class Containers
 			return EMPTY_INT_SET;
 		}
 	}
+
+	private static class EmptyLongSet extends AbstractLongSet implements Serializable
+	{
+		public static final long serialVersionUID = 8067917265294829951L;
+
+		@Override
+		public LongIterator iterator()
+		{
+			return EMPTY_LONG_ITERATOR;
+		}
+
+		@Override
+		public int size()
+		{
+			return 0;
+		}
+
+		@Override
+		public boolean contains(long obj)
+		{
+			return false;
+		}
+
+		// Preserves singleton property
+		private Object readResolve()
+		{
+			return EMPTY_LONG_SET;
+		}
+	}
+
 
 	private static class EmptyIntList extends AbstractIntList implements RandomAccess, Serializable
 	{
