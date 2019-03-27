@@ -230,6 +230,32 @@ public interface IntDoubleMap extends Container
 	double put(int key, double value);
 
 	/**
+	 * Associates the specified value with the specified key in this map if the key is not associated yet
+	 * (optional operation).  If the map previously contained a mapping for
+	 * the key, the old value is replaced by the specified value.  (A map
+	 * m is said to contain a mapping for a key k if and only
+	 * if {@link #containsKey(int) m.containsKey(k)} would return
+	 * true.)
+	 *
+	 * @param key   key with which the specified value is to be associated
+	 * @param value value to be associated with the specified key
+	 * @return the previous value associated with key, or
+	 *         null if there was no mapping for key.
+	 *         (A null return can also indicate that the map
+	 *         previously associated null with key,
+	 *         if the implementation supports null values.)
+	 * @throws UnsupportedOperationException if the put operation
+	 *                                       is not supported by this map
+	 * @throws ClassCastException			if the class of the specified key or value
+	 *                                       prevents it from being stored in this map
+	 * @throws NullPointerException		  if the specified key or value is null
+	 *                                       and this map does not permit null keys or values
+	 * @throws IllegalArgumentException	  if some property of the specified key
+	 *                                       or value prevents it from being stored in this map
+	 */
+	 double putIfAbsent(int key, double value);
+
+	/**
 	 * <p>
 	 * Removes the mapping for a key from this map if it is present
 	 * (optional operation).   More formally, if this map contains a mapping

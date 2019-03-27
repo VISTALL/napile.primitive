@@ -13,17 +13,35 @@ public interface IntIntMap extends Container {
 
     boolean isEmpty();
 
-    boolean containsKey(int var1);
+    boolean containsKey(int key);
 
-    boolean containsValue(int var1);
+    boolean containsValue(int value);
 
-    int get(int var1);
+    int get(int key);
 
-    int put(int var1, int var2);
+    int put(int key, int value);
 
-    int remove(int var1);
+    /**
+     * If the specified key is not already associated with a value, associate it with the given value.
+     * This is equivalent to
+     * <pre>
+     *   if (!map.containsKey(key))
+     *       return map.put(key, value);
+     *   else
+     *       return map.get(key);</pre>
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with the specified key, or null if there was no mapping for the key.
+     *         (A null return can also indicate that the map previously associated null with the key, if the implementation supports null values.)
+     * @throws UnsupportedOperationException if the put operation is not supported by this map
+     * @throws NullPointerException		  if the specified key or value is null, and this map does not permit null keys or values
+     */
+    int putIfAbsent(int key, int value);
 
-    void putAll(IntIntMap var1);
+    int remove(int key);
+
+    void putAll(IntIntMap map);
 
     void clear();
 
@@ -33,7 +51,7 @@ public interface IntIntMap extends Container {
 
     Set<IntIntPair> entrySet();
 
-    boolean equals(Object var1);
+    boolean equals(Object map);
 
     int hashCode();
 }

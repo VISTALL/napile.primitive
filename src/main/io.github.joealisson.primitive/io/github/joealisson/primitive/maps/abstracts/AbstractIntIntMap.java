@@ -76,6 +76,13 @@ public abstract class AbstractIntIntMap implements IntIntMap {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public int putIfAbsent(int key, int value) {
+        return containsKey(key) ? get(key) : put(key, value);
+    }
+
     public int remove(int key) {
         Iterator<IntIntPair> i = this.entrySet().iterator();
         IntIntPair correctEntry = null;

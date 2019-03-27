@@ -213,9 +213,15 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public V put(long key, V value)
-	{
+	public V put(long key, V value) {
 		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public V putIfAbsent(long key, V value) {
+		return containsKey(key) ? get(key) : put(key, value);
 	}
 
 	/**

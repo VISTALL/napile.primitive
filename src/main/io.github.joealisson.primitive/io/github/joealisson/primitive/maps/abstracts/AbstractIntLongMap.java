@@ -188,6 +188,13 @@ public abstract class AbstractIntLongMap implements IntLongMap
 
 	/**
 	 * {@inheritDoc}
+	 */
+	public long putIfAbsent(int key, long value) {
+		return containsKey(key) ? get(key) : put(key, value);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * <p>This implementation iterates over entrySet() searching for an
 	 * entry with the specified key.  If such an entry is found, its value is
 	 * obtained with its getValue operation, the entry is removed

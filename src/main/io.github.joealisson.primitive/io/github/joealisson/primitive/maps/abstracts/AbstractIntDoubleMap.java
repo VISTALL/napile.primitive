@@ -90,12 +90,8 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public boolean containsValue(double value)
 	{
-		Iterator<IntDoublePair> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			IntDoublePair e = i.next();
-			if(value == e.getValue())
-			{
+		for (IntDoublePair e : entrySet()) {
+			if (value == e.getValue()) {
 				return true;
 			}
 		}
@@ -160,9 +156,17 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public double put(int key, long value)
+	public double put(int key, double value)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 */
+	public double putIfAbsent(int key, double value) {
+		return containsKey(key) ? get(key) : put(key, value);
 	}
 
 	/**

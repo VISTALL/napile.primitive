@@ -229,6 +229,26 @@ public interface LongObjectMap<V> extends Container
 	V put(long key, V value);
 
 	/**
+	 * If the specified key is not already associated with a value, associate it with the given value.
+	 * This is equivalent to
+	 * <pre>
+	 *   if (!map.containsKey(key))
+	 *       return map.put(key, value);
+	 *   else
+	 *       return map.get(key);</pre>
+	 *
+	 * @param key   key with which the specified value is to be associated
+	 * @param value value to be associated with the specified key
+	 * @return the previous value associated with the specified key, or null if there was no mapping for the key.
+	 *         (A null return can also indicate that the map previously associated null with the key, if the implementation supports null values.)
+	 * @throws UnsupportedOperationException if the put operation is not supported by this map
+	 * @throws NullPointerException		  if the specified key or value is null, and this map does not permit null keys or values
+	 * @throws ClassCastException	if the class of the specified key or value 	prevents it from being stored in this map
+	 * @throws IllegalArgumentException	  if some property of the specified key or value prevents it from being stored in this map
+	 */
+	V putIfAbsent(long key, V value);
+
+	/**
 	 * <p>
 	 * Removes the mapping for a key from this map if it is present
 	 * (optional operation).   More formally, if this map contains a mapping
