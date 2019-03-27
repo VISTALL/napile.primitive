@@ -26,7 +26,12 @@ package io.github.joealisson.primitive.collections;
 
 import io.github.joealisson.primitive.Container;
 import io.github.joealisson.primitive.Containers;
+import io.github.joealisson.primitive.iterators.IntIterator;
 import io.github.joealisson.primitive.iterators.LongIterator;
+
+import java.util.Objects;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 
 /**
  * <p>
@@ -378,6 +383,26 @@ public interface LongCollection extends Container
 	 * @see #contains(long)
 	 */
 	boolean retainAll(LongCollection c);
+
+	/**
+	 * Performs the given action for each element of the {@code Iterable}
+	 * until all elements have been processed or the action throws an
+	 * exception.  Actions are performed in the order of iteration, if that
+	 * order is specified.  Exceptions thrown by the action are relayed to the
+	 * caller.
+	 * <p>
+	 * The behavior of this method is unspecified if the action performs
+	 * side-effects that modify the underlying source of elements, unless an
+	 * overriding class has specified a concurrent modification policy.
+	 *
+	 *
+	 * @param action The action to be performed for each element
+	 * @throws NullPointerException if the specified action is null
+	 */
+	default void forEach(LongConsumer action) {
+		Objects.requireNonNull(action);
+		iterator().forEach(action);
+	}
 
 	/**
 	 * Removes all of the elements from this collection (optional operation).
