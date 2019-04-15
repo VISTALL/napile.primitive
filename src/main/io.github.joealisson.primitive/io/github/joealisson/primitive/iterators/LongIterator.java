@@ -99,7 +99,6 @@ public interface LongIterator
 	 * side-effects that modify the underlying source of elements, unless an
 	 * overriding class has specified a concurrent modification policy.
 	 *
-	 * @implSpec
 	 * <p>The default implementation behaves as if:
 	 * <pre>{@code
 	 *     for (T t : this)
