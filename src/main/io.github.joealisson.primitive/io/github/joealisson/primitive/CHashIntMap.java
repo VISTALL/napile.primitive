@@ -1278,39 +1278,6 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     }
 
     /**
-     * Returns a string representation of this map.  The string
-     * representation consists of a list of key-value mappings (in no
-     * particular order) enclosed in braces ("{@code {}}").  Adjacent
-     * mappings are separated by the characters {@code ", "} (comma
-     * and space).  Each key-value mapping is rendered as the key
-     * followed by an equals sign ("{@code =}") followed by the
-     * associated value.
-     *
-     * @return a string representation of this map
-     */
-    public String toString() {
-        Node<V>[] t;
-        int f = (t = table) == null ? 0 : t.length;
-        Traverser<V> it = new Traverser<V>(t, f, 0, f);
-        StringBuilder sb = new StringBuilder();
-        sb.append('{');
-        Node<V> p;
-        if ((p = it.advance()) != null) {
-            for (;;) {
-                int k = p.key;
-                V v = p.val;
-                sb.append(k);
-                sb.append('=');
-                sb.append(v == this ? "(this Map)" : v);
-                if ((p = it.advance()) == null)
-                    break;
-                sb.append(',').append(' ');
-            }
-        }
-        return sb.append('}').toString();
-    }
-
-    /**
      * Compares the specified object with this map for equality.
      * Returns {@code true} if the given object is a map with the same
      * mappings as this map.  This operation may return misleading

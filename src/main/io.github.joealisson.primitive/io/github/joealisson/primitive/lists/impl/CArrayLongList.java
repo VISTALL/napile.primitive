@@ -24,18 +24,18 @@
  */
 package io.github.joealisson.primitive.lists.impl;
 
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.NoSuchElementException;
-import java.util.RandomAccess;
-import java.util.concurrent.locks.ReentrantLock;
-
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.LongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.iterators.LongListIterator;
 import io.github.joealisson.primitive.lists.LongList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractLongList;
 import sun.misc.Unsafe;
+
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
+import java.util.RandomAccess;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * <p>
@@ -1069,12 +1069,12 @@ public class CArrayLongList implements LongList, RandomAccess, Cloneable, java.i
         }
 
         LongList list = (LongList) (o);
-        LongIterator it = list.iterator();
+        var it = list.iterator();
         long[] elements = getArray();
         int len = elements.length;
         for(int i = 0; i < len; ++i)
         {
-            if(!it.hasNext() || !eq(elements[i], it.next()))
+            if(!it.hasNext() || !eq(elements[i], it.nextLong()))
             {
                 return false;
             }
@@ -1182,7 +1182,7 @@ public class CArrayLongList implements LongList, RandomAccess, Cloneable, java.i
         }
 
         @Override
-        public long next()
+        public long nextLong()
         {
             if(!hasNext())
             {
@@ -1532,11 +1532,11 @@ public class CArrayLongList implements LongList, RandomAccess, Cloneable, java.i
         }
 
         @Override
-        public long next()
+        public long nextLong()
         {
             if(hasNext())
             {
-                return i.next();
+                return i.nextLong();
             }
             else
             {

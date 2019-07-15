@@ -25,6 +25,7 @@
 package io.github.joealisson.primitive.iterators;
 
 import java.util.Objects;
+import java.util.PrimitiveIterator;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
@@ -50,7 +51,7 @@ import java.util.function.LongConsumer;
  * @see Iterable
  * @since 1.0.0
  */
-public interface LongIterator
+public interface LongIterator extends PrimitiveIterator.OfLong
 {
 	/**
 	 * Returns {@code true} if the iteration has more elements.
@@ -68,7 +69,7 @@ public interface LongIterator
 	 * @throws java.util.NoSuchElementException
 	 *          if the iteration has no more elements
 	 */
-	long next();
+	long nextLong();
 
 	/**
 	 * Removes from the underlying collection the last element returned

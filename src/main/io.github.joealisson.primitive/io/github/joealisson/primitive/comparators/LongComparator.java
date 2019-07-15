@@ -24,6 +24,8 @@
  */
 package io.github.joealisson.primitive.comparators;
 
+import io.github.joealisson.primitive.LongSet;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -61,7 +63,7 @@ import java.util.List;
  * true (and the size of the tree set will increase) because {@code a} and
  * {@code b} are not equivalent from the tree set's perspective, even though
  * this is contrary to the specification of the
- * {@link io.github.joealisson.primitive.sets.LongSet#add Set.add} method.
+ * {@link LongSet#add Set.add} method.
  * </p>
  * <p>
  * Note: It is generally a good idea for comparators to also implement

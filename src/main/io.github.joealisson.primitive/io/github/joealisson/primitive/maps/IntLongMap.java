@@ -31,7 +31,7 @@ import java.util.function.IntToLongFunction;
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.Container;
 import io.github.joealisson.primitive.IntCollection;
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.LongCollection;
 import io.github.joealisson.primitive.IntSet;
 
 /**

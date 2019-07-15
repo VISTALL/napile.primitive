@@ -24,12 +24,12 @@
  */
 package io.github.joealisson.primitive.sets.impl;
 
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.LongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.impl.CArrayLongList;
 import io.github.joealisson.primitive.IntSet;
-import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
+import io.github.joealisson.primitive.AbstractLongSet;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;

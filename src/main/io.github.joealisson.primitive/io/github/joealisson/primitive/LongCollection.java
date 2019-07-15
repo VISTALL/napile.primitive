@@ -26,9 +26,9 @@
 package io.github.joealisson.primitive;
 
 import java.util.*;
-import java.util.function.IntFunction;
-import java.util.function.IntPredicate;
-import java.util.stream.IntStream;
+import java.util.function.LongFunction;
+import java.util.function.LongPredicate;
+import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -87,7 +87,7 @@ import java.util.stream.StreamSupport;
  *
  * <p>Many methods in Collections Framework interfaces are defined in
  * terms of the {@link Object#equals(Object) equals} method.  For example,
- * the specification for the {@link #contains(int) contains(Object o)}
+ * the specification for the {@link #contains(long) contains(Object o)}
  * method says: "returns {@code true} if and only if this collection
  * contains at least one element {@code e} such that
  * {@code (o==null ? e==null : o.equals(e))}."  This specification should
@@ -216,7 +216,7 @@ import java.util.stream.StreamSupport;
  * @since 1.2
  */
 
-public interface IntCollection extends IntIterable {
+public interface LongCollection extends LongIterable {
 	// Query Operations
 
 	/**
@@ -251,17 +251,8 @@ public interface IntCollection extends IntIterable {
 	 *         collection does not permit null elements
 	 *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
 	 */
-	boolean contains(int o);
+	boolean contains(long o);
 
-	/**
-	 * Returns an iterator over the elements in this collection.  There are no
-	 * guarantees concerning the order in which the elements are returned
-	 * (unless this collection is an instance of some class that provides a
-	 * guarantee).
-	 *
-	 * @return an {@code Iterator} over the elements in this collection
-	 */
-	PrimitiveIterator.OfInt iterator();
 
 	/**
 	 * Returns an array containing all of the elements in this collection.
@@ -277,14 +268,14 @@ public interface IntCollection extends IntIterable {
 	 *
 	 * This method acts as a bridge between array-based and collection-based APIs.
 	 * It returns an array whose runtime type is {@code Object[]}.
-	 * Use {@link #toArray(int[]) toArray(T[])} to reuse an existing
-	 * array, or use {@link #toArray(IntFunction)} to control the runtime type
+	 * Use {@link #toArray(long[]) toArray(T[])} to reuse an existing
+	 * array, or use {@link #toArray(LongFunction)} to control the runtime type
 	 * of the array.
 	 *
 	 * @return an array, whose {@linkplain Class#getComponentType runtime component
 	 * type} is {@code Object}, containing all of the elements in this collection
 	 */
-	int[] toArray();
+	long[] toArray();
 
 	/**
 	 * Returns an array containing all of the elements in this collection;
@@ -307,7 +298,7 @@ public interface IntCollection extends IntIterable {
 	 * This method acts as a bridge between array-based and collection-based APIs.
 	 * It allows an existing array to be reused under certain circumstances.
 	 * Use {@link #toArray()} to create an array whose runtime type is {@code Object[]},
-	 * or use {@link #toArray(IntFunction)} to control the runtime type of
+	 * or use {@link #toArray(LongFunction)} to control the runtime type of
 	 * the array.
 	 *
 	 * <p>Suppose {@code x} is a collection known to contain only strings.
@@ -335,7 +326,7 @@ public interface IntCollection extends IntIterable {
 	 *         runtime component type} of the specified array
 	 * @throws NullPointerException if the specified array is null
 	 */
-	int[] toArray(int[] a);
+	long[] toArray(long[] a);
 
 	/**
 	 * Returns an array containing all of the elements in this collection,
@@ -349,7 +340,7 @@ public interface IntCollection extends IntIterable {
 	 * This method acts as a bridge between array-based and collection-based APIs.
 	 * It allows creation of an array of a particular runtime type. Use
 	 * {@link #toArray()} to create an array whose runtime type is {@code Object[]},
-	 * or use {@link #toArray(int[]) toArray(T[])} to reuse an existing array.
+	 * or use {@link #toArray(long[]) toArray(T[])} to reuse an existing array.
 	 *
 	 * <p>Suppose {@code x} is a collection known to contain only strings.
 	 * The following code can be used to dump the collection into a newly
@@ -360,7 +351,7 @@ public interface IntCollection extends IntIterable {
 	 *
 	 *
 	 * The default implementation calls the generator function with zero
-	 * and then passes the resulting array to {@link #toArray(int[]) toArray(T[])}.
+	 * and then passes the resulting array to {@link #toArray(long[]) toArray(T[])}.
 	 *
 	 * @param generator a function which produces a new array of the desired
 	 *                  type and the provided length
@@ -371,7 +362,7 @@ public interface IntCollection extends IntIterable {
 	 * @throws NullPointerException if the generator function is null
 	 * @since 11
 	 */
-	default int[] toArray(IntFunction<int[]> generator) {
+	default long[] toArray(LongFunction<long[]> generator) {
 		return toArray(generator.apply(0));
 	}
 
@@ -410,7 +401,7 @@ public interface IntCollection extends IntIterable {
 	 * @throws IllegalStateException if the element cannot be added at this
 	 *         time due to insertion restrictions
 	 */
-	boolean add(int e);
+	boolean add(long e);
 
 	/**
 	 * Removes a single instance of the specified element from this
@@ -432,7 +423,7 @@ public interface IntCollection extends IntIterable {
 	 * @throws UnsupportedOperationException if the {@code remove} operation
 	 *         is not supported by this collection
 	 */
-	boolean remove(int o);
+	boolean remove(long o);
 
 
 	// Bulk Operations
@@ -453,9 +444,9 @@ public interface IntCollection extends IntIterable {
 	 *         elements
 	 *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>),
 	 *         or if the specified collection is null.
-	 * @see    #contains(int)
+	 * @see    #contains(long)
 	 */
-	boolean containsAll(IntCollection c);
+	boolean containsAll(LongCollection c);
 
 	/**
 	 * Adds all of the elements in the specified collection to this collection
@@ -479,9 +470,9 @@ public interface IntCollection extends IntIterable {
 	 *         collection
 	 * @throws IllegalStateException if not all the elements can be added at
 	 *         this time due to insertion restrictions
-	 * @see #add(int)
+	 * @see #add(long)
 	 */
-	boolean addAll(IntCollection c);
+	boolean addAll(LongCollection c);
 
 	/**
 	 * Removes all of this collection's elements that are also contained in the
@@ -503,10 +494,10 @@ public interface IntCollection extends IntIterable {
 	 *         null elements
 	 *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>),
 	 *         or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean removeAll(IntCollection c);
+	boolean removeAll(LongCollection c);
 
 	/**
 	 * Removes all of the elements of this collection that satisfy the given
@@ -530,12 +521,12 @@ public interface IntCollection extends IntIterable {
 	 *         supported.
 	 * @since 1.8
 	 */
-	default boolean removeIf(IntPredicate filter) {
+	default boolean removeIf(LongPredicate filter) {
 		Objects.requireNonNull(filter);
 		boolean removed = false;
 		final var each = iterator();
 		while (each.hasNext()) {
-			if (filter.test(each.nextInt())) {
+			if (filter.test(each.nextLong())) {
 				each.remove();
 				removed = true;
 			}
@@ -562,10 +553,10 @@ public interface IntCollection extends IntIterable {
 	 *         elements
 	 *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>),
 	 *         or if the specified collection is null
-	 * @see #remove(int)
-	 * @see #contains(int)
+	 * @see #remove(long)
+	 * @see #contains(long)
 	 */
-	boolean retainAll(IntCollection c);
+	boolean retainAll(LongCollection c);
 
 	/**
 	 * Removes all of the elements from this collection (optional operation).
@@ -679,10 +670,10 @@ public interface IntCollection extends IntIterable {
 	 * covers no elements.
 	 *
 	 * @return a {@code Spliterator} over the elements in this collection
-	 * @since 1.8
+	 * @since 2.0
 	 */
 	@Override
-	default Spliterator.OfInt spliterator() {
+	default Spliterator.OfLong spliterator() {
 		return Spliterators.spliterator(iterator(), size(), 0);
 	}
 
@@ -701,8 +692,8 @@ public interface IntCollection extends IntIterable {
 	 * @return a sequential {@code Stream} over the elements in this collection
 	 * @since 1.8
 	 */
-	default IntStream stream() {
-		return StreamSupport.intStream(spliterator(), false);
+	default LongStream stream() {
+		return StreamSupport.longStream(spliterator(), false);
 	}
 
 	/**
@@ -722,7 +713,7 @@ public interface IntCollection extends IntIterable {
 	 * collection
 	 * @since 1.8
 	 */
-	default IntStream parallelStream() {
-		return StreamSupport.intStream(spliterator(), true);
+	default LongStream parallelStream() {
+		return StreamSupport.longStream(spliterator(), true);
 	}
 }

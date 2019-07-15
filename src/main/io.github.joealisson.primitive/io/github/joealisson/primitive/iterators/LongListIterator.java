@@ -24,7 +24,7 @@
  */
 package io.github.joealisson.primitive.iterators;
 
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.LongCollection;
 
 /**
  * <p>
@@ -85,7 +85,7 @@ public interface LongListIterator extends LongIterator
 	 * @return the next element in the list.
 	 * @throws java.util.NoSuchElementException if the iteration has no next element.
 	 */
-	long next();
+	long nextLong();
 
 	/**
 	 * Returns true if this list iterator has more elements when

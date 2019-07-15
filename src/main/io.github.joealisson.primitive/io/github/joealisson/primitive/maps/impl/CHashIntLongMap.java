@@ -26,8 +26,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.pair.impl.IntLongImpl;
 import io.github.joealisson.primitive.Constants;
-import io.github.joealisson.primitive.collections.LongCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
+import io.github.joealisson.primitive.LongCollection;
+import io.github.joealisson.primitive.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.CIntLongMap;
 import io.github.joealisson.primitive.maps.IntLongMap;
@@ -1316,7 +1316,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 
 	final class ValueIterator extends HashIterator implements LongIterator
 	{
-		public long next()
+		public long nextLong()
 		{
 			return super.nextEntry().value;
 		}

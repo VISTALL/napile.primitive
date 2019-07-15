@@ -24,10 +24,11 @@
  */
 package io.github.joealisson.primitive.maps;
 
+import io.github.joealisson.primitive.LongCollection;
 import io.github.joealisson.primitive.pair.LongObject;
 import io.github.joealisson.primitive.Container;
 import io.github.joealisson.primitive.IntCollection;
-import io.github.joealisson.primitive.sets.LongSet;
+import io.github.joealisson.primitive.LongSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -115,8 +116,8 @@ import java.util.function.LongFunction;
  *
  * @param <V> the type of mapped values
  * @author Josh Bloch
- * @see io.github.joealisson.primitive.maps.impl.HashLongObjectMap
- * @see io.github.joealisson.primitive.collections.LongCollection
+ * @see io.github.joealisson.primitive.HashLongMap
+ * @see LongCollection
  * @see LongSet
  * @since 1.0.0
  *

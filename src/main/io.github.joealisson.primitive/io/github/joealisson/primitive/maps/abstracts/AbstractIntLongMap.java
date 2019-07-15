@@ -24,8 +24,8 @@ import java.util.Set;
 
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.Constants;
-import io.github.joealisson.primitive.collections.LongCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
+import io.github.joealisson.primitive.LongCollection;
+import io.github.joealisson.primitive.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.IntLongMap;
 import io.github.joealisson.primitive.IntSet;
@@ -362,9 +362,9 @@ public abstract class AbstractIntLongMap implements IntLongMap
 		{
 			values = new AbstractLongCollection()
 			{
-				public LongIterator iterator()
+				public PrimitiveIterator.OfLong iterator()
 				{
-					return new LongIterator()
+					return new PrimitiveIterator.OfLong()
 					{
 						private Iterator<IntLong> i = entrySet().iterator();
 
@@ -373,7 +373,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 							return i.hasNext();
 						}
 
-						public long next()
+						public long nextLong()
 						{
 							return i.next().getValue();
 						}

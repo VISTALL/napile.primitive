@@ -27,8 +27,8 @@ import io.github.joealisson.primitive.HashUtils;
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.pair.impl.IntLongImpl;
 import io.github.joealisson.primitive.Constants;
-import io.github.joealisson.primitive.collections.LongCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
+import io.github.joealisson.primitive.LongCollection;
+import io.github.joealisson.primitive.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.IntLongMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
@@ -966,7 +966,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 
 	private final class ValueIterator extends HashLongIterator
 	{
-		public long next()
+		public long nextLong()
 		{
 			return nextEntry().getValue();
 		}

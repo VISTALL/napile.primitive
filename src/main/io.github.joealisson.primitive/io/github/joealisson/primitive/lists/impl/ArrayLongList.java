@@ -29,7 +29,7 @@ import java.util.ConcurrentModificationException;
 import java.util.RandomAccess;
 
 import io.github.joealisson.primitive.IntCollection;
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.LongCollection;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.LongList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractLongList;

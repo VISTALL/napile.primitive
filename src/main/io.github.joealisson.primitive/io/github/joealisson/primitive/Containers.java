@@ -18,21 +18,17 @@
  */
 package io.github.joealisson.primitive;
 
-import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.function.IntBiFunction;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.LongList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractLongList;
-import io.github.joealisson.primitive.maps.*;
+import io.github.joealisson.primitive.maps.IntLongMap;
+import io.github.joealisson.primitive.maps.LongObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
-import io.github.joealisson.primitive.maps.abstracts.AbstractLongObjectMap;
 import io.github.joealisson.primitive.pair.IntLong;
-import io.github.joealisson.primitive.pair.LongObject;
-import io.github.joealisson.primitive.sets.LongSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
-import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
 
 import java.io.Serializable;
 import java.util.*;
@@ -64,7 +60,7 @@ public class Containers
 	public static final IntLongMap EMPTY_INT_LONG_MAP = new EmptyIntLongMap();
 
 	@SuppressWarnings("rawtypes")
-	private static final LongObjectMap EMPTY_LONG_OBJECT_MAP = new EmptyLongObjectMap();
+	private static final LongMap EMPTY_LONG_OBJECT_MAP = new EmptyLongMap();
 
 
 	/**
@@ -79,7 +75,7 @@ public class Containers
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> LongObjectMap<T> emptyLongObjectMap() {
+	public static <T> LongMap<T> emptyLongMap() {
 		return EMPTY_LONG_OBJECT_MAP;
 	}
 
@@ -170,7 +166,7 @@ public class Containers
 		}
 
 		@Override
-		public long next()
+		public long nextLong()
 		{
 			if(_hasNext)
 			{
@@ -297,7 +293,7 @@ public class Containers
 		}
 
 		@Override
-		public long next()
+		public long nextLong()
 		{
 			throw new NoSuchElementException();
 		}
@@ -501,7 +497,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyLongObjectMap<T> extends AbstractLongObjectMap<T> implements Serializable {
+	private static class EmptyLongMap<T> extends AbstractLongMap<T> implements Serializable {
 
 		private static final long serialVersionUID = -7578467527233523710L;
 
@@ -548,7 +544,7 @@ public class Containers
 		}
 
 		@Override
-		public Set<LongObject<T>> entrySet()
+		public Set<Entry<T>> entrySet()
 		{
 			return Collections.emptySet();
 		}

@@ -24,14 +24,10 @@
  */
 package io.github.joealisson.primitive.lists.abstracts;
 
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.RandomAccess;
+import java.util.*;
 
-import io.github.joealisson.primitive.collections.LongCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
+import io.github.joealisson.primitive.LongCollection;
+import io.github.joealisson.primitive.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.iterators.LongListIterator;
 import io.github.joealisson.primitive.lists.LongList;
@@ -199,7 +195,7 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 		LongListIterator e = listIterator();
 		while(e.hasNext())
 		{
-			if(o == e.next())
+			if(o == e.nextLong())
 			{
 				return e.previousIndex();
 			}
@@ -277,10 +273,10 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 	public boolean addAll(int index, LongCollection c)
 	{
 		boolean modified = false;
-		LongIterator e = c.iterator();
+		var e = c.iterator();
 		while(e.hasNext())
 		{
-			add(index++, e.next());
+			add(index++, e.nextLong());
 			modified = true;
 		}
 		return modified;
@@ -310,7 +306,7 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 	 * @see #modCount
 	 */
 	@Override
-	public LongIterator iterator()
+	public PrimitiveIterator.OfLong iterator()
 	{
 		return new Itr();
 	}
@@ -387,7 +383,7 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 		}
 
 		@Override
-		public long next()
+		public long nextLong()
 		{
 			checkForComodification();
 			try
@@ -597,8 +593,8 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 		LongListIterator e2 = ((LongList) o).listIterator();
 		while(e1.hasNext() && e2.hasNext())
 		{
-			long o1 = e1.next();
-			long o2 = e2.next();
+			long o1 = e1.nextLong();
+			long o2 = e2.nextLong();
 			if(o1 != o2)
 			{
 				return false;
@@ -620,10 +616,10 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 	public int hashCode()
 	{
 		long hashCode = 1;
-		LongIterator i = iterator();
+		var i = iterator();
 		while(i.hasNext())
 		{
-			long obj = i.next();
+			long obj = i.nextLong();
 			hashCode = 31 * hashCode + obj;
 		}
 		return (int)hashCode;
@@ -658,7 +654,7 @@ public abstract class AbstractLongList extends AbstractLongCollection implements
 		LongListIterator it = listIterator(fromIndex);
 		for(int i = 0, n = toIndex - fromIndex; i < n; i++)
 		{
-			it.next();
+			it.nextLong();
 			it.remove();
 		}
 	}
@@ -830,11 +826,11 @@ class SubLongList extends AbstractLongList
 			}
 
 			@Override
-			public long next()
+			public long nextLong()
 			{
 				if(hasNext())
 				{
-					return i.next();
+					return i.nextLong();
 				}
 				else
 				{

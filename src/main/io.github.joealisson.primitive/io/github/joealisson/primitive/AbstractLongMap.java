@@ -65,12 +65,12 @@ import java.util.*;
  * @since 2.0
  */
 
-public abstract class AbstractIntMap<V> implements IntMap<V> {
+public abstract class AbstractLongMap<V> implements LongMap<V> {
     /**
      * Sole constructor.  (For invocation by subclass constructors, typically
      * implicit.)
      */
-    protected AbstractIntMap() {
+    protected AbstractLongMap() {
     }
 
     // Query Operations
@@ -140,7 +140,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * @throws ClassCastException   {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
      */
-    public boolean containsKey(int key) {
+    public boolean containsKey(long key) {
         for (Entry<V> e : entrySet()) {
             if (key == e.getKey())
                 return true;
@@ -162,7 +162,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * @throws ClassCastException            {@inheritDoc}
      * @throws NullPointerException          {@inheritDoc}
      */
-    public V get(int key) {
+    public V get(long key) {
         for (Entry<V> e : entrySet()) {
             if (key == e.getKey())
                 return e.getValue();
@@ -185,7 +185,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
-    public V put(int key, V value) {
+    public V put(long key, V value) {
         throw new UnsupportedOperationException();
     }
 
@@ -211,7 +211,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * @throws ClassCastException            {@inheritDoc}
      * @throws NullPointerException          {@inheritDoc}
      */
-    public V remove(int key) {
+    public V remove(long key) {
         Iterator<Entry<V>> i = entrySet().iterator();
         Entry<V> correctEntry = null;
 
@@ -249,7 +249,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
-    public void putAll(IntMap<? extends V> m) {
+    public void putAll(LongMap<? extends V> m) {
         for (Entry<? extends V> e : m.entrySet())
             put(e.getKey(), e.getValue());
     }
@@ -297,7 +297,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * }
      *}</pre>
      */
-    transient IntSet keySet;
+    transient LongSet keySet;
     transient Collection<V> values;
 
     /**
@@ -316,19 +316,19 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * is performed, so there is a slight chance that multiple calls to this
      * method will not all return the same set.
      */
-    public IntSet keySet() {
-        IntSet ks = keySet;
+    public LongSet keySet() {
+        LongSet ks = keySet;
         if (ks == null) {
-            ks = new AbstractIntSet() {
-                public PrimitiveIterator.OfInt iterator() {
-                    return new PrimitiveIterator.OfInt() {
+            ks = new AbstractLongSet() {
+                public PrimitiveIterator.OfLong iterator() {
+                    return new PrimitiveIterator.OfLong() {
                         private Iterator<Entry<V>> i = entrySet().iterator();
 
                         public boolean hasNext() {
                             return i.hasNext();
                         }
 
-                        public int nextInt() {
+                        public long nextLong() {
                             return i.next().getKey();
                         }
 
@@ -339,19 +339,19 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
                 }
 
                 public int size() {
-                    return AbstractIntMap.this.size();
+                    return AbstractLongMap.this.size();
                 }
 
                 public boolean isEmpty() {
-                    return AbstractIntMap.this.isEmpty();
+                    return AbstractLongMap.this.isEmpty();
                 }
 
                 public void clear() {
-                    AbstractIntMap.this.clear();
+                    AbstractLongMap.this.clear();
                 }
 
                 public boolean contains(int k) {
-                    return AbstractIntMap.this.containsKey(k);
+                    return AbstractLongMap.this.containsKey(k);
                 }
             };
             keySet = ks;
@@ -398,19 +398,19 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
                 }
 
                 public int size() {
-                    return AbstractIntMap.this.size();
+                    return AbstractLongMap.this.size();
                 }
 
                 public boolean isEmpty() {
-                    return AbstractIntMap.this.isEmpty();
+                    return AbstractLongMap.this.isEmpty();
                 }
 
                 public void clear() {
-                    AbstractIntMap.this.clear();
+                    AbstractLongMap.this.clear();
                 }
 
                 public boolean contains(Object v) {
-                    return AbstractIntMap.this.containsValue(v);
+                    return AbstractLongMap.this.containsValue(v);
                 }
             };
             values = vals;
@@ -449,15 +449,15 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
         if (o == this)
             return true;
 
-        if (!(o instanceof IntMap))
+        if (!(o instanceof LongMap))
             return false;
-        IntMap<?> m = (IntMap<?>) o;
+        LongMap<?> m = (LongMap<?>) o;
         if (m.size() != size())
             return false;
 
         try {
             for (Entry<V> e : entrySet()) {
-                int key = e.getKey();
+                long key = e.getKey();
                 V value = e.getValue();
                 if (value == null) {
                     if (!(m.get(key) == null && m.containsKey(key)))
@@ -513,7 +513,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      */
     public String toString() {
         var type = getClass().getTypeParameters()[0].getName();
-        return String.format("{of = %s; size = %s}", type, size());
+        return String.format("%s{of = %s; size = %s}", getClass().getSimpleName(), type, size());
     }
 
     /**
@@ -523,7 +523,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * @return a shallow copy of this map
      */
     protected Object clone() throws CloneNotSupportedException {
-        AbstractIntMap<?> result = (AbstractIntMap<?>)super.clone();
+        AbstractLongMap<?> result = (AbstractLongMap<?>)super.clone();
         result.keySet = null;
         result.values = null;
         return result;
@@ -562,7 +562,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
     {
         private static final long serialVersionUID = -8499721149061103585L;
 
-        private final int key;
+        private final long key;
         private V value;
 
         /**
@@ -572,7 +572,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
          * @param key the key represented by this entry
          * @param value the value represented by this entry
          */
-        public SimpleEntry(int key, V value) {
+        public SimpleEntry(long key, V value) {
             this.key   = key;
             this.value = value;
         }
@@ -593,7 +593,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
          *
          * @return the key corresponding to this entry
          */
-        public int getKey() {
+        public long getKey() {
             return key;
         }
 
@@ -661,7 +661,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
          * @see    #equals
          */
         public int hashCode() {
-            return key ^ (value == null ? 0 : value.hashCode());
+            return (int) (key ^ (value == null ? 0 : value.hashCode()));
         }
 
         /**
@@ -684,14 +684,14 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
      * convenient in methods that return thread-safe snapshots of
      * key-value mappings.
      *
-     * @since 1.6
+     * @since 2.0
      */
     public static class SimpleImmutableEntry<V>
             implements Entry<V>, java.io.Serializable
     {
         private static final long serialVersionUID = 7138329143949025153L;
 
-        private final int key;
+        private final long key;
         private final V value;
 
         /**
@@ -701,7 +701,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
          * @param key the key represented by this entry
          * @param value the value represented by this entry
          */
-        public SimpleImmutableEntry(int key, V value) {
+        public SimpleImmutableEntry(long key, V value) {
             this.key   = key;
             this.value = value;
         }
@@ -722,7 +722,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
          *
          * @return the key corresponding to this entry
          */
-        public int getKey() {
+        public long getKey() {
             return key;
         }
 
@@ -791,7 +791,7 @@ public abstract class AbstractIntMap<V> implements IntMap<V> {
          * @see    #equals
          */
         public int hashCode() {
-            return key ^ (value == null ? 0 : value.hashCode());
+            return (int) (key ^ (value == null ? 0 : value.hashCode()));
         }
 
         /**

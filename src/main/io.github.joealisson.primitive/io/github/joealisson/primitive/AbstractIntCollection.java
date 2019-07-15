@@ -93,7 +93,7 @@ public abstract class AbstractIntCollection implements IntCollection {
     public boolean contains(int o) {
         var it = iterator();
         while (it.hasNext())
-            if (o == it.next())
+            if (o == it.nextInt())
                 return true;
         return false;
     }
@@ -128,7 +128,7 @@ public abstract class AbstractIntCollection implements IntCollection {
         for (int i = 0; i < r.length; i++) {
             if (! it.hasNext()) // fewer elements than expected
                 return Arrays.copyOf(r, i);
-            r[i] = it.next();
+            r[i] = it.nextInt();
         }
         return it.hasNext() ? finishToArray(r, it) : r;
     }
@@ -181,7 +181,7 @@ public abstract class AbstractIntCollection implements IntCollection {
                 }
                 return a;
             }
-            r[i] = it.next();
+            r[i] = it.nextInt();
         }
         // more elements than expected
         return it.hasNext() ? finishToArray(r, it) : r;
@@ -216,7 +216,7 @@ public abstract class AbstractIntCollection implements IntCollection {
                     newCap = hugeCapacity(cap + 1);
                 r = Arrays.copyOf(r, newCap);
             }
-            r[i++] = it.next();
+            r[i++] = it.nextInt();
         }
         // trim if overallocated
         return (i == r.length) ? r : Arrays.copyOf(r, i);
@@ -270,7 +270,7 @@ public abstract class AbstractIntCollection implements IntCollection {
     public boolean remove(int o) {
         var it = iterator();
         while (it.hasNext()) {
-            if (o == it.next()) {
+            if (o == it.nextInt()) {
                 it.remove();
                 return true;
             }
@@ -294,7 +294,7 @@ public abstract class AbstractIntCollection implements IntCollection {
     public boolean containsAll(IntCollection c) {
         var it = c.iterator();
         while (it.hasNext()) {
-            if(!contains(it.next())) {
+            if(!contains(it.nextInt())) {
                 return false;
             }
         }
@@ -324,7 +324,7 @@ public abstract class AbstractIntCollection implements IntCollection {
         boolean modified = false;
         var it = c.iterator();
         while (it.hasNext()) {
-            modified |= add(it.next());
+            modified |= add(it.nextInt());
         }
         return modified;
     }
@@ -356,7 +356,7 @@ public abstract class AbstractIntCollection implements IntCollection {
         boolean modified = false;
         var it = iterator();
         while (it.hasNext()) {
-            if (c.contains(it.next())) {
+            if (c.contains(it.nextInt())) {
                 it.remove();
                 modified = true;
             }
@@ -391,7 +391,7 @@ public abstract class AbstractIntCollection implements IntCollection {
         boolean modified = false;
         var it = iterator();
         while (it.hasNext()) {
-            if (!c.contains(it.next())) {
+            if (!c.contains(it.nextInt())) {
                 it.remove();
                 modified = true;
             }
@@ -418,7 +418,7 @@ public abstract class AbstractIntCollection implements IntCollection {
     public void clear() {
         var it = iterator();
         while (it.hasNext()) {
-            it.next();
+            it.nextInt();
             it.remove();
         }
     }
@@ -444,7 +444,7 @@ public abstract class AbstractIntCollection implements IntCollection {
         StringBuilder sb = new StringBuilder();
         sb.append('[');
         for (;;) {
-            int e = it.next();
+            int e = it.nextInt();
             sb.append(e);
             if (! it.hasNext())
                 return sb.append(']').toString();

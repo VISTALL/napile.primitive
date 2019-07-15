@@ -1,12 +1,9 @@
 package io.github.joealisson.primitive.collections.abstracts;
 
 import io.github.joealisson.primitive.collections.DoubleCollection;
-import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.iterators.DoubleIterator;
-import io.github.joealisson.primitive.iterators.LongIterator;
 
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * <p>

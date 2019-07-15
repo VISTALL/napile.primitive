@@ -24,23 +24,25 @@
  */
 package io.github.joealisson.primitive;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
+import java.util.Objects;
+import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.LongConsumer;
 
 /**
  * Implementing this interface allows an object to be the target of the enhanced
  * {@code for} statement (sometimes called the "for-each loop" statement).
  *
- * @since 1.5
+ * @since 2.0
  */
-public interface IntIterable {
+public interface LongIterable {
     /**
      * Returns an iterator over elements of type {@code T}.
      *
      * @return an Iterator.
      */
-    PrimitiveIterator.OfInt iterator();
+    PrimitiveIterator.OfLong iterator();
 
     /**
      * Performs the given action for each element of the {@code Iterable}
@@ -64,11 +66,11 @@ public interface IntIterable {
      * @throws NullPointerException if the specified action is null
      * @since 1.8
      */
-    default void forEach(IntConsumer action) {
+    default void forEach(LongConsumer action) {
         Objects.requireNonNull(action);
         var it = iterator();
         while (it.hasNext()) {
-            action.accept(it.nextInt());
+            action.accept(it.nextLong());
         }
     }
 
@@ -93,7 +95,7 @@ public interface IntIterable {
      * {@code Iterable}.
      * @since 1.8
      */
-    default Spliterator.OfInt spliterator() {
+    default Spliterator.OfLong spliterator() {
         return Spliterators.spliteratorUnknownSize(iterator(), 0);
     }
 }

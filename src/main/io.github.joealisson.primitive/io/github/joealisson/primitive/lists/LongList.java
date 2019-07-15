@@ -24,12 +24,13 @@
  */
 package io.github.joealisson.primitive.lists;
 
-import java.util.Collection;
-
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.LongCollection;
+import io.github.joealisson.primitive.LongSet;
 import io.github.joealisson.primitive.iterators.IntListIterator;
-import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.iterators.LongListIterator;
+
+import java.util.Collection;
+import java.util.PrimitiveIterator;
 
 /**
  * <p>
@@ -106,7 +107,7 @@ import io.github.joealisson.primitive.iterators.LongListIterator;
  * @author Josh Bloch
  * @author Neal Gafter
  * @see LongCollection
- * @see io.github.joealisson.primitive.sets.LongSet
+ * @see LongSet
  * @see io.github.joealisson.primitive.lists.impl.ArrayLongList
  * @see io.github.joealisson.primitive.lists.abstracts.AbstractLongList
  * @since 1.0.0
@@ -152,7 +153,7 @@ public interface LongList extends LongCollection
 	 *
 	 * @return an iterator over the elements in this list in proper sequence
 	 */
-	LongIterator iterator();
+	PrimitiveIterator.OfLong iterator();
 
 	/**
 	 * <p>

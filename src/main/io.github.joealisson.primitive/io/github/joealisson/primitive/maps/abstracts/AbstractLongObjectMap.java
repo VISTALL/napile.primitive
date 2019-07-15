@@ -24,18 +24,14 @@
  */
 package io.github.joealisson.primitive.maps.abstracts;
 
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import io.github.joealisson.primitive.pair.LongObject;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.LongObjectMap;
-import io.github.joealisson.primitive.sets.LongSet;
+import io.github.joealisson.primitive.LongSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
-import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
+import io.github.joealisson.primitive.AbstractLongSet;
 
 /**
  * <p>
@@ -344,9 +340,9 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 			keySet = new AbstractLongSet()
 			{
 				@Override
-				public LongIterator iterator()
+				public PrimitiveIterator.OfLong iterator()
 				{
-					return new LongIterator()
+					return new PrimitiveIterator.OfLong()
 					{
 						private Iterator<LongObject<V>> i = entrySet().iterator();
 
@@ -357,7 +353,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 						}
 
 						@Override
-						public long next()
+						public long nextLong()
 						{
 							return i.next().getKey();
 						}

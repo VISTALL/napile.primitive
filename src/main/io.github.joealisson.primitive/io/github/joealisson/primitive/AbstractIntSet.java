@@ -122,7 +122,7 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
         int h = 0;
         var i = iterator();
         while (i.hasNext()) {
-            h+= i.next();
+            h+= i.nextInt();
         }
         return h;
     }
@@ -171,11 +171,11 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
         if (size() > c.size()) {
             var it = c.iterator();
             while (it.hasNext()) {
-                modified |= remove(it.next());
+                modified |= remove(it.nextInt());
             }
         } else {
             for (var i = iterator(); i.hasNext(); ) {
-                if (c.contains(i.next())) {
+                if (c.contains(i.nextInt())) {
                     i.remove();
                     modified = true;
                 }
