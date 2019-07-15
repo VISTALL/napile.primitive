@@ -24,16 +24,15 @@
  */
 package io.github.joealisson.primitive.sets.impl;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import io.github.joealisson.primitive.collections.LongCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.impl.CArrayLongList;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
+
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <p>
@@ -382,7 +381,7 @@ public class CArrayLongSet extends AbstractLongSet implements java.io.Serializab
 			return false;
 		}
 		IntSet set = (IntSet) (o);
-		IntIterator it = set.iterator();
+		var it = set.iterator();
 
 		// Uses O(n^2) algorithm that is only appropriate
 		// for small sets, which CopyOnWriteArraySets should be.
@@ -400,7 +399,7 @@ public class CArrayLongSet extends AbstractLongSet implements java.io.Serializab
 			{
 				return false;
 			}
-			int x = it.next();
+			int x = it.nextInt();
 			for(int i = 0; i < len; ++i)
 			{
 				if(!matched[i] && x == elements[i])

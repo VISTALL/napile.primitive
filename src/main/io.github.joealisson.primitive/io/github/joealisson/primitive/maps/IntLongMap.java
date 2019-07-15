@@ -28,11 +28,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntToLongFunction;
 
-import io.github.joealisson.primitive.pair.IntLongPair;
+import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.Container;
-import io.github.joealisson.primitive.collections.IntCollection;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.collections.LongCollection;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.IntSet;
 
 /**
  * <p>
@@ -113,9 +113,6 @@ import io.github.joealisson.primitive.sets.IntSet;
  * implementor deems it appropriate.
  *
  * @author Josh Bloch
- * @see io.github.joealisson.primitive.maps.impl.HashIntObjectMap
- * @see io.github.joealisson.primitive.maps.impl.TreeIntObjectMap
- * @see SortedIntObjectMap
  * @see IntCollection
  * @see IntSet
  * @since 1.0.0
@@ -279,7 +276,7 @@ public interface IntLongMap extends Container
 	 *
 	 * <pre> {@code
 	 * if (map.get(key) == null) {
-	 *     V newValue = mappingFunction.apply(key);
+	 *     V newValue = mappingFunction.applyAsInt(key);
 	 *     if (newValue != null)
 	 *         map.put(key, newValue);
 	 * }
@@ -450,7 +447,7 @@ public interface IntLongMap extends Container
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	Set<IntLongPair> entrySet();
+	Set<IntLong> entrySet();
 
 	// Comparison and hashing
 

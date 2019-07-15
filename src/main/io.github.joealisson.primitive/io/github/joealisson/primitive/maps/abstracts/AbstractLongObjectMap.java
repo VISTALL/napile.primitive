@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import io.github.joealisson.primitive.pair.LongObjectPair;
+import io.github.joealisson.primitive.pair.LongObject;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.LongObjectMap;
 import io.github.joealisson.primitive.sets.LongSet;
@@ -118,12 +118,12 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public boolean containsValue(Object value)
 	{
-		Iterator<LongObjectPair<V>> i = entrySet().iterator();
+		Iterator<LongObject<V>> i = entrySet().iterator();
 		if(value == null)
 		{
 			while(i.hasNext())
 			{
-				LongObjectPair<V> e = i.next();
+				LongObject<V> e = i.next();
 				if(e.getValue() == null)
 				{
 					return true;
@@ -134,7 +134,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		{
 			while(i.hasNext())
 			{
-				LongObjectPair<V> e = i.next();
+				LongObject<V> e = i.next();
 				if(value.equals(e.getValue()))
 				{
 					return true;
@@ -159,10 +159,10 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public boolean containsKey(long key)
 	{
-		Iterator<LongObjectPair<V>> i = entrySet().iterator();
+		Iterator<LongObject<V>> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			LongObjectPair<V> e = i.next();
+			LongObject<V> e = i.next();
 			if(key == e.getKey())
 			{
 				return true;
@@ -186,10 +186,10 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public V get(long key)
 	{
-		Iterator<LongObjectPair<V>> i = entrySet().iterator();
+		Iterator<LongObject<V>> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			LongObjectPair<V> e = i.next();
+			LongObject<V> e = i.next();
 			if(key == e.getKey())
 			{
 				return e.getValue();
@@ -247,12 +247,12 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public V remove(long key)
 	{
-		Iterator<LongObjectPair<V>> i = entrySet().iterator();
-		LongObjectPair<V> correctEntry = null;
+		Iterator<LongObject<V>> i = entrySet().iterator();
+		LongObject<V> correctEntry = null;
 
 		while(correctEntry == null && i.hasNext())
 		{
-			LongObjectPair<V> e = i.next();
+			LongObject<V> e = i.next();
 			if(key == e.getKey())
 			{
 				correctEntry = e;
@@ -290,7 +290,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public void putAll(LongObjectMap<? extends V> m)
 	{
-		for(LongObjectPair<? extends V> e : m.entrySet())
+		for(LongObject<? extends V> e : m.entrySet())
 		{
 			put(e.getKey(), e.getValue());
 		}
@@ -348,7 +348,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 				{
 					return new LongIterator()
 					{
-						private Iterator<LongObjectPair<V>> i = entrySet().iterator();
+						private Iterator<LongObject<V>> i = entrySet().iterator();
 
 						@Override
 						public boolean hasNext()
@@ -412,7 +412,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 				{
 					return new Iterator<V>()
 					{
-						private Iterator<LongObjectPair<V>> i = entrySet().iterator();
+						private Iterator<LongObject<V>> i = entrySet().iterator();
 
 						@Override
 						public boolean hasNext()
@@ -450,7 +450,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		return values;
 	}
 
-	public abstract Set<LongObjectPair<V>> entrySet();
+	public abstract Set<LongObject<V>> entrySet();
 
 
 	// Comparison and hashing
@@ -497,10 +497,10 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 
 		try
 		{
-			Iterator<LongObjectPair<V>> i = entrySet().iterator();
+			Iterator<LongObject<V>> i = entrySet().iterator();
 			while(i.hasNext())
 			{
-				LongObjectPair<V> e = i.next();
+				LongObject<V> e = i.next();
 				long key = e.getKey();
 				V value = e.getValue();
 				if(value == null)
@@ -548,7 +548,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	public int hashCode()
 	{
 		int h = 0;
-		Iterator<LongObjectPair<V>> i = entrySet().iterator();
+		Iterator<LongObject<V>> i = entrySet().iterator();
 		while(i.hasNext())
 		{
 			h += i.next().hashCode();
@@ -570,7 +570,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public String toString()
 	{
-		Iterator<LongObjectPair<V>> i = entrySet().iterator();
+		Iterator<LongObject<V>> i = entrySet().iterator();
 		if(!i.hasNext())
 		{
 			return "{}";
@@ -580,7 +580,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		sb.append('{');
 		for(; ;)
 		{
-			LongObjectPair<V> e = i.next();
+			LongObject<V> e = i.next();
 			long key = e.getKey();
 			V value = e.getValue();
 			sb.append(key);

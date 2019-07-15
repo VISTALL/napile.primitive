@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.RandomAccess;
 
-import io.github.joealisson.primitive.collections.IntCollection;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
 
@@ -545,7 +545,6 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return true if this list changed as a result of the call
 	 * @throws NullPointerException if the specified array is null
 	 */
-	@Override
 	public boolean addAll(int[] items) {
 		int numNew = items.length;
 		ensureCapacity(size + numNew);  // Increments modCount

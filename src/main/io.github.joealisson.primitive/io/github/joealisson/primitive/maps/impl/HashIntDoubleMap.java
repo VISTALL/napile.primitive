@@ -1,25 +1,18 @@
 package io.github.joealisson.primitive.maps.impl;
 
 import io.github.joealisson.primitive.HashUtils;
-import io.github.joealisson.primitive.Variables;
+import io.github.joealisson.primitive.Constants;
 import io.github.joealisson.primitive.collections.DoubleCollection;
-import io.github.joealisson.primitive.collections.IntCollection;
-import io.github.joealisson.primitive.collections.LongCollection;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.DoubleIterator;
-import io.github.joealisson.primitive.iterators.IntIterator;
-import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.IntDoubleMap;
 import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.maps.IntObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntDoubleMap;
-import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
-import io.github.joealisson.primitive.pair.IntDoublePair;
-import io.github.joealisson.primitive.pair.IntLongPair;
-import io.github.joealisson.primitive.pair.impl.IntDoublePairImpl;
-import io.github.joealisson.primitive.pair.impl.IntLongPairImpl;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.pair.IntDouble;
+import io.github.joealisson.primitive.pair.IntLong;
+import io.github.joealisson.primitive.pair.impl.IntDoubleImpl;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 import java.io.IOException;
@@ -108,8 +101,6 @@ import java.util.*;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @see     IntObjectMap
- * @see     TreeIntObjectMap
  * @see Object#hashCode()
  * @see IntCollection
  * @since 1.0.0
@@ -325,7 +316,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 			if(e.hash == hash && e.getKey() == key)
 				return e.getValue();
 
-		return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		return Constants.DEFAULT_LONG_VALUE;
 	}
 
 	/**
@@ -386,7 +377,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 		modCount++;
 		addEntry(hash, key, value, i);
-		return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		return Constants.DEFAULT_LONG_VALUE;
 	}
 
 	/**
@@ -419,9 +410,9 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	private void putAllForCreate(IntDoubleMap m)
 	{
-		for(Iterator<IntDoublePair> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<IntDouble> i = m.entrySet().iterator(); i.hasNext();)
 		{
-			IntDoublePair e = i.next();
+			IntDouble e = i.next();
 			putForCreate(e.getKey(), e.getValue());
 		}
 	}
@@ -525,9 +516,9 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 			}
 		}
 
-		for(Iterator<IntLongPair> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<IntLong> i = m.entrySet().iterator(); i.hasNext();)
 		{
-			IntLongPair e = i.next();
+			IntLong e = i.next();
 			put(e.getKey(), e.getValue());
 		}
 	}
@@ -545,7 +536,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 	public double remove(int key)
 	{
 		Entry e = removeEntryForKey(key);
-		return (e == null ? Variables.RETURN_LONG_VALUE_IF_NOT_FOUND : e.getValue());
+		return (e == null ? Constants.DEFAULT_LONG_VALUE : e.getValue());
 	}
 
 	/**
@@ -590,12 +581,12 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 	 */
 	final Entry removeMapping(Object o)
 	{
-		if(!(o instanceof IntLongPair))
+		if(!(o instanceof IntLong))
 		{
 			return null;
 		}
 
-		IntLongPair entry = (IntLongPair) o;
+		IntLong entry = (IntLong) o;
 		Object key = entry.getKey();
 		int hash = (key == null) ? 0 : hash(key.hashCode());
 		int i = indexFor(hash, table.length);
@@ -693,7 +684,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 		return result;
 	}
 
-	static class Entry extends IntDoublePairImpl
+	static class Entry extends IntDoubleImpl
 	{
 		Entry next;
 		final int hash;
@@ -819,7 +810,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 		}
 	}
 
-	private abstract class HashIntIterator implements IntIterator
+	private abstract class HashIntIterator implements PrimitiveIterator.OfInt
 	{
 		Entry next;	// next entry to return
 		int expectedModCount;	// For fast-fail
@@ -961,22 +952,22 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	private final class KeyIterator extends HashIntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			return nextEntry().getKey();
 		}
 	}
 
-	private final class EntryIterator extends HashIterator<IntDoublePair>
+	private final class EntryIterator extends HashIterator<IntDouble>
 	{
-		public IntDoublePair next()
+		public IntDouble next()
 		{
 			return nextEntry();
 		}
 	}
 
 	// Subclass overrides these to alter behavior of views' iterator() method
-	IntIterator newKeyIterator()
+	PrimitiveIterator.OfInt newKeyIterator()
 	{
 		return new KeyIterator();
 	}
@@ -986,7 +977,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 		return new ValueIterator();
 	}
 
-	Iterator<IntDoublePair> newEntryIterator()
+	Iterator<IntDouble> newEntryIterator()
 	{
 		return new EntryIterator();
 	}
@@ -994,7 +985,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	// Views
 
-	private transient Set<IntDoublePair> entrySet = null;
+	private transient Set<IntDouble> entrySet = null;
 
 	/**
 	 * Returns a {@link Set} view of the keys contained in this map.
@@ -1017,7 +1008,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	private final class KeySet extends AbstractIntSet
 	{
-		public IntIterator iterator()
+		public PrimitiveIterator.OfInt iterator()
 		{
 			return newKeyIterator();
 		}
@@ -1101,31 +1092,31 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	public Set<IntDoublePair> entrySet()
+	public Set<IntDouble> entrySet()
 	{
 		return entrySet0();
 	}
 
-	private Set<IntDoublePair> entrySet0()
+	private Set<IntDouble> entrySet0()
 	{
-		Set<IntDoublePair> es = entrySet;
+		Set<IntDouble> es = entrySet;
 		return es != null ? es : (entrySet = new EntrySet());
 	}
 
-	private final class EntrySet extends AbstractSet<IntDoublePair>
+	private final class EntrySet extends AbstractSet<IntDouble>
 	{
-		public Iterator<IntDoublePair> iterator()
+		public Iterator<IntDouble> iterator()
 		{
 			return newEntryIterator();
 		}
 
 		public boolean contains(Object o)
 		{
-			if(!(o instanceof IntLongPair))
+			if(!(o instanceof IntLong))
 			{
 				return false;
 			}
-			IntLongPair e = (IntLongPair) o;
+			IntLong e = (IntLong) o;
 			Entry candidate = getEntry(e.getKey());
 			return candidate != null && candidate.equals(e);
 		}
@@ -1162,7 +1153,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 	 */
 	private void writeObject(java.io.ObjectOutputStream s) throws IOException
 	{
-		Iterator<IntDoublePair> i = (size > 0) ? entrySet0().iterator() : null;
+		Iterator<IntDouble> i = (size > 0) ? entrySet0().iterator() : null;
 
 		// Write out the threshold, loadfactor, and any hidden stuff
 		s.defaultWriteObject();
@@ -1178,7 +1169,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 		{
 			while(i.hasNext())
 			{
-				IntDoublePair e = i.next();
+				IntDouble e = i.next();
 				s.writeInt(e.getKey());
 				s.writeObject(e.getValue());
 			}

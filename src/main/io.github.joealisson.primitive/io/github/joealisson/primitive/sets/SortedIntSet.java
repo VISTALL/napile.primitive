@@ -24,7 +24,8 @@
  */
 package io.github.joealisson.primitive.sets;
 
-import io.github.joealisson.primitive.collections.IntCollection;
+import io.github.joealisson.primitive.IntCollection;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.comparators.IntComparator;
 
 /**
@@ -34,8 +35,7 @@ import io.github.joealisson.primitive.comparators.IntComparator;
  * ordering}, or by a {@link IntComparator} typically provided at sorted
  * set creation time.  The set's iterator will traverse the set in
  * ascending element order. Several additional operations are provided
- * to take advantage of the ordering.  (This interface is the set
- * analogue of {@link io.github.joealisson.primitive.maps.SortedIntObjectMap}.)
+ * to take advantage of the ordering.
  * </p>
  * <p>All elements inserted into a sorted set must implement the Comparable
  * interface (or be accepted by the specified comparator).  Furthermore, all
@@ -99,8 +99,6 @@ import io.github.joealisson.primitive.comparators.IntComparator;
  * @author Josh Bloch
  * @version %I%, %G%
  * @see IntSet
- * @see io.github.joealisson.primitive.sets.impl.TreeIntSet
- * @see io.github.joealisson.primitive.maps.SortedIntObjectMap
  * @see IntCollection
  * @see Comparable
  * @see IntComparator

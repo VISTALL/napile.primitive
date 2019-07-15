@@ -24,14 +24,10 @@
  */
 package io.github.joealisson.primitive.lists.impl;
 
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.NoSuchElementException;
-import java.util.RandomAccess;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import io.github.joealisson.primitive.collections.IntCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.iterators.IntListIterator;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
@@ -896,7 +892,6 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @throws NullPointerException if the specified array is null
      * @see #add(int)
      */
-    @Override
     public boolean addAll(int[] items) {
         if(items.length == 0)
         {
@@ -1073,12 +1068,12 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
         }
 
         IntList list = (IntList) (o);
-        IntIterator it = list.iterator();
+        var it = list.iterator();
         int[] elements = getArray();
         int len = elements.length;
         for(int i = 0; i < len; ++i)
         {
-            if(!it.hasNext() || !eq(elements[i], it.next()))
+            if(!it.hasNext() || !eq(elements[i], it.nextInt()))
             {
                 return false;
             }
@@ -1122,7 +1117,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return an iterator over the elements in this list in proper sequence
      */
-    public IntIterator iterator()
+    public PrimitiveIterator.OfInt iterator()
     {
         return new COWIterator(getArray(), 0);
     }
@@ -1187,7 +1182,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             return cursor > 0;
         }
 
-        public int next()
+        public int nextInt()
         {
             if(!hasNext())
             {
@@ -1445,7 +1440,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             }
         }
 
-        public IntIterator iterator()
+        public PrimitiveIterator.OfInt iterator()
         {
             final ReentrantLock lock = l.lock;
             lock.lock();
@@ -1521,7 +1516,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             return nextIndex() < size;
         }
 
-        public int next()
+        public int nextInt()
         {
             if(hasNext())
             {

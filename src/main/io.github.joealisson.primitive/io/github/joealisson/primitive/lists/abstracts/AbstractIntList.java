@@ -24,15 +24,10 @@
  */
 package io.github.joealisson.primitive.lists.abstracts;
 
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.RandomAccess;
+import java.util.*;
 
-import io.github.joealisson.primitive.collections.IntCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractIntCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
+import io.github.joealisson.primitive.AbstractIntCollection;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.iterators.IntListIterator;
 import io.github.joealisson.primitive.lists.IntList;
 
@@ -267,10 +262,10 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	public boolean addAll(int index, IntCollection c)
 	{
 		boolean modified = false;
-		IntIterator e = c.iterator();
+		var e = c.iterator();
 		while(e.hasNext())
 		{
-			add(index++, e.next());
+			add(index++, e.nextInt());
 			modified = true;
 		}
 		return modified;
@@ -328,7 +323,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @return an iterator over the elements in this list in proper sequence
 	 * @see #modCount
 	 */
-	public IntIterator iterator()
+	public PrimitiveIterator.OfInt iterator()
 	{
 		return new Itr();
 	}
@@ -376,7 +371,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 		return new ListItr(index);
 	}
 
-	private class Itr implements IntIterator
+	private class Itr implements PrimitiveIterator.OfInt
 	{
 		/**
 		 * Index of element to be returned by subsequent call to next.
@@ -402,7 +397,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 			return cursor != size();
 		}
 
-		public int next()
+		public int nextInt()
 		{
 			checkForComodification();
 			try
@@ -627,10 +622,10 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	public int hashCode()
 	{
 		int hashCode = 1;
-		IntIterator i = iterator();
+		var i = iterator();
 		while(i.hasNext())
 		{
-			int obj = i.next();
+			int obj = i.nextInt();
 			hashCode = 31 * hashCode + obj;
 		}
 		return hashCode;
@@ -828,7 +823,7 @@ class SubIntList extends AbstractIntList
 	}
 
 
-	public IntIterator iterator()
+	public PrimitiveIterator.OfInt iterator()
 	{
 		return listIterator();
 	}
@@ -850,7 +845,7 @@ class SubIntList extends AbstractIntList
 				return nextIndex() < size;
 			}
 
-			public int next()
+			public int nextInt()
 			{
 				if(hasNext())
 				{

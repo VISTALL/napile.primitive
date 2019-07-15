@@ -36,8 +36,8 @@ import java.util.Set;
 
 import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.HashUtils;
-import io.github.joealisson.primitive.pair.LongObjectPair;
-import io.github.joealisson.primitive.pair.impl.LongObjectPairImpl;
+import io.github.joealisson.primitive.pair.LongObject;
+import io.github.joealisson.primitive.pair.impl.LongObjectImpl;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.LongObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractLongObjectMap;
@@ -443,9 +443,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 
     private void putAllForCreate(LongObjectMap<? extends V> m)
     {
-        for(Iterator<? extends LongObjectPair<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+        for(Iterator<? extends LongObject<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
         {
-            LongObjectPair<? extends V> e = i.next();
+            LongObject<? extends V> e = i.next();
             putForCreate(e.getKey(), e.getValue());
         }
     }
@@ -551,9 +551,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
             }
         }
 
-        for(Iterator<? extends LongObjectPair<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
+        for(Iterator<? extends LongObject<? extends V>> i = m.entrySet().iterator(); i.hasNext();)
         {
-            LongObjectPair<? extends V> e = i.next();
+            LongObject<? extends V> e = i.next();
             put(e.getKey(), e.getValue());
         }
     }
@@ -615,12 +615,12 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
      */
     final Entry<V> removeMapping(Object o)
     {
-        if(!(o instanceof LongObjectPair))
+        if(!(o instanceof LongObject))
         {
             return null;
         }
 
-        LongObjectPair<V> entry = (LongObjectPair<V>) o;
+        LongObject<V> entry = (LongObject<V>) o;
         long key = entry.getKey();
         int hash = hash(key);
         int i = indexFor(hash, table.length);
@@ -742,7 +742,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
         return result;
     }
 
-    static class Entry<V> extends LongObjectPairImpl<V>
+    static class Entry<V> extends LongObjectImpl<V>
     {
         Entry<V> next;
         final int hash;
@@ -832,7 +832,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
             return next != null;
         }
 
-        final LongObjectPair<V> nextEntry()
+        final LongObject<V> nextEntry()
         {
             if(modCount != expectedModCount)
             {
@@ -955,9 +955,9 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
         }
     }
 
-    private final class EntryIterator extends HashIterator<LongObjectPair<V>>
+    private final class EntryIterator extends HashIterator<LongObject<V>>
     {
-        public LongObjectPair<V> next()
+        public LongObject<V> next()
         {
             return nextEntry();
         }
@@ -974,7 +974,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
         return new ValueIterator();
     }
 
-    Iterator<LongObjectPair<V>> newEntryIterator()
+    Iterator<LongObject<V>> newEntryIterator()
     {
         return new EntryIterator();
     }
@@ -982,7 +982,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
 
     // Views
 
-    private transient Set<LongObjectPair<V>> entrySet = null;
+    private transient Set<LongObject<V>> entrySet = null;
 
     /**
      * Returns a {@link Set} view of the keys contained in this map.
@@ -1089,31 +1089,31 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
      *
      * @return a set view of the mappings contained in this map
      */
-    public Set<LongObjectPair<V>> entrySet()
+    public Set<LongObject<V>> entrySet()
     {
         return entrySet0();
     }
 
-    private Set<LongObjectPair<V>> entrySet0()
+    private Set<LongObject<V>> entrySet0()
     {
-        Set<LongObjectPair<V>> es = entrySet;
+        Set<LongObject<V>> es = entrySet;
         return es != null ? es : (entrySet = new EntrySet());
     }
 
-    private final class EntrySet extends AbstractSet<LongObjectPair<V>>
+    private final class EntrySet extends AbstractSet<LongObject<V>>
     {
-        public Iterator<LongObjectPair<V>> iterator()
+        public Iterator<LongObject<V>> iterator()
         {
             return newEntryIterator();
         }
 
         public boolean contains(Object o)
         {
-            if(!(o instanceof LongObjectPair))
+            if(!(o instanceof LongObject))
             {
                 return false;
             }
-            LongObjectPair<V> e = (LongObjectPair<V>) o;
+            LongObject<V> e = (LongObject<V>) o;
             Entry<V> candidate = getEntry(e.getKey());
             return candidate != null && candidate.equals(e);
         }
@@ -1150,7 +1150,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
      */
     private void writeObject(java.io.ObjectOutputStream s) throws IOException
     {
-        Iterator<LongObjectPair<V>> i = (size > 0) ? entrySet0().iterator() : null;
+        Iterator<LongObject<V>> i = (size > 0) ? entrySet0().iterator() : null;
 
         // Write out the threshold, loadfactor, and any hidden stuff
         s.defaultWriteObject();
@@ -1166,7 +1166,7 @@ public class HashLongObjectMap<V> extends AbstractLongObjectMap<V> implements Lo
         {
             while(i.hasNext())
             {
-                LongObjectPair<V> e = i.next();
+                LongObject<V> e = i.next();
                 s.writeLong(e.getKey());
                 s.writeObject(e.getValue());
             }

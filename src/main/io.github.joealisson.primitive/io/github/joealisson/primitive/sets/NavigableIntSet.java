@@ -24,9 +24,8 @@
  */
 package io.github.joealisson.primitive.sets;
 
+import java.util.PrimitiveIterator;
 import java.util.SortedSet;
-
-import io.github.joealisson.primitive.iterators.IntIterator;
 
 /**
  * <p>
@@ -155,7 +154,7 @@ public interface NavigableIntSet extends SortedIntSet
 	 *
 	 * @return an iterator over the elements in this set, in ascending order
 	 */
-	IntIterator iterator();
+	PrimitiveIterator.OfInt iterator();
 
 	/**
 	 * <p>
@@ -181,7 +180,7 @@ public interface NavigableIntSet extends SortedIntSet
 	 *
 	 * @return an iterator over the elements in this set, in descending order
 	 */
-	IntIterator descendingIterator();
+	PrimitiveIterator.OfInt descendingIterator();
 
 	/**
 	 * <p>

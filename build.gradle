@@ -35,14 +35,10 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    testCompile group: 'org.testng', name: 'testng', version: '6.14.3'
-
-}
-
 compileJava {
     inputs.property("moduleName", moduleName)
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "--add-exports" << "java.base/jdk.internal.misc=io.github.joealisson.primitive"
 }
 
 jar {
@@ -59,6 +55,14 @@ jar {
 task jarSources(type:Jar){
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+javadoc {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.addStringOption('-module-path', classpath.asPath )
+        options.addStringOption("-add-exports", "java.base/jdk.internal.misc=io.github.joealisson.primitive")
+    }
 }
 
 task javadocJar(type: Jar) {

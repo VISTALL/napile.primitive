@@ -20,23 +20,19 @@ package io.github.joealisson.primitive.maps.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import io.github.joealisson.primitive.pair.IntLongPair;
-import io.github.joealisson.primitive.pair.impl.IntLongPairImpl;
-import io.github.joealisson.primitive.Variables;
+import io.github.joealisson.primitive.pair.IntLong;
+import io.github.joealisson.primitive.pair.impl.IntLongImpl;
+import io.github.joealisson.primitive.Constants;
 import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.CIntLongMap;
 import io.github.joealisson.primitive.maps.IntLongMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 /**
@@ -167,7 +163,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 	final Segment[] segments;
 
 	transient IntSet keySet;
-	transient Set<IntLongPair> entrySet;
+	transient Set<IntLong> entrySet;
 	transient LongCollection values;
 
 	/* ---------------- Small Utilities -------------- */
@@ -385,7 +381,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 					e = e.next;
 				}
 			}
-			return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+			return Constants.DEFAULT_LONG_VALUE;
 		}
 
 		boolean containsKey(int key, int hash)
@@ -458,7 +454,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 					e = e.next;
 				}
 
-				long oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+				long oldValue = Constants.DEFAULT_LONG_VALUE;
 				if(e != null)
 				{
 					oldValue = e.value;
@@ -503,7 +499,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 				}
 				else
 				{
-					oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+					oldValue = Constants.DEFAULT_LONG_VALUE;
 					++modCount;
 					tab[index] = new HashEntry(key, first, value);
 					count = c; // write-volatile
@@ -601,7 +597,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 				while(e != null && key != e.key)
 					e = e.next;
 
-				long oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+				long oldValue = Constants.DEFAULT_LONG_VALUE;
 				if(e != null)
 				{
 					oldValue = e.value;
@@ -1097,7 +1093,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 	 */
 	public void putAll(IntLongMap m)
 	{
-		for(IntLongPair e : m.entrySet())
+		for(IntLong e : m.entrySet())
 		{
 			put(e.getKey(), e.getValue());
 		}
@@ -1226,9 +1222,9 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 	 * construction of the iterator, and may (but is not guaranteed to)
 	 * reflect any modifications subsequent to construction.
 	 */
-	public Set<IntLongPair> entrySet()
+	public Set<IntLong> entrySet()
 	{
-		Set<IntLongPair> es = entrySet;
+		Set<IntLong> es = entrySet;
 		return (es != null) ? es : (entrySet = new EntrySet());
 	}
 
@@ -1310,9 +1306,9 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		}
 	}
 
-	final class KeyIterator extends HashIterator implements IntIterator
+	final class KeyIterator extends HashIterator implements PrimitiveIterator.OfInt
 	{
-		public int next()
+		public int nextInt()
 		{
 			return super.nextEntry().key;
 		}
@@ -1330,7 +1326,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 	 * Custom Entry class used by EntryIterator.next(), that relays
 	 * setValue changes to the underlying map.
 	 */
-	final class WriteThroughEntry extends IntLongPairImpl
+	final class WriteThroughEntry extends IntLongImpl
 	{
 		WriteThroughEntry(int k, long v)
 		{
@@ -1354,9 +1350,9 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		}
 	}
 
-	final class EntryIterator extends HashIterator implements Iterator<IntLongPair>
+	final class EntryIterator extends HashIterator implements Iterator<IntLong>
 	{
-		public IntLongPair next()
+		public IntLong next()
 		{
 			HashEntry e = super.nextEntry();
 			return new WriteThroughEntry(e.key, e.value);
@@ -1365,7 +1361,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 
 	final class KeySet extends AbstractIntSet
 	{
-		public IntIterator iterator()
+		public PrimitiveIterator.OfInt iterator()
 		{
 			return new KeyIterator();
 		}
@@ -1415,31 +1411,31 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		}
 	}
 
-	final class EntrySet extends AbstractSet<IntLongPair>
+	final class EntrySet extends AbstractSet<IntLong>
 	{
-		public Iterator<IntLongPair> iterator()
+		public Iterator<IntLong> iterator()
 		{
 			return new EntryIterator();
 		}
 
 		public boolean contains(Object o)
 		{
-			if(!(o instanceof IntLongPair))
+			if(!(o instanceof IntLong))
 			{
 				return false;
 			}
-			IntLongPair e = (IntLongPair) o;
+			IntLong e = (IntLong) o;
 			long v = CHashIntLongMap.this.get(e.getKey());
 			return v == e.getValue();
 		}
 
 		public boolean remove(Object o)
 		{
-			if(!(o instanceof IntLongPair))
+			if(!(o instanceof IntLong))
 			{
 				return false;
 			}
-			IntLongPair e = (IntLongPair) o;
+			IntLong e = (IntLong) o;
 			return CHashIntLongMap.this.remove(e.getKey(), e.getValue());
 		}
 

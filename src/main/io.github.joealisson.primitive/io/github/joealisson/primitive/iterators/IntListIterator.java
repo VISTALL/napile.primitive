@@ -24,6 +24,8 @@
  */
 package io.github.joealisson.primitive.iterators;
 
+import java.util.PrimitiveIterator;
+
 /**
  * <p>
  * An iterator for lists that allows the programmer
@@ -59,7 +61,7 @@ package io.github.joealisson.primitive.iterators;
  * @see java.util.List#listIterator()
  * @since 1.0.0
  */
-public interface IntListIterator extends IntIterator
+public interface IntListIterator extends PrimitiveIterator.OfInt
 {
 	// Query Operations
 
@@ -84,7 +86,7 @@ public interface IntListIterator extends IntIterator
 	 * @return the next element in the list.
 	 * @throws java.util.NoSuchElementException if the iteration has no next element.
 	 */
-	int next();
+	int nextInt();
 
 	/**
 	 * Returns true if this list iterator has more elements when

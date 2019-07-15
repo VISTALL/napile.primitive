@@ -28,7 +28,7 @@ import io.github.joealisson.primitive.HashUtils;
 import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.LongSet;
 
 /**

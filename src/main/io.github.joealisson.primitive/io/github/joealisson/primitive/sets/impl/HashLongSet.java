@@ -24,12 +24,11 @@
  */
 package io.github.joealisson.primitive.sets.impl;
 
-import io.github.joealisson.primitive.collections.IntCollection;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
-import io.github.joealisson.primitive.maps.impl.HashIntObjectMap;
 import io.github.joealisson.primitive.maps.impl.HashLongObjectMap;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.LongSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
 
@@ -90,8 +89,6 @@ import java.util.ConcurrentModificationException;
  * @version %I%, %G%
  * @see	 IntCollection
  * @see	 IntSet
- * @see	 TreeIntSet
- * @see	 HashIntObjectMap
  * @since 1.0.0
  */
 public class HashLongSet extends AbstractLongSet implements LongSet, Cloneable, java.io.Serializable

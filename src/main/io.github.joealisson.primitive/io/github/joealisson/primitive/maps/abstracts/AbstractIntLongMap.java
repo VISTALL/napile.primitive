@@ -19,16 +19,16 @@
 package io.github.joealisson.primitive.maps.abstracts;
 
 import java.util.Iterator;
+import java.util.PrimitiveIterator;
 import java.util.Set;
 
-import io.github.joealisson.primitive.pair.IntLongPair;
-import io.github.joealisson.primitive.Variables;
+import io.github.joealisson.primitive.pair.IntLong;
+import io.github.joealisson.primitive.Constants;
 import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 /**
@@ -111,10 +111,10 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public boolean containsValue(long value)
 	{
-		Iterator<IntLongPair> i = entrySet().iterator();
+		Iterator<IntLong> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			IntLongPair e = i.next();
+			IntLong e = i.next();
 			if(value == e.getValue())
 			{
 				return true;
@@ -137,10 +137,10 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public boolean containsKey(int key)
 	{
-		Iterator<IntLongPair> i = entrySet().iterator();
+		Iterator<IntLong> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			IntLongPair e = i.next();
+			IntLong e = i.next();
 			if(key == e.getKey())
 				return true;
 		}
@@ -161,11 +161,11 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public long get(int key)
 	{
-		for(IntLongPair e : entrySet())
+		for(IntLong e : entrySet())
 			if(key == e.getKey())
 				return e.getValue();
 
-		return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		return Constants.DEFAULT_LONG_VALUE;
 	}
 
 
@@ -215,18 +215,18 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public long remove(int key)
 	{
-		Iterator<IntLongPair> i = entrySet().iterator();
-		IntLongPair correctEntry = null;
+		Iterator<IntLong> i = entrySet().iterator();
+		IntLong correctEntry = null;
 
 		while(correctEntry == null && i.hasNext())
 		{
-			IntLongPair e = i.next();
+			IntLong e = i.next();
 			if(key == e.getKey())
 				correctEntry = e;
 		}
 
 
-		long oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		long oldValue = Constants.DEFAULT_LONG_VALUE;
 		if(correctEntry != null)
 		{
 			oldValue = correctEntry.getValue();
@@ -255,7 +255,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public void putAll(IntLongMap m)
 	{
-		for(IntLongPair e : m.entrySet())
+		for(IntLong e : m.entrySet())
 			put(e.getKey(), e.getValue());
 	}
 
@@ -305,18 +305,18 @@ public abstract class AbstractIntLongMap implements IntLongMap
 		{
 			keySet = new AbstractIntSet()
 			{
-				public IntIterator iterator()
+				public PrimitiveIterator.OfInt iterator()
 				{
-					return new IntIterator()
+					return new PrimitiveIterator.OfInt()
 					{
-						private Iterator<IntLongPair> i = entrySet().iterator();
+						private Iterator<IntLong> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
 							return i.hasNext();
 						}
 
-						public int next()
+						public int nextInt()
 						{
 							return i.next().getKey();
 						}
@@ -366,7 +366,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 				{
 					return new LongIterator()
 					{
-						private Iterator<IntLongPair> i = entrySet().iterator();
+						private Iterator<IntLong> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
@@ -399,7 +399,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 		return values;
 	}
 
-	public abstract Set<IntLongPair> entrySet();
+	public abstract Set<IntLong> entrySet();
 
 
 	// Comparison and hashing
@@ -445,10 +445,10 @@ public abstract class AbstractIntLongMap implements IntLongMap
 
 		try
 		{
-			Iterator<IntLongPair> i = entrySet().iterator();
+			Iterator<IntLong> i = entrySet().iterator();
 			while(i.hasNext())
 			{
-				IntLongPair e = i.next();
+				IntLong e = i.next();
 				int key = e.getKey();
 				long value = e.getValue();
 				if(value != m.get(key))
@@ -457,11 +457,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 				}
 			}
 		}
-		catch(ClassCastException unused)
-		{
-			return false;
-		}
-		catch(NullPointerException unused)
+		catch(ClassCastException | NullPointerException unused)
 		{
 			return false;
 		}
@@ -490,7 +486,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	public int hashCode()
 	{
 		int h = 0;
-		for(IntLongPair intLongPair : entrySet())
+		for(IntLong intLongPair : entrySet())
 			h += intLongPair.hashCode();
 		return h;
 	}
@@ -509,7 +505,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public String toString()
 	{
-		Iterator<IntLongPair> i = entrySet().iterator();
+		Iterator<IntLong> i = entrySet().iterator();
 		if(!i.hasNext())
 		{
 			return "{}";
@@ -519,7 +515,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 		sb.append('{');
 		for(; ;)
 		{
-			IntLongPair e = i.next();
+			IntLong e = i.next();
 			int key = e.getKey();
 			long value = e.getValue();
 			sb.append(key);

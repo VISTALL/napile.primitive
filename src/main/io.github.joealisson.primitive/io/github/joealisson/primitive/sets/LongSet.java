@@ -24,7 +24,8 @@
  */
 package io.github.joealisson.primitive.sets;
 
-import io.github.joealisson.primitive.collections.IntCollection;
+import io.github.joealisson.primitive.IntCollection;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 

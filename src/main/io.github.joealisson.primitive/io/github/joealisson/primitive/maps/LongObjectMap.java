@@ -24,17 +24,15 @@
  */
 package io.github.joealisson.primitive.maps;
 
-import io.github.joealisson.primitive.pair.LongObjectPair;
+import io.github.joealisson.primitive.pair.LongObject;
 import io.github.joealisson.primitive.Container;
-import io.github.joealisson.primitive.collections.IntCollection;
+import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.sets.LongSet;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.IntFunction;
-import java.util.function.IntToDoubleFunction;
 import java.util.function.LongFunction;
 
 /**
@@ -282,7 +280,7 @@ public interface LongObjectMap<V> extends Container
 	 *
 	 * <pre> {@code
 	 * if (map.get(key) == null) {
-	 *     V newValue = mappingFunction.apply(key);
+	 *     V newValue = mappingFunction.applyAsInt(key);
 	 *     if (newValue != null)
 	 *         map.put(key, newValue);
 	 * }
@@ -455,7 +453,7 @@ public interface LongObjectMap<V> extends Container
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	Set<LongObjectPair<V>> entrySet();
+	Set<LongObject<V>> entrySet();
 
 	/**
 	 * Compares the specified object with this map for equality.  Returns

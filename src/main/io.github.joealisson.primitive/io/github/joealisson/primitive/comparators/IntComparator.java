@@ -24,6 +24,8 @@
  */
 package io.github.joealisson.primitive.comparators;
 
+import io.github.joealisson.primitive.IntSet;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -62,14 +64,9 @@ import java.util.List;
  * true (and the size of the tree set will increase) because {@code a} and
  * {@code b} are not equivalent from the tree set's perspective, even though
  * this is contrary to the specification of the
- * {@link io.github.joealisson.primitive.sets.IntSet#add Set.add} method.
+ * {@link IntSet#add Set.add} method.
  * </p>
- * <p>
- * Note: It is generally a good idea for comparators to also implement
- * java.io.Serializable, as they may be used as ordering methods in
- * serializable data structures (like {@link io.github.joealisson.primitive.sets.impl.TreeIntSet},
- * {@link io.github.joealisson.primitive.maps.impl.TreeIntObjectMap}).  In
- * order for the data structure to serialize successfully, the comparator (if
+ * <p>.  In order for the data structure to serialize successfully, the comparator (if
  * provided) must implement Serializable.
  * </p>
  * <p>

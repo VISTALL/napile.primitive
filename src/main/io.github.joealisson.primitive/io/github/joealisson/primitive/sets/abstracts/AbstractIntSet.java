@@ -24,10 +24,9 @@
  */
 package io.github.joealisson.primitive.sets.abstracts;
 
-import io.github.joealisson.primitive.collections.IntCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractIntCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.AbstractIntCollection;
+import io.github.joealisson.primitive.IntCollection;
+import io.github.joealisson.primitive.IntSet;
 
 /**
  * <p>
@@ -110,11 +109,7 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 		{
 			return containsAll(c);
 		}
-		catch(ClassCastException unused)
-		{
-			return false;
-		}
-		catch(NullPointerException unused)
+		catch(ClassCastException | NullPointerException unused)
 		{
 			return false;
 		}
@@ -141,10 +136,10 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	public int hashCode()
 	{
 		int h = 0;
-		IntIterator i = iterator();
+		var i = iterator();
 		while(i.hasNext())
 		{
-			int obj = i.next();
+			int obj = i.nextInt();
 			h += obj;
 		}
 		return h;
@@ -192,16 +187,16 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 
 		if(size() > c.size())
 		{
-			for(IntIterator i = c.iterator(); i.hasNext();)
+			for(var i = c.iterator(); i.hasNext();)
 			{
-				modified |= remove(i.next());
+				modified |= remove(i.nextInt());
 			}
 		}
 		else
 		{
-			for(IntIterator i = iterator(); i.hasNext();)
+			for(var i = iterator(); i.hasNext();)
 			{
-				if(c.contains(i.next()))
+				if(c.contains(i.nextInt()))
 				{
 					i.remove();
 					modified = true;

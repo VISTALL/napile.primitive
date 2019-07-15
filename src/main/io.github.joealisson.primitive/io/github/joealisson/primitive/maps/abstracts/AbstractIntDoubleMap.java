@@ -1,17 +1,17 @@
 package io.github.joealisson.primitive.maps.abstracts;
 
-import io.github.joealisson.primitive.Variables;
+import io.github.joealisson.primitive.Constants;
 import io.github.joealisson.primitive.collections.DoubleCollection;
 import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
 import io.github.joealisson.primitive.iterators.DoubleIterator;
-import io.github.joealisson.primitive.iterators.IntIterator;
 import io.github.joealisson.primitive.maps.IntDoubleMap;
 import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.pair.IntDoublePair;
-import io.github.joealisson.primitive.sets.IntSet;
+import io.github.joealisson.primitive.pair.IntDouble;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 import java.util.Iterator;
+import java.util.PrimitiveIterator;
 import java.util.Set;
 
 /**
@@ -90,7 +90,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public boolean containsValue(double value)
 	{
-		for (IntDoublePair e : entrySet()) {
+		for (IntDouble e : entrySet()) {
 			if (value == e.getValue()) {
 				return true;
 			}
@@ -112,10 +112,10 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public boolean containsKey(int key)
 	{
-		Iterator<IntDoublePair> i = entrySet().iterator();
+		Iterator<IntDouble> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			IntDoublePair e = i.next();
+			IntDouble e = i.next();
 			if(key == e.getKey())
 				return true;
 		}
@@ -136,11 +136,11 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public double get(int key)
 	{
-		for(IntDoublePair e : entrySet())
+		for(IntDouble e : entrySet())
 			if(key == e.getKey())
 				return e.getValue();
 
-		return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		return Constants.DEFAULT_LONG_VALUE;
 	}
 
 
@@ -191,18 +191,18 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public double remove(int key)
 	{
-		Iterator<IntDoublePair> i = entrySet().iterator();
-		IntDoublePair correctEntry = null;
+		Iterator<IntDouble> i = entrySet().iterator();
+		IntDouble correctEntry = null;
 
 		while(correctEntry == null && i.hasNext())
 		{
-			IntDoublePair e = i.next();
+			IntDouble e = i.next();
 			if(key == e.getKey())
 				correctEntry = e;
 		}
 
 
-		double oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
+		double oldValue = Constants.DEFAULT_LONG_VALUE;
 		if(correctEntry != null)
 		{
 			oldValue = correctEntry.getValue();
@@ -231,7 +231,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public void putAll(IntDoubleMap m)
 	{
-		for(IntDoublePair e : m.entrySet())
+		for(IntDouble e : m.entrySet())
 			put(e.getKey(), e.getValue());
 	}
 
@@ -281,18 +281,18 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 		{
 			keySet = new AbstractIntSet()
 			{
-				public IntIterator iterator()
+				public PrimitiveIterator.OfInt iterator()
 				{
-					return new IntIterator()
+					return new PrimitiveIterator.OfInt()
 					{
-						private Iterator<IntDoublePair> i = entrySet().iterator();
+						private Iterator<IntDouble> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
 							return i.hasNext();
 						}
 
-						public int next()
+						public int nextInt()
 						{
 							return i.next().getKey();
 						}
@@ -342,7 +342,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 				{
 					return new DoubleIterator()
 					{
-						private Iterator<IntDoublePair> i = entrySet().iterator();
+						private Iterator<IntDouble> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
@@ -375,7 +375,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 		return values;
 	}
 
-	public abstract Set<IntDoublePair> entrySet();
+	public abstract Set<IntDouble> entrySet();
 
 
 	// Comparison and hashing
@@ -421,10 +421,10 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 
 		try
 		{
-			Iterator<IntDoublePair> i = entrySet().iterator();
+			Iterator<IntDouble> i = entrySet().iterator();
 			while(i.hasNext())
 			{
-				IntDoublePair e = i.next();
+				IntDouble e = i.next();
 				int key = e.getKey();
 				double value = e.getValue();
 				if(value != m.get(key))
@@ -462,7 +462,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	public int hashCode()
 	{
 		int h = 0;
-		for(IntDoublePair intDoublePair : entrySet())
+		for(IntDouble intDoublePair : entrySet())
 			h += intDoublePair.hashCode();
 		return h;
 	}
@@ -481,7 +481,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public String toString()
 	{
-		Iterator<IntDoublePair> i = entrySet().iterator();
+		Iterator<IntDouble> i = entrySet().iterator();
 		if(!i.hasNext())
 		{
 			return "{}";
@@ -491,7 +491,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 		sb.append('{');
 		for(; ;)
 		{
-			IntDoublePair e = i.next();
+			IntDouble e = i.next();
 			int key = e.getKey();
 			double value = e.getValue();
 			sb.append(key);

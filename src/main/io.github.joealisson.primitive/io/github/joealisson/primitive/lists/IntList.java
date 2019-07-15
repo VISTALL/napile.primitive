@@ -24,11 +24,12 @@
  */
 package io.github.joealisson.primitive.lists;
 
-import java.util.Collection;
-
-import io.github.joealisson.primitive.collections.IntCollection;
-import io.github.joealisson.primitive.iterators.IntIterator;
+import io.github.joealisson.primitive.IntCollection;
+import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.iterators.IntListIterator;
+
+import java.util.Collection;
+import java.util.PrimitiveIterator;
 
 /**
  * <p>
@@ -105,7 +106,7 @@ import io.github.joealisson.primitive.iterators.IntListIterator;
  * @author Josh Bloch
  * @author Neal Gafter
  * @see IntCollection
- * @see io.github.joealisson.primitive.sets.IntSet
+ * @see IntSet
  * @see io.github.joealisson.primitive.lists.impl.ArrayIntList
  * @see io.github.joealisson.primitive.lists.abstracts.AbstractIntList
  * @since 1.0.0
@@ -151,7 +152,7 @@ public interface IntList extends IntCollection
 	 *
 	 * @return an iterator over the elements in this list in proper sequence
 	 */
-	IntIterator iterator();
+	PrimitiveIterator.OfInt iterator();
 
 	/**
 	 * <p>

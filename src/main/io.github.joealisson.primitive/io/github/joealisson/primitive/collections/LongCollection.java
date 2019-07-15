@@ -24,13 +24,10 @@
  */
 package io.github.joealisson.primitive.collections;
 
-import io.github.joealisson.primitive.Container;
-import io.github.joealisson.primitive.Containers;
-import io.github.joealisson.primitive.iterators.IntIterator;
+import io.github.joealisson.primitive.*;
 import io.github.joealisson.primitive.iterators.LongIterator;
 
 import java.util.Objects;
-import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
 /**
@@ -114,15 +111,12 @@ import java.util.function.LongConsumer;
  *
  * @author Josh Bloch
  * @author Neal Gafter
- * @see	 io.github.joealisson.primitive.sets.IntSet
+ * @see     IntSet
  * @see	 io.github.joealisson.primitive.lists.IntList
- * @see	 io.github.joealisson.primitive.maps.IntObjectMap
  * @see	 io.github.joealisson.primitive.sets.SortedIntSet
- * @see	 io.github.joealisson.primitive.maps.SortedIntObjectMap
- * @see	 io.github.joealisson.primitive.sets.impl.HashIntSet
- * @see	 io.github.joealisson.primitive.sets.impl.TreeIntSet
+ * @see     HashIntSet
  * @see	 io.github.joealisson.primitive.lists.impl.ArrayIntList
- * @see	 io.github.joealisson.primitive.collections.abstracts.AbstractIntCollection
+ * @see     AbstractIntCollection
  * @see     Containers
  * @since 1.0.0
  */
@@ -447,7 +441,7 @@ public interface LongCollection extends Container
 	 * @return true if the specified object is equal to this
 	 *         collection
 	 * @see Object#equals(Object)
-	 * @see io.github.joealisson.primitive.sets.IntSet#equals(Object)
+	 * @see IntSet#equals(Object)
 	 * @see io.github.joealisson.primitive.lists.IntList#equals(Object)
 	 */
 	boolean equals(Object o);

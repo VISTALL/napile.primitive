@@ -31,10 +31,8 @@ import java.util.function.IntConsumer;
 /**
  * Implementing this interface allows an object to be the target of the enhanced
  * {@code for} statement (sometimes called the "for-each loop" statement).
-
  *
  * @since 1.5
- * @jls 14.14.2 The enhanced {@code for} statement
  */
 public interface IntIterable {
     /**
@@ -55,7 +53,7 @@ public interface IntIterable {
      * side-effects that modify the underlying source of elements, unless an
      * overriding class has specified a concurrent modification policy.
      *
-     * @implSpec
+     *
      * <p>The default implementation behaves as if:
      * <pre>{@code
      *     for (T t : this)
@@ -78,13 +76,13 @@ public interface IntIterable {
      * Creates a {@link Spliterator} over the elements described by this
      * {@code Iterable}.
      *
-     * @implSpec
+     *
      * The default implementation creates an
      * <em><a href="../util/Spliterator.html#binding">early-binding</a></em>
      * spliterator from the iterable's {@code Iterator}.  The spliterator
      * inherits the <em>fail-fast</em> properties of the iterable's iterator.
      *
-     * @implNote
+     *
      * The default implementation should usually be overridden.  The
      * spliterator returned by the default implementation has poor splitting
      * capabilities, is unsized, and does not report any spliterator
