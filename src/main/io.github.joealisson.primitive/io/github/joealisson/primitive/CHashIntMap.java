@@ -4716,7 +4716,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             V v;
             if ((v = value) == null)
                 throw new UnsupportedOperationException();
-            for (var it = iterator(); it.hasNext();) {
+            for (var it = c.iterator(); it.hasNext();) {
                 if (map.putVal(it.nextInt(), v, true) == null)
                     added = true;
             }
