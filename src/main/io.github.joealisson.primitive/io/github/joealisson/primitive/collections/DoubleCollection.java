@@ -110,10 +110,10 @@ import java.util.function.DoubleConsumer;
  * Java Collections Framework</a>.
  *
  * @see     IntSet
- * @see	 io.github.joealisson.primitive.lists.IntList
+ * @see     IntList
  * @see	 io.github.joealisson.primitive.sets.SortedIntSet
  * @see     HashIntSet
- * @see	 io.github.joealisson.primitive.lists.impl.ArrayIntList
+ * @see     ArrayIntList
  * @see     AbstractIntCollection
  * @see  Containers
  * @since 1.0.0
@@ -439,7 +439,7 @@ public interface DoubleCollection extends Container
 	 *         collection
 	 * @see Object#equals(Object)
 	 * @see IntSet#equals(Object)
-	 * @see io.github.joealisson.primitive.lists.IntList#equals(Object)
+	 * @see IntList#equals(Object)
 	 */
 	boolean equals(Object o);
 

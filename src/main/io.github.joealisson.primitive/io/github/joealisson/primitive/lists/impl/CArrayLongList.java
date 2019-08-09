@@ -24,6 +24,7 @@
  */
 package io.github.joealisson.primitive.lists.impl;
 
+import io.github.joealisson.primitive.ArrayIntList;
 import io.github.joealisson.primitive.LongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.iterators.LongListIterator;
@@ -1602,7 +1603,7 @@ public class CArrayLongList implements LongList, RandomAccess, Cloneable, java.i
     {
         try
         {
-            lockOffset = unsafe.objectFieldOffset(CArrayIntList.class.getDeclaredField("lock"));
+            lockOffset = unsafe.objectFieldOffset(CArrayLongList.class.getDeclaredField("lock"));
         }
         catch(Exception ex)
         {
