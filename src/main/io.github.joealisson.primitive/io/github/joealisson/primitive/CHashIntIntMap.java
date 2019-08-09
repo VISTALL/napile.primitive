@@ -35,25 +35,28 @@
 
 package io.github.joealisson.primitive;
 
+import io.github.joealisson.primitive.function.*;
+import jdk.internal.misc.Unsafe;
+
 import java.io.ObjectStreamField;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountedCompleter;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import io.github.joealisson.primitive.function.*;
-import jdk.internal.misc.Unsafe;
-
 /**
  * A hash table supporting full concurrency of retrievals and
  * high expected concurrency for updates. This class obeys the
- * same functional specification as {@link java.util.Hashtable}, and
+ * same functional specification as {@link Hashtable}, and
  * includes versions of methods corresponding to each method of
  * {@code Hashtable}. However, even though all operations are
  * thread-safe, retrieval operations do <em>not</em> entail locking,
@@ -74,7 +77,7 @@ import jdk.internal.misc.Unsafe;
  * Iterators, Spliterators and Enumerations return elements reflecting the
  * state of the hash table at some point at or since the creation of the
  * iterator/enumeration.  They do <em>not</em> throw {@link
- * java.util.ConcurrentModificationException ConcurrentModificationException}.
+ * ConcurrentModificationException ConcurrentModificationException}.
  * However, iterators are designed to be used by only one thread at a time.
  * Bear in mind that the results of aggregate status methods including
  * {@code size}, {@code isEmpty}, and {@code containsValue} are typically
@@ -240,8 +243,8 @@ import jdk.internal.misc.Unsafe;
  * @author Doug Lea
  * @param <V> the type of mapped values
  */
-public class CHashIntMap<V> extends AbstractIntMap<V>
-        implements ConcurrentIntMap<V>, Serializable {
+public class CHashIntIntMap extends AbstractIntIntMap
+        implements ConcurrentIntIntMap, Serializable {
 
     private static final long serialVersionUID = 7249069246763182397L;
 
@@ -603,46 +606,43 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * are special, and contain null keys and values (but are never
      * exported).  Otherwise, keys and vals are never null.
      */
-    static class Node<V> implements Entry<V> {
+    static class Node implements Entry {
         final int hash;
         final int key;
-        volatile V val;
-        volatile Node<V> next;
+        volatile int val;
+        volatile Node next;
 
-        Node(int hash, int key, V val) {
+        Node(int hash, int key, int val) {
             this.hash = hash;
             this.key = key;
             this.val = val;
         }
 
-        Node(int hash, int key, V val, Node<V> next) {
+        Node(int hash, int key, int val, Node next) {
             this(hash, key, val);
             this.next = next;
         }
 
         public final int getKey()     { return key; }
-        public final V getValue()   { return val; }
-        public final int hashCode() { return key ^ val.hashCode(); }
+        public final int getValue()   { return val; }
+        public final int hashCode() { return key ^ val; }
         public final String toString() {
             return key + "=" + val;
         }
-        public final V setValue(V value) {
+        public final int setValue(int value) {
             throw new UnsupportedOperationException();
         }
 
         public final boolean equals(Object o) {
-            Object v, u; Entry<?> e;
-            return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
-                    (e.getKey() == key) &&
-                    (v == (u = val) || v.equals(u)));
+            int v; Entry e;
+            return o instanceof Entry && (v = (e = (Entry) o).getValue()) != 0 && e.getKey() == key && v == val;
         }
 
         /**
          * Virtualized support for map.get(); overridden in subclasses.
          */
-        Node<V> find(int h, int k) {
-            Node<V> e = this;
+        Node find(int h, int k) {
+            Node e = this;
             do {
                 if (e.hash == h && (e.key == k))
                     return e;
@@ -732,16 +732,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
 
     @SuppressWarnings("unchecked")
-    static final <V> Node<V> tabAt(Node<V>[] tab, int i) {
-        return (Node<V>)U.getObjectAcquire(tab, ((long)i << ASHIFT) + ABASE);
+    static final Node tabAt(Node[] tab, int i) {
+        return (Node)U.getObjectAcquire(tab, ((long)i << ASHIFT) + ABASE);
     }
 
-    static final <V> boolean casTabAt(Node<V>[] tab, int i,
-                                        Node<V> c, Node<V> v) {
+    static final boolean casTabAt(Node[] tab, int i,
+                                        Node c, Node v) {
         return U.compareAndSetObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 
-    static final <V> void setTabAt(Node<V>[] tab, int i, Node<V> v) {
+    static final void setTabAt(Node[] tab, int i, Node v) {
         U.putObjectRelease(tab, ((long)i << ASHIFT) + ABASE, v);
     }
 
@@ -751,12 +751,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * The array of bins. Lazily initialized upon first insertion.
      * Size is always a power of two. Accessed directly by iterators.
      */
-    transient volatile Node<V>[] table;
+    transient volatile Node[] table;
 
     /**
      * The next table to use; non-null only while resizing.
      */
-    private transient volatile Node<V>[] nextTable;
+    private transient volatile Node[] nextTable;
 
     /**
      * Base counter value, used mainly when there is no contention,
@@ -791,9 +791,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     private transient volatile CounterCell[] counterCells;
 
     // views
-    private transient KeySetView<V> keySet;
-    private transient ValuesView<V> values;
-    private transient EntrySetView<V> entrySet;
+    private transient KeySetView keySet;
+    private transient ValuesView values;
+    private transient EntrySetView entrySet;
 
 
     /* ---------------- Public operations -------------- */
@@ -801,7 +801,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Creates a new, empty map with the default initial table size (16).
      */
-    public CHashIntMap() {
+    public CHashIntIntMap() {
     }
 
     /**
@@ -814,7 +814,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative
      */
-    public CHashIntMap(int initialCapacity) {
+    public CHashIntIntMap(int initialCapacity) {
         this(initialCapacity, LOAD_FACTOR, 1);
     }
 
@@ -823,7 +823,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @param m the map
      */
-    public CHashIntMap(IntMap<? extends V> m) {
+    public CHashIntIntMap(IntIntMap m) {
         this.sizeCtl = DEFAULT_CAPACITY;
         putAll(m);
     }
@@ -843,7 +843,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @since 1.6
      */
-    public CHashIntMap(int initialCapacity, float loadFactor) {
+    public CHashIntIntMap(int initialCapacity, float loadFactor) {
         this(initialCapacity, loadFactor, 1);
     }
 
@@ -865,8 +865,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * negative or the load factor or concurrencyLevel are
      * nonpositive
      */
-    public CHashIntMap(int initialCapacity,
-                             float loadFactor, int concurrencyLevel) {
+    public CHashIntIntMap(int initialCapacity,
+                          float loadFactor, int concurrencyLevel) {
         if (!(loadFactor > 0.0f) || initialCapacity < 0 || concurrencyLevel <= 0)
             throw new IllegalArgumentException();
         if (initialCapacity < concurrencyLevel)   // Use at least as many bins
@@ -906,24 +906,24 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * {@code null}.  (There can be at most one such mapping.)
      *
      */
-    public V get(int key) {
-        Node<V>[] tab; Node<V> e, p; int n, eh; int ek;
+    public int get(int key) {
+        Node[] tab; Node e, p; int n, eh;
         int h = spread(key);
         if ((tab = table) != null && (n = tab.length) > 0 &&
                 (e = tabAt(tab, (n - 1) & h)) != null) {
             if ((eh = e.hash) == h) {
-                if ((ek = e.key) == key)
+                if (e.key == key)
                     return e.val;
             }
             else if (eh < 0)
-                return (p = e.find(h, key)) != null ? p.val : null;
+                return (p = e.find(h, key)) != null ? p.val : 0;
             while ((e = e.next) != null) {
                 if (e.hash == h &&
-                        ((ek = e.key) == key))
+                        (e.key == key))
                     return e.val;
             }
         }
-        return null;
+        return 0;
     }
 
     /**
@@ -936,7 +936,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws NullPointerException if the specified key is null
      */
     public boolean containsKey(int key) {
-        return get(key) != null;
+        return get(key) != 0;
     }
 
     /**
@@ -949,15 +949,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         specified value
      * @throws NullPointerException if the specified value is null
      */
-    public boolean containsValue(Object value) {
-        if (value == null)
-            throw new NullPointerException();
-        Node<V>[] t;
+    public boolean containsValue(int value) {
+        Node[] t;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; ) {
-                V v;
-                if ((v = p.val) == value || (v != null && value.equals(v)))
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; ) {
+                if (p.val == value)
                     return true;
             }
         }
@@ -977,21 +974,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         {@code null} if there was no mapping for {@code key}
      * @throws NullPointerException if the specified key or value is null
      */
-    public V put(int key, V value) {
+    public int put(int key, int value) {
         return putVal(key, value, false);
     }
 
     /** Implementation for put and putIfAbsent */
-    final V putVal(int key, V value, boolean onlyIfAbsent) {
-        if (value == null) throw new NullPointerException();
+    final int putVal(int key, int value, boolean onlyIfAbsent) {
         int hash = spread(key);
         int binCount = 0;
-        for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh; int fk; V fv;
+        for (Node[] tab = table;;) {
+            Node f; int n, i, fh; int fk; int fv;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
-                if (casTabAt(tab, i, null, new Node<V>(hash, key, value)))
+                if (casTabAt(tab, i, null, new Node(hash, key, value)))
                     break;                   // no lock when adding to empty bin
             }
             else if ((fh = f.hash) == MOVED)
@@ -999,15 +995,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             else if (onlyIfAbsent // check first node without acquiring lock
                     && fh == hash
                     && ((fk = f.key) == key)
-                    && (fv = f.val) != null)
+                    && (fv = f.val) != 0)
                 return fv;
             else {
-                V oldVal = null;
+                int oldVal = 0;
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
                             binCount = 1;
-                            for (Node<V> e = f;; ++binCount) {
+                            for (Node e = f;; ++binCount) {
                                 int ek;
                                 if (e.hash == hash &&
                                         ((ek = e.key) == key )) {
@@ -1016,17 +1012,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                         e.val = value;
                                     break;
                                 }
-                                Node<V> pred = e;
+                                Node pred = e;
                                 if ((e = e.next) == null) {
-                                    pred.next = new Node<V>(hash, key, value);
+                                    pred.next = new Node(hash, key, value);
                                     break;
                                 }
                             }
                         }
                         else if (f instanceof TreeBin) {
-                            Node<V> p;
+                            Node p;
                             binCount = 2;
-                            if ((p = ((TreeBin<V>)f).putTreeVal(hash, key,
+                            if ((p = ((TreeBin)f).putTreeVal(hash, key,
                                     value)) != null) {
                                 oldVal = p.val;
                                 if (!onlyIfAbsent)
@@ -1040,14 +1036,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 if (binCount != 0) {
                     if (binCount >= TREEIFY_THRESHOLD)
                         treeifyBin(tab, i);
-                    if (oldVal != null)
+                    if (oldVal != 0)
                         return oldVal;
                     break;
                 }
             }
         }
         addCount(1L, binCount);
-        return null;
+        return 0;
     }
 
     /**
@@ -1057,9 +1053,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @param m mappings to be stored in this map
      */
-    public void putAll(IntMap<? extends V> m) {
+    public void putAll(IntIntMap m) {
         tryPresize(m.size());
-        for (IntMap.Entry<? extends V> e : m.entrySet())
+        for (Entry e : m.entrySet())
             putVal(e.getKey(), e.getValue(), false);
     }
 
@@ -1072,8 +1068,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         {@code null} if there was no mapping for {@code key}
      * @throws NullPointerException if the specified key is null
      */
-    public V remove(int key) {
-        return replaceNode(key, null, null);
+    public int remove(int key) {
+        return replaceNode(key, 0, 0);
     }
 
     /**
@@ -1081,31 +1077,30 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Replaces node value with v, conditional upon match of cv if
      * non-null.  If resulting value is null, delete.
      */
-    final V replaceNode(int key, V value, Object cv) {
+    final int replaceNode(int key, int value, int cv) {
         int hash = spread(key);
-        for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+        for (Node[] tab = table;;) {
+            Node f; int n, i, fh;
             if (tab == null || (n = tab.length) == 0 ||
                     (f = tabAt(tab, i = (n - 1) & hash)) == null)
                 break;
             else if ((fh = f.hash) == MOVED)
                 tab = helpTransfer(tab, f);
             else {
-                V oldVal = null;
+                int oldVal = 0;
                 boolean validated = false;
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
                             validated = true;
-                            for (Node<V> e = f, pred = null;;) {
+                            for (Node e = f, pred = null;;) {
                                 int ek;
                                 if (e.hash == hash &&
                                         ((ek = e.key) == key )) {
-                                    V ev = e.val;
-                                    if (cv == null || cv == ev ||
-                                            (ev != null && cv.equals(ev))) {
+                                    int ev = e.val;
+                                    if ((cv == ev)) {
                                         oldVal = ev;
-                                        if (value != null)
+                                        if (value != 0)
                                             e.val = value;
                                         else if (pred != null)
                                             pred.next = e.next;
@@ -1121,15 +1116,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         }
                         else if (f instanceof TreeBin) {
                             validated = true;
-                            TreeBin<V> t = (TreeBin<V>)f;
-                            TreeNode<V> r, p;
+                            TreeBin t = (TreeBin)f;
+                            TreeNode r, p;
                             if ((r = t.root) != null &&
                                     (p = r.findTreeNode(hash, key, null)) != null) {
-                                V pv = p.val;
-                                if (cv == null || cv == pv ||
-                                        (pv != null && cv.equals(pv))) {
+                                int pv = p.val;
+                                if (cv == pv) {
                                     oldVal = pv;
-                                    if (value != null)
+                                    if (value != 0)
                                         p.val = value;
                                     else if (t.removeTreeNode(p))
                                         setTabAt(tab, i, untreeify(t.first));
@@ -1141,8 +1135,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     }
                 }
                 if (validated) {
-                    if (oldVal != null) {
-                        if (value == null)
+                    if (oldVal != 0) {
+                        if (value == 0)
                             addCount(-1L, -1);
                         return oldVal;
                     }
@@ -1150,7 +1144,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 }
             }
         }
-        return null;
+        return 0;
     }
 
     /**
@@ -1159,10 +1153,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     public void clear() {
         long delta = 0L; // negative number of deletions
         int i = 0;
-        Node<V>[] tab = table;
+        Node[] tab = table;
         while (tab != null && i < tab.length) {
             int fh;
-            Node<V> f = tabAt(tab, i);
+            Node f = tabAt(tab, i);
             if (f == null)
                 ++i;
             else if ((fh = f.hash) == MOVED) {
@@ -1172,9 +1166,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             else {
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
-                        Node<V> p = (fh >= 0 ? f :
+                        Node p = (fh >= 0 ? f :
                                 (f instanceof TreeBin) ?
-                                        ((TreeBin<V>)f).first : null);
+                                        ((TreeBin)f).first : null);
                         while (p != null) {
                             --delta;
                             p = p.next;
@@ -1206,10 +1200,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @return the set view
      */
-    public KeySetView<V> keySet() {
-        KeySetView<V> ks;
+    public KeySetView keySet() {
+        KeySetView ks;
         if ((ks = keySet) != null) return ks;
-        return keySet = new KeySetView<V>(this, null);
+        return keySet = new KeySetView(this, null);
     }
 
     /**
@@ -1230,10 +1224,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @return the collection view
      */
-    public Collection<V> values() {
-        ValuesView<V> vs;
+    public IntCollection values() {
+        ValuesView vs;
         if ((vs = values) != null) return vs;
-        return values = new ValuesView<V>(this);
+        return values = new ValuesView(this);
     }
 
     /**
@@ -1253,10 +1247,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @return the set view
      */
-    public Set<IntMap.Entry<V>> entrySet() {
-        EntrySetView<V> es;
+    public Set<Entry> entrySet() {
+        EntrySetView es;
         if ((es = entrySet) != null) return es;
-        return entrySet = new EntrySetView<>(this);
+        return entrySet = new EntrySetView(this);
     }
 
     /**
@@ -1268,11 +1262,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     public int hashCode() {
         int h = 0;
-        Node<V>[] t;
+        Node[] t;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; )
-                h += p.key ^ p.val.hashCode();
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; )
+                h += p.key ^ p.val;
         }
         return h;
     }
@@ -1289,19 +1283,19 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     public boolean equals(Object o) {
         if (o != this) {
-            if (!(o instanceof IntMap))
+            if (!(o instanceof IntIntMap))
                 return false;
-            IntMap<?> m = (IntMap<?>) o;
-            Node<V>[] t;
+            IntIntMap m = (IntIntMap) o;
+            Node[] t;
             int f = (t = table) == null ? 0 : t.length;
-            Traverser<V> it = new Traverser<V>(t, f, 0, f);
-            for (Node<V> p; (p = it.advance()) != null; ) {
-                V val = p.val;
-                Object v = m.get(p.key);
-                if (v == null || (v != val && !v.equals(val)))
+            Traverser it = new Traverser(t, f, 0, f);
+            for (Node p; (p = it.advance()) != null; ) {
+                int val = p.val;
+                int v = m.get(p.key);
+                if ((v != val))
                     return false;
             }
-            for (IntMap.Entry<?> e : m.entrySet()) {
+            for (Entry e : m.entrySet()) {
                 Object mv, v;
                 if ((mv = e.getValue()) == null ||
                         (v = get(e.getKey())) == null ||
@@ -1345,20 +1339,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         int segmentShift = 32 - sshift;
         int segmentMask = ssize - 1;
         @SuppressWarnings("unchecked")
-        Segment<V>[] segments = (Segment<V>[])
+        Segment[] segments = (Segment[])
                 new Segment<?>[DEFAULT_CONCURRENCY_LEVEL];
         for (int i = 0; i < segments.length; ++i)
-            segments[i] = new Segment<V>(LOAD_FACTOR);
+            segments[i] = new Segment(LOAD_FACTOR);
         java.io.ObjectOutputStream.PutField streamFields = s.putFields();
         streamFields.put("segments", segments);
         streamFields.put("segmentShift", segmentShift);
         streamFields.put("segmentMask", segmentMask);
         s.writeFields();
 
-        Node<V>[] t;
+        Node[] t;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; ) {
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; ) {
                 s.writeObject(p.key);
                 s.writeObject(p.val);
             }
@@ -1386,14 +1380,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         sizeCtl = -1; // force exclusion for table construction
         s.defaultReadObject();
         long size = 0L;
-        Node<V> p = null;
+        Node p = null;
         for (;;) {
             @SuppressWarnings("unchecked")
             int k = s.readInt();
-            @SuppressWarnings("unchecked")
-            V v = (V) s.readObject();
-            if (v != null) {
-                p = new Node<V>(spread(k), k, v, p);
+            int v = s.readInt();
+            if (v != 0) {
+                p = new Node(spread(k), k, v, p);
                 ++size;
             }
             else
@@ -1405,20 +1398,19 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             long ts = (long)(1.0 + size / LOAD_FACTOR);
             int n = (ts >= (long)MAXIMUM_CAPACITY) ?
                     MAXIMUM_CAPACITY : tableSizeFor((int)ts);
-            @SuppressWarnings("unchecked")
-            Node<V>[] tab = (Node<V>[])new Node<?>[n];
+            Node[] tab = new Node[n];
             int mask = n - 1;
             long added = 0L;
             while (p != null) {
                 boolean insertAtFront;
-                Node<V> next = p.next, first;
+                Node next = p.next, first;
                 int h = p.hash, j = h & mask;
                 if ((first = tabAt(tab, j)) == null)
                     insertAtFront = true;
                 else {
                     int k = p.key;
                     if (first.hash < 0) {
-                        TreeBin<V> t = (TreeBin<V>)first;
+                        TreeBin t = (TreeBin)first;
                         if (t.putTreeVal(h, k, p.val) == null)
                             ++added;
                         insertAtFront = false;
@@ -1426,7 +1418,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     else {
                         int binCount = 0;
                         insertAtFront = true;
-                        Node<V> q; int qk;
+                        Node q; int qk;
                         for (q = first; q != null; q = q.next) {
                             if (q.hash == h &&
                                     ((qk = q.key) == k )) {
@@ -1439,17 +1431,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             insertAtFront = false;
                             ++added;
                             p.next = first;
-                            TreeNode<V> hd = null, tl = null;
+                            TreeNode hd = null, tl = null;
                             for (q = p; q != null; q = q.next) {
-                                TreeNode<V> t = new TreeNode<V>
-                                        (q.hash, q.key, q.val, null, null);
+                                TreeNode t = new TreeNode(q.hash, q.key, q.val, null, null);
                                 if ((t.prev = tl) == null)
                                     hd = t;
                                 else
                                     tl.next = t;
                                 tl = t;
                             }
-                            setTabAt(tab, j, new TreeBin<V>(hd));
+                            setTabAt(tab, j, new TreeBin(hd));
                         }
                     }
                 }
@@ -1475,7 +1466,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         or {@code null} if there was no mapping for the key
      * @throws NullPointerException if the specified key or value is null
      */
-    public V putIfAbsent(int key, V value) {
+    public int putIfAbsent(int key, int value) {
         return putVal(key, value, true);
     }
 
@@ -1483,8 +1474,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * {@inheritDoc}
      *
      */
-    public boolean remove(int key, Object value) {
-        return value != null && replaceNode(key, null, value) != null;
+    public boolean remove(int key, int value) {
+        return replaceNode(key, 0, value) != 0;
     }
 
     /**
@@ -1492,10 +1483,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @throws NullPointerException if any of the arguments are null
      */
-    public boolean replace(int key, V oldValue, V newValue) {
-        if (oldValue == null || newValue == null)
-            throw new NullPointerException();
-        return replaceNode(key, newValue, oldValue) != null;
+    public boolean replace(int key, int oldValue, int newValue) {
+        return replaceNode(key, newValue, oldValue) != 0;
     }
 
     /**
@@ -1505,10 +1494,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         or {@code null} if there was no mapping for the key
      * @throws NullPointerException if the specified key or value is null
      */
-    public V replace(int key, V value) {
-        if (value == null)
-            throw new NullPointerException();
-        return replaceNode(key, value, null);
+    public int replace(int key, int value) {
+        return replaceNode(key, value, 0);
     }
 
     // Overrides of JDK8+ Map extension method defaults
@@ -1524,35 +1511,33 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @return the mapping for the key, if present; else the default value
      *
      */
-    public V getOrDefault(int key, V defaultValue) {
-        V v;
-        return (v = get(key)) == null ? defaultValue : v;
+    public int getOrDefault(int key, int defaultValue) {
+        int v;
+        return (v = get(key)) == 0 ? defaultValue : v;
     }
 
-    public void forEach(IntBiConsumer<? super V> action) {
+    public void forEach(IntIntBiConsumer action) {
         if (action == null) throw new NullPointerException();
-        Node<V>[] t;
+        Node[] t;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; ) {
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; ) {
                 action.accept(p.key, p.val);
             }
         }
     }
 
-    public void replaceAll(IntBiFunction<? super V, ? extends V> function) {
+    public void replaceAll(IntToIntBiFunction function) {
         if (function == null) throw new NullPointerException();
-        Node<V>[] t;
+        Node[] t;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; ) {
-                V oldValue = p.val;
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; ) {
+                int oldValue = p.val;
                 for (int key = p.key;;) {
-                    V newValue = function.apply(key, oldValue);
-                    if (newValue == null)
-                        throw new NullPointerException();
-                    if (replaceNode(key, newValue, oldValue) != null ||
-                            (oldValue = get(key)) == null)
+                    int newValue = function.applyAsInt(key, oldValue);
+                    if (replaceNode(key, newValue, oldValue) != 0 ||
+                            (oldValue = get(key)) == 0)
                         break;
                 }
             }
@@ -1562,17 +1547,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Helper method for EntrySetView.removeIf.
      */
-    boolean removeEntryIf(Predicate<? super Entry<V>> function) {
+    boolean removeEntryIf(Predicate<? super Entry> function) {
         if (function == null) throw new NullPointerException();
-        Node<V>[] t;
+        Node[] t;
         boolean removed = false;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; ) {
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; ) {
                 int k = p.key;
-                V v = p.val;
-                IntMap.Entry<V> e = new AbstractIntMap.SimpleImmutableEntry<>(k, v);
-                if (function.test(e) && replaceNode(k, null, v) != null)
+                int v = p.val;
+                Entry e = new SimpleImmutableEntry(k, v);
+                if (function.test(e) && replaceNode(k, 0, v) != 0)
                     removed = true;
             }
         }
@@ -1582,16 +1567,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Helper method for ValuesView.removeIf.
      */
-    boolean removeValueIf(Predicate<? super V> function) {
+    boolean removeValueIf(IntPredicate function) {
         if (function == null) throw new NullPointerException();
-        Node<V>[] t;
+        Node[] t;
         boolean removed = false;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-            for (Node<V> p; (p = it.advance()) != null; ) {
+            Traverser it = new Traverser(t, t.length, 0, t.length);
+            for (Node p; (p = it.advance()) != null; ) {
                 int k = p.key;
-                V v = p.val;
-                if (function.test(v) && replaceNode(k, null, v) != null)
+                int v = p.val;
+                if (function.test(v) && replaceNode(k, 0, v) != 0)
                     removed = true;
             }
         }
@@ -1620,25 +1605,25 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws RuntimeException or Error if the mappingFunction does so,
      *         in which case the mapping is left unestablished
      */
-    public V computeIfAbsent(int key, IntFunction<? extends V> mappingFunction) {
+    public int computeIfAbsent(int key, ToIntIntFunction mappingFunction) {
         if (mappingFunction == null)
             throw new NullPointerException();
         int h = spread(key);
-        V val = null;
+        int val = 0;
         int binCount = 0;
-        for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh; int fk; V fv;
+        for (Node[] tab = table;;) {
+            Node f; int n, i, fh; int fk; int fv;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null) {
-                Node<V> r = new ReservationNode<>();
+                Node r = new ReservationNode<>();
                 synchronized (r) {
                     if (casTabAt(tab, i, null, r)) {
                         binCount = 1;
-                        Node<V> node = null;
+                        Node node = null;
                         try {
-                            if ((val = mappingFunction.apply(key)) != null)
-                                node = new Node<>(h, key, val);
+                            if ((val = mappingFunction.applyAsInt(key)) != 0)
+                                node = new Node(h, key, val);
                         } finally {
                             setTabAt(tab, i, node);
                         }
@@ -1651,7 +1636,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 tab = helpTransfer(tab, f);
             else if (fh == h    // check first node without acquiring lock
                     && ((fk = f.key) == key )
-                    && (fv = f.val) != null)
+                    && (fv = f.val) != 0)
                 return fv;
             else {
                 boolean added = false;
@@ -1659,20 +1644,19 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
                             binCount = 1;
-                            for (Node<V> e = f;; ++binCount) {
-                                int ek;
+                            for (Node e = f;; ++binCount) {
                                 if (e.hash == h &&
-                                        ((ek = e.key) == key )) {
+                                        (e.key == key )) {
                                     val = e.val;
                                     break;
                                 }
-                                Node<V> pred = e;
+                                Node pred = e;
                                 if ((e = e.next) == null) {
-                                    if ((val = mappingFunction.apply(key)) != null) {
+                                    if ((val = mappingFunction.applyAsInt(key)) != 0) {
                                         if (pred.next != null)
                                             throw new IllegalStateException("Recursive update");
                                         added = true;
-                                        pred.next = new Node<>(h, key, val);
+                                        pred.next = new Node(h, key, val);
                                     }
                                     break;
                                 }
@@ -1680,12 +1664,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         }
                         else if (f instanceof TreeBin) {
                             binCount = 2;
-                            TreeBin<V> t = (TreeBin<V>)f;
-                            TreeNode<V> r, p;
+                            TreeBin t = (TreeBin)f;
+                            TreeNode r, p;
                             if ((r = t.root) != null &&
                                     (p = r.findTreeNode(h, key, null)) != null)
                                 val = p.val;
-                            else if ((val = mappingFunction.apply(key)) != null) {
+                            else if ((val = mappingFunction.applyAsInt(key)) != 0) {
                                 added = true;
                                 t.putTreeVal(h, key, val);
                             }
@@ -1703,7 +1687,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 }
             }
         }
-        if (val != null)
+        if (val != 0)
             addCount(1L, binCount);
         return val;
     }
@@ -1728,15 +1712,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws RuntimeException or Error if the remappingFunction does so,
      *         in which case the mapping is unchanged
      */
-    public V computeIfPresent(int key, IntBiFunction<? super V, ? extends V> remappingFunction) {
+    public int computeIfPresent(int key, IntToIntBiFunction remappingFunction) {
         if (remappingFunction == null)
             throw new NullPointerException();
         int h = spread(key);
-        V val = null;
+        int val = 0;
         int delta = 0;
         int binCount = 0;
-        for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+        for (Node[] tab = table;;) {
+            Node f; int n, i, fh;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null)
@@ -1748,16 +1732,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
                             binCount = 1;
-                            for (Node<V> e = f, pred = null;; ++binCount) {
+                            for (Node e = f, pred = null;; ++binCount) {
                                 int ek;
                                 if (e.hash == h &&
                                         ((ek = e.key) == key)) {
-                                    val = remappingFunction.apply(key, e.val);
-                                    if (val != null)
+                                    val = remappingFunction.applyAsInt(key, e.val);
+                                    if (val != 0)
                                         e.val = val;
                                     else {
                                         delta = -1;
-                                        Node<V> en = e.next;
+                                        Node en = e.next;
                                         if (pred != null)
                                             pred.next = en;
                                         else
@@ -1772,12 +1756,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         }
                         else if (f instanceof TreeBin) {
                             binCount = 2;
-                            TreeBin<V> t = (TreeBin<V>)f;
-                            TreeNode<V> r, p;
+                            TreeBin t = (TreeBin)f;
+                            TreeNode r, p;
                             if ((r = t.root) != null &&
                                     (p = r.findTreeNode(h, key, null)) != null) {
-                                val = remappingFunction.apply(key, p.val);
-                                if (val != null)
+                                val = remappingFunction.applyAsInt(key, p.val);
+                                if (val != 0)
                                     p.val = val;
                                 else {
                                     delta = -1;
@@ -1795,7 +1779,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             }
         }
         if (delta != 0)
-            addCount((long)delta, binCount);
+            addCount(delta, binCount);
         return val;
     }
 
@@ -1819,29 +1803,28 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws RuntimeException or Error if the remappingFunction does so,
      *         in which case the mapping is unchanged
      */
-    public V compute(int key,
-                     IntBiFunction<? super V, ? extends V> remappingFunction) {
+    public int compute(int key,
+                     IntToIntBiFunction remappingFunction) {
         if (remappingFunction == null)
             throw new NullPointerException();
         int h = spread(key);
-        V val = null;
+        int val = 0;
         int delta = 0;
         int binCount = 0;
-        for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+        for (Node[] tab = table;;) {
+            Node f; int n, i, fh;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null) {
-                Node<V> r = new ReservationNode<V>();
+                Node r = new ReservationNode();
                 synchronized (r) {
                     if (casTabAt(tab, i, null, r)) {
                         binCount = 1;
-                        Node<V> node = null;
+                        Node node = null;
                         try {
-                            if ((val = remappingFunction.apply(key, null)) != null) {
-                                delta = 1;
-                                node = new Node<V>(h, key, val);
-                            }
+                            val = remappingFunction.applyAsInt(key, 0);
+                            delta = 1;
+                            node = new Node(h, key, val);
                         } finally {
                             setTabAt(tab, i, node);
                         }
@@ -1857,58 +1840,40 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
                             binCount = 1;
-                            for (Node<V> e = f, pred = null;; ++binCount) {
+                            for (Node e = f, pred = null;; ++binCount) {
                                 int ek;
                                 if (e.hash == h &&
                                         ((ek = e.key) == key )) {
-                                    val = remappingFunction.apply(key, e.val);
-                                    if (val != null)
-                                        e.val = val;
-                                    else {
-                                        delta = -1;
-                                        Node<V> en = e.next;
-                                        if (pred != null)
-                                            pred.next = en;
-                                        else
-                                            setTabAt(tab, i, en);
-                                    }
-                                    break;
+                                    val = remappingFunction.applyAsInt(key, e.val);
+                                    e.val = val;
+                                    break;null
                                 }
                                 pred = e;
                                 if ((e = e.next) == null) {
-                                    val = remappingFunction.apply(key, null);
-                                    if (val != null) {
-                                        if (pred.next != null)
-                                            throw new IllegalStateException("Recursive update");
-                                        delta = 1;
-                                        pred.next = new Node<V>(h, key, val);
-                                    }
+                                    val = remappingFunction.applyAsInt(key, 0);
+                                    if (pred.next != null)
+                                        throw new IllegalStateException("Recursive update");
+                                    delta = 1;
+                                    pred.next = new Node(h, key, val);
                                     break;
                                 }
                             }
                         }
                         else if (f instanceof TreeBin) {
                             binCount = 1;
-                            TreeBin<V> t = (TreeBin<V>)f;
-                            TreeNode<V> r, p;
+                            TreeBin t = (TreeBin)f;
+                            TreeNode r, p;
                             if ((r = t.root) != null)
                                 p = r.findTreeNode(h, key, null);
                             else
                                 p = null;
-                            V pv = (p == null) ? null : p.val;
-                            val = remappingFunction.apply(key, pv);
-                            if (val != null) {
-                                if (p != null)
-                                    p.val = val;
-                                else {
-                                    delta = 1;
-                                    t.putTreeVal(h, key, val);
-                                }
-                            }
-                            else if (p != null) {
-                                delta = -1;
-                                if (t.removeTreeNode(p))
-                                    setTabAt(tab, i, untreeify(t.first));
+                            int pv = (p == null) ? null : p.val;
+                            val = remappingFunction.applyAsInt(key, pv);
+                            if (p != null)
+                                p.val = val;
+                            else {
+                                delta = 1;
+                                t.putTreeVal(h, key, val);
                             }
                         }
                         else if (f instanceof ReservationNode)
@@ -1923,7 +1888,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             }
         }
         if (delta != 0)
-            addCount((long)delta, binCount);
+            addCount(delta, binCount);
         return val;
     }
 
@@ -1947,19 +1912,19 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws RuntimeException or Error if the remappingFunction does so,
      *         in which case the mapping is unchanged
      */
-    public V merge(int key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        if (value == null || remappingFunction == null)
+    public int merge(int key, int value, IntToIntBiFunction remappingFunction) {
+        if (remappingFunction == null)
             throw new NullPointerException();
         int h = spread(key);
-        V val = null;
+        int val = 0;
         int delta = 0;
         int binCount = 0;
-        for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+        for (Node[] tab = table;;) {
+            Node f; int n, i, fh;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null) {
-                if (casTabAt(tab, i, null, new Node<V>(h, key, value))) {
+                if (casTabAt(tab, i, null, new Node(h, key, value))) {
                     delta = 1;
                     val = value;
                     break;
@@ -1972,52 +1937,34 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
                             binCount = 1;
-                            for (Node<V> e = f, pred = null;; ++binCount) {
-                                int ek;
+                            for (Node e = f, pred = null;; ++binCount) {
                                 if (e.hash == h &&
-                                        ((ek = e.key) == key )) {
-                                    val = remappingFunction.apply(e.val, value);
-                                    if (val != null)
-                                        e.val = val;
-                                    else {
-                                        delta = -1;
-                                        Node<V> en = e.next;
-                                        if (pred != null)
-                                            pred.next = en;
-                                        else
-                                            setTabAt(tab, i, en);
-                                    }
+                                        (e.key == key )) {
+                                    val = remappingFunction.applyAsInt(e.val, value);
+                                    e.val = val;
                                     break;
                                 }
                                 pred = e;
                                 if ((e = e.next) == null) {
                                     delta = 1;
                                     val = value;
-                                    pred.next = new Node<V>(h, key, val);
+                                    pred.next = new Node(h, key, val);
                                     break;
                                 }
                             }
                         }
                         else if (f instanceof TreeBin) {
                             binCount = 2;
-                            TreeBin<V> t = (TreeBin<V>)f;
-                            TreeNode<V> r = t.root;
-                            TreeNode<V> p = (r == null) ? null :
+                            TreeBin t = (TreeBin)f;
+                            TreeNode r = t.root;
+                            TreeNode p = (r == null) ? null :
                                     r.findTreeNode(h, key, null);
-                            val = (p == null) ? value :
-                                    remappingFunction.apply(p.val, value);
-                            if (val != null) {
-                                if (p != null)
-                                    p.val = val;
-                                else {
-                                    delta = 1;
-                                    t.putTreeVal(h, key, val);
-                                }
-                            }
-                            else if (p != null) {
-                                delta = -1;
-                                if (t.removeTreeNode(p))
-                                    setTabAt(tab, i, untreeify(t.first));
+                            val = (p == null) ? value : remappingFunction.applyAsInt(p.val, value);
+                            if (p != null)
+                                p.val = val;
+                            else {
+                                delta = 1;
+                                t.putTreeVal(h, key, val);
                             }
                         }
                         else if (f instanceof ReservationNode)
@@ -2032,7 +1979,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             }
         }
         if (delta != 0)
-            addCount((long)delta, binCount);
+            addCount(delta, binCount);
         return val;
     }
 
@@ -2043,7 +1990,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * <p>Note that this method is identical in functionality to
      * {@link #containsValue(Object)}, and exists solely to ensure
-     * full compatibility with class {@link java.util.Hashtable},
+     * full compatibility with class {@link Hashtable},
      * which supported this method prior to introduction of the
      * Java Collections Framework.
      *
@@ -2054,7 +2001,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         {@code false} otherwise
      * @throws NullPointerException if the specified value is null
      */
-    public boolean contains(Object value) {
+    public boolean contains(int value) {
         return containsValue(value);
     }
 
@@ -2065,9 +2012,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @see #keySet()
      */
     public PrimitiveIterator.OfInt keys() {
-        Node<V>[] t;
+        Node[] t;
         int f = (t = table) == null ? 0 : t.length;
-        return new KeyIterator<V>(t, f, 0, f, this);
+        return new KeyIterator(t, f, 0, f, this);
     }
 
     /**
@@ -2076,10 +2023,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @return an iterator of the values in this table
      * @see #values()
      */
-    public Iterator<V> elements() {
-        Node<V>[] t;
+    public Iterator elements() {
+        Node[] t;
         int f = (t = table) == null ? 0 : t.length;
-        return new ValueIterator<V>(t, f, 0, f, this);
+        return new ValueIterator(t, f, 0, f, this);
     }
 
     // ConcurrentHashMap-only methods
@@ -2096,36 +2043,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     public long mappingCount() {
         long n = sumCount();
-        return (n < 0L) ? 0L : n; // ignore transient negative values
-    }
-
-    /**
-     * Creates a new {@link Set} backed by a ConcurrentHashMap
-     * from the given type to {@code Boolean.TRUE}.
-     *
-     * @return the new set
-     * @since 1.8
-     */
-    public static  KeySetView<Boolean> newKeySet() {
-        return new KeySetView<Boolean>
-                (new CHashIntMap<Boolean>(), Boolean.TRUE);
-    }
-
-    /**
-     * Creates a new {@link Set} backed by a ConcurrentHashMap
-     * from the given type to {@code Boolean.TRUE}.
-     *
-     * @param initialCapacity The implementation performs internal
-     * sizing to accommodate this many elements.
-     *
-     * @return the new set
-     * @throws IllegalArgumentException if the initial capacity of
-     * elements is negative
-     * @since 1.8
-     */
-    public static KeySetView<Boolean> newKeySet(int initialCapacity) {
-        return new KeySetView<Boolean>
-                (new CHashIntMap<Boolean>(initialCapacity), Boolean.TRUE);
+        return Math.max(n, 0L); // ignore transient negative values
     }
 
     /**
@@ -2139,10 +2057,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @return the set view
      * @throws NullPointerException if the mappedValue is null
      */
-    public KeySetView<V> keySet(V mappedValue) {
-        if (mappedValue == null)
-            throw new NullPointerException();
-        return new KeySetView<V>(this, mappedValue);
+    public KeySetView keySet(int mappedValue) {
+        return new KeySetView(this, mappedValue);
     }
 
     /* ---------------- Special Nodes -------------- */
@@ -2150,17 +2066,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * A node inserted at head of bins during transfer operations.
      */
-    static final class ForwardingNode<V> extends Node<V> {
-        final Node<V>[] nextTable;
-        ForwardingNode(Node<V>[] tab) {
-            super(MOVED, 0, null);
+    static final class ForwardingNode extends Node {
+        final Node[] nextTable;
+        ForwardingNode(Node[] tab) {
+            super(MOVED, 0, 0);
             this.nextTable = tab;
         }
 
-        Node<V> find(int h, int k) {
+        Node find(int h, int k) {
             // loop to avoid arbitrarily deep recursion on forwarding nodes
-            outer: for (Node<V>[] tab = nextTable;;) {
-                Node<V> e; int n;
+            outer: for (Node[] tab = nextTable;;) {
+                Node e; int n;
                 if (tab == null || (n = tab.length) == 0 ||
                         (e = tabAt(tab, (n - 1) & h)) == null)
                     return null;
@@ -2171,7 +2087,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         return e;
                     if (eh < 0) {
                         if (e instanceof ForwardingNode) {
-                            tab = ((ForwardingNode<V>)e).nextTable;
+                            tab = ((ForwardingNode)e).nextTable;
                             continue outer;
                         }
                         else
@@ -2187,12 +2103,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * A place-holder node used in computeIfAbsent and compute.
      */
-    static final class ReservationNode<V> extends Node<V> {
+    static final class ReservationNode<V> extends Node {
         ReservationNode() {
-            super(RESERVED, 0, null);
+            super(RESERVED, 0, 0);
         }
 
-        Node<V> find(int h, int k) {
+        Node find(int h, int k) {
             return null;
         }
     }
@@ -2210,8 +2126,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Initializes table, using the size recorded in sizeCtl.
      */
-    private final Node<V>[] initTable() {
-        Node<V>[] tab; int sc;
+    private final Node[] initTable() {
+        Node[] tab; int sc;
         while ((tab = table) == null || tab.length == 0) {
             if ((sc = sizeCtl) < 0)
                 Thread.yield(); // lost initialization race; just spin
@@ -2219,8 +2135,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 try {
                     if ((tab = table) == null || tab.length == 0) {
                         int n = (sc > 0) ? sc : DEFAULT_CAPACITY;
-                        @SuppressWarnings("unchecked")
-                        Node<V>[] nt = (Node<V>[])new Node<?>[n];
+                        Node[] nt = new Node[n];
                         table = tab = nt;
                         sc = n - (n >>> 2);
                     }
@@ -2261,7 +2176,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             s = sumCount();
         }
         if (check >= 0) {
-            Node<V>[] tab, nt; int n, sc;
+            Node[] tab, nt; int n, sc;
             while (s >= (long)(sc = sizeCtl) && (tab = table) != null &&
                     (n = tab.length) < MAXIMUM_CAPACITY) {
                 int rs = resizeStamp(n);
@@ -2284,10 +2199,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Helps transfer if a resize is in progress.
      */
-    final Node<V>[] helpTransfer(Node<V>[] tab, Node<V> f) {
-        Node<V>[] nextTab; int sc;
+    final Node[] helpTransfer(Node[] tab, Node f) {
+        Node[] nextTab; int sc;
         if (tab != null && (f instanceof ForwardingNode) &&
-                (nextTab = ((ForwardingNode<V>)f).nextTable) != null) {
+                (nextTab = ((ForwardingNode)f).nextTable) != null) {
             int rs = resizeStamp(tab.length);
             while (nextTab == nextTable && table == tab &&
                     (sc = sizeCtl) < 0) {
@@ -2314,14 +2229,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 tableSizeFor(size + (size >>> 1) + 1);
         int sc;
         while ((sc = sizeCtl) >= 0) {
-            Node<V>[] tab = table; int n;
+            Node[] tab = table; int n;
             if (tab == null || (n = tab.length) == 0) {
                 n = (sc > c) ? sc : c;
                 if (U.compareAndSetInt(this, SIZECTL, sc, -1)) {
                     try {
                         if (table == tab) {
                             @SuppressWarnings("unchecked")
-                            Node<V>[] nt = (Node<V>[])new Node<?>[n];
+                            Node[] nt = new Node[n];
                             table = nt;
                             sc = n - (n >>> 2);
                         }
@@ -2345,14 +2260,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Moves and/or copies the nodes in each bin to new table. See
      * above for explanation.
      */
-    private final void transfer(Node<V>[] tab, Node<V>[] nextTab) {
+    private final void transfer(Node[] tab, Node[] nextTab) {
         int n = tab.length, stride;
         if ((stride = (NCPU > 1) ? (n >>> 3) / NCPU : n) < MIN_TRANSFER_STRIDE)
             stride = MIN_TRANSFER_STRIDE; // subdivide range
         if (nextTab == null) {            // initiating
             try {
                 @SuppressWarnings("unchecked")
-                Node<V>[] nt = (Node<V>[])new Node<?>[n << 1];
+                Node[] nt = new Node[n << 1];
                 nextTab = nt;
             } catch (Throwable ex) {      // try to cope with OOME
                 sizeCtl = Integer.MAX_VALUE;
@@ -2362,11 +2277,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             transferIndex = n;
         }
         int nextn = nextTab.length;
-        ForwardingNode<V> fwd = new ForwardingNode<V>(nextTab);
+        ForwardingNode fwd = new ForwardingNode(nextTab);
         boolean advance = true;
         boolean finishing = false; // to ensure sweep before committing nextTab
         for (int i = 0, bound = 0;;) {
-            Node<V> f; int fh;
+            Node f; int fh;
             while (advance) {
                 int nextIndex, nextBound;
                 if (--i >= bound || finishing)
@@ -2406,11 +2321,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             else {
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
-                        Node<V> ln, hn;
+                        Node ln, hn;
                         if (fh >= 0) {
                             int runBit = fh & n;
-                            Node<V> lastRun = f;
-                            for (Node<V> p = f.next; p != null; p = p.next) {
+                            Node lastRun = f;
+                            for (Node p = f.next; p != null; p = p.next) {
                                 int b = p.hash & n;
                                 if (b != runBit) {
                                     runBit = b;
@@ -2425,12 +2340,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 hn = lastRun;
                                 ln = null;
                             }
-                            for (Node<V> p = f; p != lastRun; p = p.next) {
-                                int ph = p.hash; int pk = p.key; V pv = p.val;
+                            for (Node p = f; p != lastRun; p = p.next) {
+                                int ph = p.hash; int pk = p.key; int pv = p.val;
                                 if ((ph & n) == 0)
-                                    ln = new Node<V>(ph, pk, pv, ln);
+                                    ln = new Node(ph, pk, pv, ln);
                                 else
-                                    hn = new Node<V>(ph, pk, pv, hn);
+                                    hn = new Node(ph, pk, pv, hn);
                             }
                             setTabAt(nextTab, i, ln);
                             setTabAt(nextTab, i + n, hn);
@@ -2438,13 +2353,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             advance = true;
                         }
                         else if (f instanceof TreeBin) {
-                            TreeBin<V> t = (TreeBin<V>)f;
-                            TreeNode<V> lo = null, loTail = null;
-                            TreeNode<V> hi = null, hiTail = null;
+                            TreeBin t = (TreeBin)f;
+                            TreeNode lo = null, loTail = null;
+                            TreeNode hi = null, hiTail = null;
                             int lc = 0, hc = 0;
-                            for (Node<V> e = t.first; e != null; e = e.next) {
+                            for (Node e = t.first; e != null; e = e.next) {
                                 int h = e.hash;
-                                TreeNode<V> p = new TreeNode<V>
+                                TreeNode p = new TreeNode
                                         (h, e.key, e.val, null, null);
                                 if ((h & n) == 0) {
                                     if ((p.prev = loTail) == null)
@@ -2464,9 +2379,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 }
                             }
                             ln = (lc <= UNTREEIFY_THRESHOLD) ? untreeify(lo) :
-                                    (hc != 0) ? new TreeBin<V>(lo) : t;
+                                    (hc != 0) ? new TreeBin(lo) : t;
                             hn = (hc <= UNTREEIFY_THRESHOLD) ? untreeify(hi) :
-                                    (lc != 0) ? new TreeBin<V>(hi) : t;
+                                    (lc != 0) ? new TreeBin(hi) : t;
                             setTabAt(nextTab, i, ln);
                             setTabAt(nextTab, i + n, hn);
                             setTabAt(tab, i, fwd);
@@ -2584,18 +2499,18 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Replaces all linked nodes in bin at given index unless table is
      * too small, in which case resizes instead.
      */
-    private final void treeifyBin(Node<V>[] tab, int index) {
-        Node<V> b; int n;
+    private final void treeifyBin(Node[] tab, int index) {
+        Node b; int n;
         if (tab != null) {
             if ((n = tab.length) < MIN_TREEIFY_CAPACITY)
                 tryPresize(n << 1);
             else if ((b = tabAt(tab, index)) != null && b.hash >= 0) {
                 synchronized (b) {
                     if (tabAt(tab, index) == b) {
-                        TreeNode<V> hd = null, tl = null;
-                        for (Node<V> e = b; e != null; e = e.next) {
-                            TreeNode<V> p =
-                                    new TreeNode<V>(e.hash, e.key, e.val,
+                        TreeNode hd = null, tl = null;
+                        for (Node e = b; e != null; e = e.next) {
+                            TreeNode p =
+                                    new TreeNode(e.hash, e.key, e.val,
                                             null, null);
                             if ((p.prev = tl) == null)
                                 hd = p;
@@ -2603,7 +2518,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 tl.next = p;
                             tl = p;
                         }
-                        setTabAt(tab, index, new TreeBin<V>(hd));
+                        setTabAt(tab, index, new TreeBin(hd));
                     }
                 }
             }
@@ -2613,10 +2528,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Returns a list of non-TreeNodes replacing those in given list.
      */
-    static <V> Node<V> untreeify(Node<V> b) {
-        Node<V> hd = null, tl = null;
-        for (Node<V> q = b; q != null; q = q.next) {
-            Node<V> p = new Node<V>(q.hash, q.key, q.val);
+    static Node untreeify(Node b) {
+        Node hd = null, tl = null;
+        for (Node q = b; q != null; q = q.next) {
+            Node p = new Node(q.hash, q.key, q.val);
             if (tl == null)
                 hd = p;
             else
@@ -2631,20 +2546,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Nodes for use in TreeBins.
      */
-    static final class TreeNode<V> extends Node<V> {
-        TreeNode<V> parent;  // red-black tree links
-        TreeNode<V> left;
-        TreeNode<V> right;
-        TreeNode<V> prev;    // needed to unlink next upon deletion
+    static final class TreeNode extends Node {
+        TreeNode parent;  // red-black tree links
+        TreeNode left;
+        TreeNode right;
+        TreeNode prev;    // needed to unlink next upon deletion
         boolean red;
 
-        TreeNode(int hash, int key, V val, Node<V> next,
-                 TreeNode<V> parent) {
+        TreeNode(int hash, int key, int val, Node next,
+                 TreeNode parent) {
             super(hash, key, val, next);
             this.parent = parent;
         }
 
-        Node<V> find(int h, int k) {
+        Node find(int h, int k) {
             return findTreeNode(h, k, null);
         }
 
@@ -2652,11 +2567,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * Returns the TreeNode (or null if not found) for the given key
          * starting at given root.
          */
-        final TreeNode<V> findTreeNode(int h, int k, Class<?> kc) {
-            TreeNode<V> p = this;
+        final TreeNode findTreeNode(int h, int k, Class<?> kc) {
+            TreeNode p = this;
             do {
-                int ph, dir; int pk; TreeNode<V> q;
-                TreeNode<V> pl = p.left, pr = p.right;
+                int ph, dir; int pk; TreeNode q;
+                TreeNode pl = p.left, pr = p.right;
                 if ((ph = p.hash) > h)
                     p = pl;
                 else if (ph < h)
@@ -2689,9 +2604,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * forcing writers (who hold bin lock) to wait for readers (who do
      * not) to complete before tree restructuring operations.
      */
-    static final class TreeBin<V> extends Node<V> {
-        TreeNode<V> root;
-        volatile TreeNode<V> first;
+    static final class TreeBin extends Node {
+        TreeNode root;
+        volatile TreeNode first;
         volatile Thread waiter;
         volatile int lockState;
         // values for lockState
@@ -2719,12 +2634,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         /**
          * Creates bin with initial set of nodes headed by b.
          */
-        TreeBin(TreeNode<V> b) {
-            super(TREEBIN, 0, null);
+        TreeBin(TreeNode b) {
+            super(TREEBIN, 0, 0);
             this.first = b;
-            TreeNode<V> r = null;
-            for (TreeNode<V> x = b, next; x != null; x = next) {
-                next = (TreeNode<V>)x.next;
+            TreeNode r = null;
+            for (TreeNode x = b, next; x != null; x = next) {
+                next = (TreeNode)x.next;
                 x.left = x.right = null;
                 if (r == null) {
                     x.parent = null;
@@ -2735,7 +2650,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     int k = x.key;
                     int h = x.hash;
                     Class<?> kc = null;
-                    for (TreeNode<V> p = r;;) {
+                    for (TreeNode p = r;;) {
                         int dir, ph;
                         int pk = p.key;
                         if ((ph = p.hash) > h)
@@ -2746,7 +2661,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 (kc = comparableClassFor(k)) == null) ||
                                 (dir = compareComparables(kc, k, pk)) == 0)
                             dir = tieBreakOrder(k, pk);
-                        TreeNode<V> xp = p;
+                        TreeNode xp = p;
                         if ((p = (dir <= 0) ? p.left : p.right) == null) {
                             x.parent = xp;
                             if (dir <= 0)
@@ -2807,8 +2722,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * using tree comparisons from root, but continues linear
          * search when lock not available.
          */
-        final Node<V> find(int h, int k) {
-            for (Node<V> e = first; e != null; ) {
+        final Node find(int h, int k) {
+            for (Node e = first; e != null; ) {
                 int s; int ek;
                 if (((s = lockState) & (WAITER|WRITER)) != 0) {
                     if (e.hash == h &&
@@ -2818,7 +2733,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 }
                 else if (U.compareAndSetInt(this, LOCKSTATE, s,
                         s + READER)) {
-                    TreeNode<V> r, p;
+                    TreeNode r, p;
                     try {
                         p = ((r = root) == null ? null :
                                 r.findTreeNode(h, k, null));
@@ -2838,13 +2753,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * Finds or adds a node.
          * @return null if added
          */
-        final TreeNode<V> putTreeVal(int h, int k, V v) {
+        final TreeNode putTreeVal(int h, int k, int v) {
             Class<?> kc = null;
             boolean searched = false;
-            for (TreeNode<V> p = root;;) {
+            for (TreeNode p = root;;) {
                 int dir, ph; int pk;
                 if (p == null) {
-                    first = root = new TreeNode<V>(h, k, v, null, null);
+                    first = root = new TreeNode(h, k, v, null, null);
                     break;
                 }
                 else if ((ph = p.hash) > h)
@@ -2857,7 +2772,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         (kc = comparableClassFor(k)) == null) ||
                         (dir = compareComparables(kc, k, pk)) == 0) {
                     if (!searched) {
-                        TreeNode<V> q, ch;
+                        TreeNode q, ch;
                         searched = true;
                         if (((ch = p.left) != null &&
                                 (q = ch.findTreeNode(h, k, kc)) != null) ||
@@ -2868,10 +2783,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     dir = tieBreakOrder(k, pk);
                 }
 
-                TreeNode<V> xp = p;
+                TreeNode xp = p;
                 if ((p = (dir <= 0) ? p.left : p.right) == null) {
-                    TreeNode<V> x, f = first;
-                    first = x = new TreeNode<V>(h, k, v, f, xp);
+                    TreeNode x, f = first;
+                    first = x = new TreeNode(h, k, v, f, xp);
                     if (f != null)
                         f.prev = x;
                     if (dir <= 0)
@@ -2905,10 +2820,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          *
          * @return true if now too small, so should be untreeified
          */
-        final boolean removeTreeNode(TreeNode<V> p) {
-            TreeNode<V> next = (TreeNode<V>)p.next;
-            TreeNode<V> pred = p.prev;  // unlink traversal pointers
-            TreeNode<V> r, rl;
+        final boolean removeTreeNode(TreeNode p) {
+            TreeNode next = (TreeNode)p.next;
+            TreeNode pred = p.prev;  // unlink traversal pointers
+            TreeNode r, rl;
             if (pred == null)
                 first = next;
             else
@@ -2924,22 +2839,22 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 return true;
             lockRoot();
             try {
-                TreeNode<V> replacement;
-                TreeNode<V> pl = p.left;
-                TreeNode<V> pr = p.right;
+                TreeNode replacement;
+                TreeNode pl = p.left;
+                TreeNode pr = p.right;
                 if (pl != null && pr != null) {
-                    TreeNode<V> s = pr, sl;
+                    TreeNode s = pr, sl;
                     while ((sl = s.left) != null) // find successor
                         s = sl;
                     boolean c = s.red; s.red = p.red; p.red = c; // swap colors
-                    TreeNode<V> sr = s.right;
-                    TreeNode<V> pp = p.parent;
+                    TreeNode sr = s.right;
+                    TreeNode pp = p.parent;
                     if (s == pr) { // p was s's direct parent
                         p.parent = s;
                         s.right = p;
                     }
                     else {
-                        TreeNode<V> sp = s.parent;
+                        TreeNode sp = s.parent;
                         if ((p.parent = sp) != null) {
                             if (s == sp.left)
                                 sp.left = p;
@@ -2972,7 +2887,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 else
                     replacement = p;
                 if (replacement != p) {
-                    TreeNode<V> pp = replacement.parent = p.parent;
+                    TreeNode pp = replacement.parent = p.parent;
                     if (pp == null)
                         r = replacement;
                     else if (p == pp.left)
@@ -2985,7 +2900,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 root = (p.red) ? r : balanceDeletion(r, replacement);
 
                 if (p == replacement) {  // detach pointers
-                    TreeNode<V> pp;
+                    TreeNode pp;
                     if ((pp = p.parent) != null) {
                         if (p == pp.left)
                             pp.left = null;
@@ -3004,9 +2919,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         /* ------------------------------------------------------------ */
         // Red-black tree methods, all adapted from CLR
 
-        static <V> TreeNode<V> rotateLeft(TreeNode<V> root,
-                                              TreeNode<V> p) {
-            TreeNode<V> r, pp, rl;
+        static TreeNode rotateLeft(TreeNode root,
+                                              TreeNode p) {
+            TreeNode r, pp, rl;
             if (p != null && (r = p.right) != null) {
                 if ((rl = p.right = r.left) != null)
                     rl.parent = p;
@@ -3022,9 +2937,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             return root;
         }
 
-        static <V> TreeNode<V> rotateRight(TreeNode<V> root,
-                                               TreeNode<V> p) {
-            TreeNode<V> l, pp, lr;
+        static TreeNode rotateRight(TreeNode root,
+                                               TreeNode p) {
+            TreeNode l, pp, lr;
             if (p != null && (l = p.left) != null) {
                 if ((lr = p.left = l.right) != null)
                     lr.parent = p;
@@ -3040,10 +2955,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             return root;
         }
 
-        static <V> TreeNode<V> balanceInsertion(TreeNode<V> root,
-                                                    TreeNode<V> x) {
+        static TreeNode balanceInsertion(TreeNode root,
+                                                    TreeNode x) {
             x.red = true;
-            for (TreeNode<V> xp, xpp, xppl, xppr;;) {
+            for (TreeNode xp, xpp, xppl, xppr;;) {
                 if ((xp = x.parent) == null) {
                     x.red = false;
                     return x;
@@ -3095,9 +3010,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             }
         }
 
-        static <V> TreeNode<V> balanceDeletion(TreeNode<V> root,
-                                                   TreeNode<V> x) {
-            for (TreeNode<V> xp, xpl, xpr;;) {
+        static TreeNode balanceDeletion(TreeNode root,
+                                                   TreeNode x) {
+            for (TreeNode xp, xpl, xpr;;) {
                 if (x == null || x == root)
                     return root;
                 else if ((xp = x.parent) == null) {
@@ -3118,7 +3033,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (xpr == null)
                         x = xp;
                     else {
-                        TreeNode<V> sl = xpr.left, sr = xpr.right;
+                        TreeNode sl = xpr.left, sr = xpr.right;
                         if ((sr == null || !sr.red) &&
                                 (sl == null || !sl.red)) {
                             xpr.red = true;
@@ -3156,7 +3071,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (xpl == null)
                         x = xp;
                     else {
-                        TreeNode<V> sl = xpl.left, sr = xpl.right;
+                        TreeNode sl = xpl.left, sr = xpl.right;
                         if ((sl == null || !sl.red) &&
                                 (sr == null || !sr.red)) {
                             xpl.red = true;
@@ -3190,9 +3105,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         /**
          * Checks invariants recursively for the tree of Nodes rooted at t.
          */
-        static <V> boolean checkInvariants(TreeNode<V> t) {
-            TreeNode<V> tp = t.parent, tl = t.left, tr = t.right,
-                    tb = t.prev, tn = (TreeNode<V>)t.next;
+        static boolean checkInvariants(TreeNode t) {
+            TreeNode tp = t.parent, tl = t.left, tr = t.right,
+                    tb = t.prev, tn = (TreeNode)t.next;
             if (tb != null && tb.next != t)
                 return false;
             if (tn != null && tn.prev != t)
@@ -3223,11 +3138,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * traverser that must process a region of a forwarded table before
      * proceeding with current table.
      */
-    static final class TableStack<V> {
+    static final class TableStack {
         int length;
         int index;
-        Node<V>[] tab;
-        TableStack<V> next;
+        Node[] tab;
+        TableStack next;
     }
 
     /**
@@ -3252,15 +3167,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * for a table read.
      */
     static class Traverser<V> {
-        Node<V>[] tab;        // current table; updated if resized
-        Node<V> next;         // the next entry to use
-        TableStack<V> stack, spare; // to save/restore on ForwardingNodes
+        Node[] tab;        // current table; updated if resized
+        Node next;         // the next entry to use
+        TableStack stack, spare; // to save/restore on ForwardingNodes
         int index;              // index of bin to use next
         int baseIndex;          // current index of initial table
         int baseLimit;          // index bound for initial table
         final int baseSize;     // initial table size
 
-        Traverser(Node<V>[] tab, int size, int index, int limit) {
+        Traverser(Node[] tab, int size, int index, int limit) {
             this.tab = tab;
             this.baseSize = size;
             this.baseIndex = this.index = index;
@@ -3271,12 +3186,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         /**
          * Advances if possible, returning next valid node, or null if none.
          */
-        final Node<V> advance() {
-            Node<V> e;
+        final Node advance() {
+            Node e;
             if ((e = next) != null)
                 e = e.next;
             for (;;) {
-                Node<V>[] t; int i, n;  // must use locals in checks
+                Node[] t; int i, n;  // must use locals in checks
                 if (e != null)
                     return next = e;
                 if (baseIndex >= baseLimit || (t = tab) == null ||
@@ -3284,13 +3199,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     return next = null;
                 if ((e = tabAt(t, i)) != null && e.hash < 0) {
                     if (e instanceof ForwardingNode) {
-                        tab = ((ForwardingNode<V>)e).nextTable;
+                        tab = ((ForwardingNode)e).nextTable;
                         e = null;
                         pushState(t, i, n);
                         continue;
                     }
                     else if (e instanceof TreeBin)
-                        e = ((TreeBin<V>)e).first;
+                        e = ((TreeBin)e).first;
                     else
                         e = null;
                 }
@@ -3304,12 +3219,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         /**
          * Saves traversal state upon encountering a forwarding node.
          */
-        private void pushState(Node<V>[] t, int i, int n) {
-            TableStack<V> s = spare;  // reuse if possible
+        private void pushState(Node[] t, int i, int n) {
+            TableStack s = spare;  // reuse if possible
             if (s != null)
                 spare = s.next;
             else
-                s = new TableStack<V>();
+                s = new TableStack();
             s.tab = t;
             s.length = n;
             s.index = i;
@@ -3323,13 +3238,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * @param n length of current table
          */
         private void recoverState(int n) {
-            TableStack<V> s; int len;
+            TableStack s; int len;
             while ((s = stack) != null && (index += (len = s.length)) >= n) {
                 n = len;
                 index = s.index;
                 tab = s.tab;
                 s.tab = null;
-                TableStack<V> next = s.next;
+                TableStack next = s.next;
                 s.next = spare; // save for reuse
                 stack = next;
                 spare = s;
@@ -3343,11 +3258,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Base of key, value, and entry Iterators. Adds fields to
      * Traverser to support iterator.remove.
      */
-    static class BaseIterator<V> extends Traverser<V> {
-        final CHashIntMap<V> map;
-        Node<V> lastReturned;
-        BaseIterator(Node<V>[] tab, int size, int index, int limit,
-                     CHashIntMap<V> map) {
+    static class BaseIterator extends Traverser {
+        final CHashIntIntMap map;
+        Node lastReturned;
+        BaseIterator(Node[] tab, int size, int index, int limit,
+                     CHashIntIntMap map) {
             super(tab, size, index, limit);
             this.map = map;
             advance();
@@ -3356,23 +3271,23 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         public final boolean hasNext() { return next != null; }
 
         public final void remove() {
-            Node<V> p;
+            Node p;
             if ((p = lastReturned) == null)
                 throw new IllegalStateException();
             lastReturned = null;
-            map.replaceNode(p.key, null, null);
+            map.replaceNode(p.key, 0, 0);
         }
     }
 
-    static final class KeyIterator<V> extends BaseIterator<V>
+    static final class KeyIterator extends BaseIterator
             implements PrimitiveIterator.OfInt {
-        KeyIterator(Node<V>[] tab, int size, int index, int limit,
-                    CHashIntMap<V> map) {
+        KeyIterator(Node[] tab, int size, int index, int limit,
+                    CHashIntIntMap map) {
             super(tab, size, index, limit, map);
         }
 
         public final int nextInt() {
-            Node<V> p;
+            Node p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
             int k = p.key;
@@ -3382,68 +3297,68 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
     }
 
-    static final class ValueIterator<V> extends BaseIterator<V>
-            implements Iterator<V> {
-        ValueIterator(Node<V>[] tab, int size, int index, int limit,
-                      CHashIntMap<V> map) {
+    static final class ValueIterator extends BaseIterator
+            implements PrimitiveIterator.OfInt {
+        ValueIterator(Node[] tab, int size, int index, int limit,
+                      CHashIntIntMap map) {
             super(tab, size, index, limit, map);
         }
 
-        public final V next() {
-            Node<V> p;
+        public final int nextInt() {
+            Node p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
-            V v = p.val;
+            int v = p.val;
             lastReturned = p;
             advance();
             return v;
         }
     }
 
-    static final class EntryIterator<V> extends BaseIterator<V>
-            implements Iterator<IntMap.Entry<V>> {
-        EntryIterator(Node<V>[] tab, int size, int index, int limit,
-                      CHashIntMap<V> map) {
+    static final class EntryIterator extends BaseIterator
+            implements Iterator<Entry> {
+        EntryIterator(Node[] tab, int size, int index, int limit,
+                      CHashIntIntMap map) {
             super(tab, size, index, limit, map);
         }
 
-        public final IntMap.Entry<V> next() {
-            Node<V> p;
+        public final Entry next() {
+            Node p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
             int k = p.key;
-            V v = p.val;
+            int v = p.val;
             lastReturned = p;
             advance();
-            return new MapEntry<V>(k, v, map);
+            return new MapEntry(k, v, map);
         }
     }
 
     /**
      * Exported Entry for EntryIterator.
      */
-    static final class MapEntry<V> implements IntMap.Entry<V> {
+    static final class MapEntry implements Entry {
         final int key; // non-null
-        V val;       // non-null
-        final CHashIntMap<V> map;
-        MapEntry(int key, V val, CHashIntMap<V> map) {
+        int val;       // non-null
+        final CHashIntIntMap map;
+        MapEntry(int key, int val, CHashIntIntMap map) {
             this.key = key;
             this.val = val;
             this.map = map;
         }
         public int getKey()        { return key; }
-        public V getValue()      { return val; }
-        public int hashCode()    { return key ^ val.hashCode(); }
+        public int getValue()      { return val; }
+        public int hashCode()    { return key ^ val; }
         public String toString() {
             return key + "=" + val;
         }
 
         public boolean equals(Object o) {
-            Object k, v; IntMap.Entry<?> e;
-            return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+            int v; Entry e;
+            return ((o instanceof IntIntMap.Entry) &&
+                    (v = (e = (Entry)o).getValue()) != 0 &&
                     (e.getKey() == key) &&
-                    (v == val || v.equals(val)));
+                    (v == val));
         }
 
         /**
@@ -3454,40 +3369,39 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * could even have been removed, in which case the put will
          * re-establish). We do not and cannot guarantee more.
          */
-        public V setValue(V value) {
-            if (value == null) throw new NullPointerException();
-            V v = val;
+        public int setValue(int value) {
+            int v = val;
             val = value;
             map.put(key, value);
             return v;
         }
     }
 
-    static final class KeySpliterator<V> extends Traverser<V>
+    static final class KeySpliterator extends Traverser
             implements Spliterator.OfInt {
         long est;               // size estimate
-        KeySpliterator(Node<V>[] tab, int size, int index, int limit,
+        KeySpliterator(Node[] tab, int size, int index, int limit,
                        long est) {
             super(tab, size, index, limit);
             this.est = est;
         }
 
-        public KeySpliterator<V> trySplit() {
+        public KeySpliterator trySplit() {
             int i, f, h;
             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
-                    new KeySpliterator<V>(tab, baseSize, baseLimit = h,
+                    new KeySpliterator(tab, baseSize, baseLimit = h,
                             f, est >>>= 1);
         }
 
         public void forEachRemaining(IntConsumer action) {
             if (action == null) throw new NullPointerException();
-            for (Node<V> p; (p = advance()) != null;)
+            for (Node p; (p = advance()) != null;)
                 action.accept(p.key);
         }
 
         public boolean tryAdvance(IntConsumer action) {
             if (action == null) throw new NullPointerException();
-            Node<V> p;
+            Node p;
             if ((p = advance()) == null)
                 return false;
             action.accept(p.key);
@@ -3505,7 +3419,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     static final class ValueSpliterator<V> extends Traverser<V>
             implements Spliterator<V> {
         long est;               // size estimate
-        ValueSpliterator(Node<V>[] tab, int size, int index, int limit,
+        ValueSpliterator(Node[] tab, int size, int index, int limit,
                          long est) {
             super(tab, size, index, limit);
             this.est = est;
@@ -3518,15 +3432,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             f, est >>>= 1);
         }
 
-        public void forEachRemaining(Consumer<? super V> action) {
+        public void forEachRemaining(IntConsumer action) {
             if (action == null) throw new NullPointerException();
-            for (Node<V> p; (p = advance()) != null;)
+            for (Node p; (p = advance()) != null;)
                 action.accept(p.val);
         }
 
-        public boolean tryAdvance(Consumer<? super V> action) {
+        public boolean tryAdvance(IntConsumer action) {
             if (action == null) throw new NullPointerException();
-            Node<V> p;
+            Node p;
             if ((p = advance()) == null)
                 return false;
             action.accept(p.val);
@@ -3540,36 +3454,36 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
     }
 
-    static final class EntrySpliterator<V> extends Traverser<V>
-            implements Spliterator<IntMap.Entry<V>> {
-        final CHashIntMap<V> map; // To export MapEntry
+    static final class EntrySpliterator extends Traverser
+            implements Spliterator<Entry> {
+        final CHashIntIntMap map; // To export MapEntry
         long est;               // size estimate
-        EntrySpliterator(Node<V>[] tab, int size, int index, int limit,
-                         long est, CHashIntMap<V> map) {
+        EntrySpliterator(Node[] tab, int size, int index, int limit,
+                         long est, CHashIntIntMap map) {
             super(tab, size, index, limit);
             this.map = map;
             this.est = est;
         }
 
-        public EntrySpliterator<V> trySplit() {
+        public EntrySpliterator trySplit() {
             int i, f, h;
             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
-                    new EntrySpliterator<>(tab, baseSize, baseLimit = h,
+                    new EntrySpliterator(tab, baseSize, baseLimit = h,
                             f, est >>>= 1, map);
         }
 
-        public void forEachRemaining(Consumer<? super IntMap.Entry<V>> action) {
+        public void forEachRemaining(Consumer<? super Entry> action) {
             if (action == null) throw new NullPointerException();
-            for (Node<V> p; (p = advance()) != null; )
-                action.accept(new MapEntry<V>(p.key, p.val, map));
+            for (Node p; (p = advance()) != null; )
+                action.accept(new MapEntry(p.key, p.val, map));
         }
 
-        public boolean tryAdvance(Consumer<? super IntMap.Entry<V>> action) {
+        public boolean tryAdvance(Consumer<? super Entry> action) {
             if (action == null) throw new NullPointerException();
-            Node<V> p;
+            Node p;
             if ((p = advance()) == null)
                 return false;
-            action.accept(new MapEntry<V>(p.key, p.val, map));
+            action.accept(new MapEntry(p.key, p.val, map));
             return true;
         }
 
@@ -3608,9 +3522,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public void forEach(long parallelismThreshold,
-                        IntBiConsumer<? super V> action) {
+                        IntIntBiConsumer action) {
         if (action == null) throw new NullPointerException();
-        new ForEachMappingTask<V>
+        new ForEachMappingTask
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         action).invoke();
     }
@@ -4147,7 +4061,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public void forEachEntry(long parallelismThreshold,
-                             Consumer<? super IntMap.Entry<V>> action) {
+                             Consumer<? super Entry<V>> action) {
         if (action == null) throw new NullPointerException();
         new ForEachEntryTask<V>(null, batchFor(parallelismThreshold), 0, 0, table,
                 action).invoke();
@@ -4167,7 +4081,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> void forEachEntry(long parallelismThreshold,
-                                 Function<IntMap.Entry<V>, ? extends U> transformer,
+                                 Function<Entry<V>, ? extends U> transformer,
                                  Consumer<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
@@ -4193,7 +4107,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U searchEntries(long parallelismThreshold,
-                               Function<IntMap.Entry<V>, ? extends U> searchFunction) {
+                               Function<Entry<V>, ? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
         return new SearchEntriesTask<V,U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4210,8 +4124,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @return the result of accumulating all entries
      * @since 1.8
      */
-    public IntMap.Entry<V> reduceEntries(long parallelismThreshold,
-                                        BiFunction<IntMap.Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer) {
+    public Entry<V> reduceEntries(long parallelismThreshold,
+                                        BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer) {
         if (reducer == null) throw new NullPointerException();
         return new ReduceEntriesTask<V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4235,7 +4149,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U reduceEntries(long parallelismThreshold,
-                               Function<IntMap.Entry<V>, ? extends U> transformer,
+                               Function<Entry<V>, ? extends U> transformer,
                                BiFunction<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
@@ -4260,7 +4174,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public double reduceEntriesToDouble(long parallelismThreshold,
-                                        ToDoubleFunction<IntMap.Entry<V>> transformer,
+                                        ToDoubleFunction<Entry<V>> transformer,
                                         double basis,
                                         DoubleBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4286,7 +4200,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public long reduceEntriesToLong(long parallelismThreshold,
-                                    ToLongFunction<IntMap.Entry<V>> transformer,
+                                    ToLongFunction<Entry<V>> transformer,
                                     long basis,
                                     LongBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4312,7 +4226,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public int reduceEntriesToInt(long parallelismThreshold,
-                                  ToIntFunction<IntMap.Entry<V>> transformer,
+                                  ToIntFunction<Entry<V>> transformer,
                                   int basis,
                                   IntBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4329,17 +4243,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Base class for views.
      */
     abstract static class CollectionView<V,E>
-            implements Collection<E>, java.io.Serializable {
+            implements Collection<E>, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
-        final CHashIntMap<V> map;
-        CollectionView(CHashIntMap<V> map)  { this.map = map; }
+        final CHashIntIntMap<V> map;
+        CollectionView(CHashIntIntMap<V> map)  { this.map = map; }
 
         /**
          * Returns the map backing this view.
          *
          * @return the map backing this view
          */
-        public CHashIntMap<V> getMap() { return map; }
+        public CHashIntIntMap<V> getMap() { return map; }
 
         /**
          * Removes all of the elements from this view, by removing all
@@ -4502,11 +4416,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public static class KeySetView<V>
-            implements IntSet, java.io.Serializable {
+            implements IntSet, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         private final V value;
-        final CHashIntMap<V> map;
-        KeySetView(CHashIntMap<V> map, V value) {  // non-public
+        final CHashIntIntMap<V> map;
+        KeySetView(CHashIntIntMap<V> map, V value) {  // non-public
             this.map = map;
             this.value = value;
         }
@@ -4516,7 +4430,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          *
          * @return the map backing this view
          */
-        public CHashIntMap<V> getMap() { return map; }
+        public CHashIntIntMap<V> getMap() { return map; }
 
         /**
          * Removes all of the elements from this view, by removing all
@@ -4555,7 +4469,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          */
         public PrimitiveIterator.OfInt iterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashIntIntMap<V> m = map;
             int f = (t = m.table) == null ? 0 : t.length;
             return new KeyIterator<>(t, f, 0, f, m);
         }
@@ -4738,19 +4652,19 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
 
         public Spliterator.OfInt spliterator() {
-            Node<V>[] t;
-            CHashIntMap<V> m = map;
+            Node[] t;
+            CHashIntIntMap m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
-            return new KeySpliterator<V>(t, f, 0, f, n < 0L ? 0L : n);
+            return new KeySpliterator<V>(t, f, 0, f, Math.max(n, 0L));
         }
 
         public void forEach(IntConsumer action) {
             if (action == null) throw new NullPointerException();
-            Node<V>[] t;
+            Node[] t;
             if ((t = map.table) != null) {
-                Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
-                for (Node<V> p; (p = it.advance()) != null; )
+                Traverser it = new Traverser(t, t.length, 0, t.length);
+                for (Node p; (p = it.advance()) != null; )
                     action.accept(p.key);
             }
         }
@@ -4762,9 +4676,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * directly instantiated. See {@link #values()}.
      */
     static final class ValuesView<V> extends CollectionView<V,V>
-            implements Collection<V>, java.io.Serializable {
+            implements IntCollection, Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
-        ValuesView(CHashIntMap<V> map) { super(map); }
+        ValuesView(CHashIntIntMap map) { super(map); }
         public final boolean contains(Object o) {
             return map.containsValue(o);
         }
@@ -4782,7 +4696,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
 
         public final Iterator<V> iterator() {
-            CHashIntMap<V> m = map;
+            CHashIntIntMap<V> m = map;
             Node<V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
             return new ValueIterator<V>(t, f, 0, f, m);
@@ -4813,7 +4727,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
 
         public Spliterator<V> spliterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashIntIntMap<V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new ValueSpliterator<V>(t, f, 0, f, n < 0L ? 0L : n);
@@ -4835,32 +4749,32 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * entries.  This class cannot be directly instantiated. See
      * {@link #entrySet()}.
      */
-    static final class EntrySetView<V> extends CollectionView<V,IntMap.Entry<V>>
-            implements Set<IntMap.Entry<V>>, java.io.Serializable {
+    static final class EntrySetView<V> extends CollectionView<V, Entry<V>>
+            implements Set<Entry<V>>, Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
-        EntrySetView(CHashIntMap<V> map) { super(map); }
+        EntrySetView(CHashIntIntMap<V> map) { super(map); }
 
         public boolean contains(Object o) {
-            Object v, r; IntMap.Entry<?> e;
+            Object v, r; Entry<?> e;
             int k;
             return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+                    (v = (e = (Entry<?>)o).getValue()) != null &&
                     (r = map.get(e.getKey())) != null &&
                     (v == r || v.equals(r)));
         }
 
         public boolean remove(Object o) {
-            Object v; IntMap.Entry<?> e;
+            Object v; Entry<?> e;
             return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+                    (v = (e = (Entry<?>)o).getValue()) != null &&
                     map.remove(e.getKey(), v));
         }
 
         /**
          * @return an iterator over the entries of the backing map
          */
-        public Iterator<IntMap.Entry<V>> iterator() {
-            CHashIntMap<V> m = map;
+        public Iterator<Entry<V>> iterator() {
+            CHashIntIntMap<V> m = map;
             Node<V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
             return new EntryIterator<V>(t, f, 0, f, m);
@@ -4902,15 +4816,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             (containsAll(c) && c.containsAll(this))));
         }
 
-        public Spliterator<IntMap.Entry<V>> spliterator() {
+        public Spliterator<Entry<V>> spliterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashIntIntMap<V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new EntrySpliterator<V>(t, f, 0, f, n < 0L ? 0L : n, m);
         }
 
-        public void forEach(Consumer<? super IntMap.Entry<V>> action) {
+        public void forEach(Consumer<? super Entry<V>> action) {
             if (action == null) throw new NullPointerException();
             Node<V>[] t;
             if ((t = map.table) != null) {
@@ -5200,16 +5114,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class ForEachTransformedEntryTask<V,U>
             extends BulkTask<V,Void> {
-        final Function<IntMap.Entry<V>, ? extends U> transformer;
+        final Function<Entry<V>, ? extends U> transformer;
         final Consumer<? super U> action;
         ForEachTransformedEntryTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 Function<IntMap.Entry<V>, ? extends U> transformer, Consumer<? super U> action) {
+                 Function<Entry<V>, ? extends U> transformer, Consumer<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final Function<IntMap.Entry<V>, ? extends U> transformer;
+            final Function<Entry<V>, ? extends U> transformer;
             final Consumer<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
@@ -5535,20 +5449,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
 
     @SuppressWarnings("serial")
     static final class ReduceEntriesTask<V>
-            extends BulkTask<V,IntMap.Entry<V>> {
-        final BiFunction<IntMap.Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer;
-        IntMap.Entry<V> result;
+            extends BulkTask<V, Entry<V>> {
+        final BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer;
+        Entry<V> result;
         ReduceEntriesTask<V> rights, nextRight;
         ReduceEntriesTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  ReduceEntriesTask<V> nextRight,
-                 BiFunction<Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer) {
+                 BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final IntMap.Entry<V> getRawResult() { return result; }
+        public final Entry<V> getRawResult() { return result; }
         public final void compute() {
-            final BiFunction<IntMap.Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer;
+            final BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -5557,7 +5471,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                IntMap.Entry<V> r = null;
+                Entry<V> r = null;
                 for (Node<V> p; (p = advance()) != null; )
                     r = (r == null) ? p : reducer.apply(r, p);
                 result = r;
@@ -5568,7 +5482,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             t = (ReduceEntriesTask<V>)c,
                             s = t.rights;
                     while (s != null) {
-                        IntMap.Entry<V> tr, sr;
+                        Entry<V> tr, sr;
                         if ((sr = s.result) != null)
                             t.result = (((tr = t.result) == null) ? sr :
                                     reducer.apply(tr, sr));
@@ -5690,14 +5604,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesTask<V,U>
             extends BulkTask<V,U> {
-        final Function<IntMap.Entry<V>, ? extends U> transformer;
+        final Function<Entry<V>, ? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
         MapReduceEntriesTask<V,U> rights, nextRight;
         MapReduceEntriesTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesTask<V,U> nextRight,
-                 Function<IntMap.Entry<V>, ? extends U> transformer,
+                 Function<Entry<V>, ? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5705,7 +5619,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final Function<IntMap.Entry<V>, ? extends U> transformer;
+            final Function<Entry<V>, ? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5898,7 +5812,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToDoubleTask<V>
             extends BulkTask<V,Double> {
-        final ToDoubleFunction<IntMap.Entry<V>> transformer;
+        final ToDoubleFunction<Entry<V>> transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
@@ -5906,7 +5820,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceEntriesToDoubleTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesToDoubleTask<V> nextRight,
-                 ToDoubleFunction<IntMap.Entry<V>> transformer,
+                 ToDoubleFunction<Entry<V>> transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5915,7 +5829,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleFunction<IntMap.Entry<V>> transformer;
+            final ToDoubleFunction<Entry<V>> transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6098,7 +6012,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToLongTask<V>
             extends BulkTask<V,Long> {
-        final ToLongFunction<IntMap.Entry<V>> transformer;
+        final ToLongFunction<Entry<V>> transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
@@ -6106,7 +6020,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceEntriesToLongTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesToLongTask<V> nextRight,
-                 ToLongFunction<IntMap.Entry<V>> transformer,
+                 ToLongFunction<Entry<V>> transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6115,7 +6029,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongFunction<IntMap.Entry<V>> transformer;
+            final ToLongFunction<Entry<V>> transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6298,7 +6212,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToIntTask<V>
             extends BulkTask<V,Integer> {
-        final ToIntFunction<IntMap.Entry<V>> transformer;
+        final ToIntFunction<Entry<V>> transformer;
         final IntBinaryOperator reducer;
         final int basis;
         int result;
@@ -6306,7 +6220,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceEntriesToIntTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesToIntTask<V> nextRight,
-                 ToIntFunction<IntMap.Entry<V>> transformer,
+                 ToIntFunction<Entry<V>> transformer,
                  int basis,
                  IntBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6315,7 +6229,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Integer getRawResult() { return result; }
         public final void compute() {
-            final ToIntFunction<IntMap.Entry<V>> transformer;
+            final ToIntFunction<Entry<V>> transformer;
             final IntBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
