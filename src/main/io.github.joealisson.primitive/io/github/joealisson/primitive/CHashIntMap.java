@@ -3777,7 +3777,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     public void forEachKey(long parallelismThreshold,
                            IntConsumer action) {
         if (action == null) throw new NullPointerException();
-        new ForEachKeyTask<V>
+        new ForEachKeyTask<>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         action).invoke();
     }

@@ -27,18 +27,18 @@ import io.github.joealisson.primitive.pair.abstracts.AbstractLongObject;
  */
 public class LongObjectImpl<G> extends AbstractLongObject<G>
 {
-	public LongObjectImpl(long key, G value)
-	{
-		super(key, value);
-	}
+    public LongObjectImpl(long key, G value)
+    {
+        super(key, value);
+    }
 
-	@Override
-	public G setValue(G value)
-	{
-		G old = _value;
+    @Override
+    public G setValue(G value)
+    {
+        G old = _value;
 
-		_value = value;
+        _value = value;
 
-		return old;
-	}
+        return old;
+    }
 }

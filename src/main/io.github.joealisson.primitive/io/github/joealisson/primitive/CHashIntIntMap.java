@@ -241,7 +241,6 @@ import java.util.stream.Stream;
  *
  * @since 1.5
  * @author Doug Lea
- * @param <V> the type of mapped values
  */
 public class CHashIntIntMap extends AbstractIntIntMap
         implements ConcurrentIntIntMap, Serializable {
@@ -1846,7 +1845,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
                                         ((ek = e.key) == key )) {
                                     val = remappingFunction.applyAsInt(key, e.val);
                                     e.val = val;
-                                    break;null
+                                    break;
                                 }
                                 pred = e;
                                 if ((e = e.next) == null) {
@@ -1989,7 +1988,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * Tests if some key maps into the specified value in this table.
      *
      * <p>Note that this method is identical in functionality to
-     * {@link #containsValue(Object)}, and exists solely to ensure
+     * {@link #containsValue(int)}, and exists solely to ensure
      * full compatibility with class {@link Hashtable},
      * which supported this method prior to introduction of the
      * Java Collections Framework.
@@ -3416,8 +3415,8 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
     }
 
-    static final class ValueSpliterator<V> extends Traverser<V>
-            implements Spliterator<V> {
+    static final class ValueSpliterator extends Traverser
+            implements Spliterator.OfInt {
         long est;               // size estimate
         ValueSpliterator(Node[] tab, int size, int index, int limit,
                          long est) {
@@ -3425,10 +3424,10 @@ public class CHashIntIntMap extends AbstractIntIntMap
             this.est = est;
         }
 
-        public ValueSpliterator<V> trySplit() {
+        public ValueSpliterator trySplit() {
             int i, f, h;
             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
-                    new ValueSpliterator<>(tab, baseSize, baseLimit = h,
+                    new ValueSpliterator(tab, baseSize, baseLimit = h,
                             f, est >>>= 1);
         }
 
@@ -3543,11 +3542,11 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * @since 1.8
      */
     public <U> void forEach(long parallelismThreshold,
-                            IntBiFunction<? super V, ? extends U> transformer,
+                            ToObjIntIntBiFunction<? extends U> transformer,
                             Consumer<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
-        new ForEachTransformedMappingTask<V,U>
+        new ForEachTransformedMappingTask<U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         transformer, action).invoke();
     }
@@ -3569,9 +3568,9 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * @since 1.8
      */
     public <U> U search(long parallelismThreshold,
-                        IntBiFunction<? super V, ? extends U> searchFunction) {
+                        ToObjIntIntBiFunction<? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
-        return new SearchMappingsTask<V,U>
+        return new SearchMappingsTask<U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         searchFunction, new AtomicReference<U>()).invoke();
     }
@@ -3593,11 +3592,11 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * @since 1.8
      */
     public <U> U reduce(long parallelismThreshold,
-                        IntBiFunction<? super V, ? extends U> transformer,
+                        ToObjIntIntBiFunction<? extends U> transformer,
                         BiFunction<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
-        return new MapReduceMappingsTask<V,U>
+        return new MapReduceMappingsTask<U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         null, transformer, reducer).invoke();
     }
@@ -3618,12 +3617,12 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * @since 1.8
      */
     public double reduceToDouble(long parallelismThreshold,
-                                 ToDoubleIntBiFunction<? super V> transformer,
+                                 ToDoubleIntIntBiFunction transformer,
                                  double basis,
                                  DoubleBinaryOperator reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
-        return new MapReduceMappingsToDoubleTask<V>
+        return new MapReduceMappingsToDoubleTask
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         null, transformer, basis, reducer).invoke();
     }
@@ -4843,17 +4842,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * class Traverser, because we need to subclass CountedCompleter.
      */
     @SuppressWarnings("serial")
-    abstract static class BulkTask<V,R> extends CountedCompleter<R> {
-        Node<V>[] tab;        // same as Traverser
-        Node<V> next;
-        TableStack<V> stack, spare;
+    abstract static class BulkTask<R> extends CountedCompleter<R> {
+        Node[] tab;        // same as Traverser
+        Node next;
+        TableStack stack, spare;
         int index;
         int baseIndex;
         int baseLimit;
         final int baseSize;
         int batch;              // split control
 
-        BulkTask(BulkTask<V,?> par, int b, int i, int f, Node<V>[] t) {
+        BulkTask(BulkTask<?> par, int b, int i, int f, Node[] t) {
             super(par);
             this.batch = b;
             this.index = this.baseIndex = i;
@@ -5019,12 +5018,12 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class ForEachMappingTask<V>
-            extends BulkTask<V,Void> {
-        final IntBiConsumer<? super V> action;
+    static final class ForEachMappingTask
+            extends BulkTask<Void> {
+        final IntIntBiConsumer action;
         ForEachMappingTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntBiConsumer<? super V> action) {
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 IntIntBiConsumer action) {
             super(p, b, i, f, t);
             this.action = action;
         }
@@ -5145,32 +5144,32 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class ForEachTransformedMappingTask<V,U>
-            extends BulkTask<V,Void> {
-        final IntBiFunction<? super V, ? extends U> transformer;
+    static final class ForEachTransformedMappingTask<U>
+            extends BulkTask<Void> {
+        final ToObjIntIntBiFunction<? extends U> transformer;
         final Consumer<? super U> action;
         ForEachTransformedMappingTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntBiFunction<? super V, ? extends U> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 ToObjIntIntBiFunction<? extends U> transformer,
                  Consumer<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final IntBiFunction<? super V, ? extends U> transformer;
+            final ToObjIntIntBiFunction<? extends U> transformer;
             final Consumer<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    new ForEachTransformedMappingTask<V,U>
+                    new ForEachTransformedMappingTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     transformer, action).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; ) {
+                for (Node p; (p = advance()) != null; ) {
                     U u;
-                    if ((u = transformer.apply(p.key, p.val)) != null)
+                    if ((u = transformer.applyAsInt(p.key, p.val)) != null)
                         action.accept(u);
                 }
                 propagateCompletion();
@@ -5179,12 +5178,12 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class SearchKeysTask<V,U>
-            extends BulkTask<V,U> {
+    static final class SearchKeysTask<U>
+            extends BulkTask<U> {
         final IntFunction<? extends U> searchFunction;
         final AtomicReference<U> result;
         SearchKeysTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
                  IntFunction<? extends U> searchFunction,
                  AtomicReference<U> result) {
             super(p, b, i, f, t);
@@ -5201,13 +5200,13 @@ public class CHashIntIntMap extends AbstractIntIntMap
                     if (result.get() != null)
                         return;
                     addToPendingCount(1);
-                    new SearchKeysTask<V,U>
+                    new SearchKeysTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     searchFunction, result).fork();
                 }
                 while (result.get() == null) {
                     U u;
-                    Node<V> p;
+                    Node p;
                     if ((p = advance()) == null) {
                         propagateCompletion();
                         break;
@@ -5223,20 +5222,20 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class SearchValuesTask<V,U>
-            extends BulkTask<V,U> {
-        final Function<? super V, ? extends U> searchFunction;
+    static final class SearchValuesTask<U>
+            extends BulkTask<U> {
+        final IntFunction<? extends U> searchFunction;
         final AtomicReference<U> result;
         SearchValuesTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 Function<? super V, ? extends U> searchFunction,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 IntFunction<? extends U> searchFunction,
                  AtomicReference<U> result) {
             super(p, b, i, f, t);
             this.searchFunction = searchFunction; this.result = result;
         }
         public final U getRawResult() { return result.get(); }
         public final void compute() {
-            final Function<? super V, ? extends U> searchFunction;
+            final IntFunction<? extends U> searchFunction;
             final AtomicReference<U> result;
             if ((searchFunction = this.searchFunction) != null &&
                     (result = this.result) != null) {
@@ -5245,13 +5244,13 @@ public class CHashIntIntMap extends AbstractIntIntMap
                     if (result.get() != null)
                         return;
                     addToPendingCount(1);
-                    new SearchValuesTask<V,U>
+                    new SearchValuesTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     searchFunction, result).fork();
                 }
                 while (result.get() == null) {
                     U u;
-                    Node<V> p;
+                    Node p;
                     if ((p = advance()) == null) {
                         propagateCompletion();
                         break;
@@ -5267,20 +5266,20 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class SearchEntriesTask<V,U>
-            extends BulkTask<V,U> {
-        final Function<Entry<V>, ? extends U> searchFunction;
+    static final class SearchEntriesTask<U>
+            extends BulkTask<U> {
+        final Function<Entry, ? extends U> searchFunction;
         final AtomicReference<U> result;
         SearchEntriesTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 Function<Entry<V>, ? extends U> searchFunction,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 Function<Entry, ? extends U> searchFunction,
                  AtomicReference<U> result) {
             super(p, b, i, f, t);
             this.searchFunction = searchFunction; this.result = result;
         }
         public final U getRawResult() { return result.get(); }
         public final void compute() {
-            final Function<Entry<V>, ? extends U> searchFunction;
+            final Function<Entry, ? extends U> searchFunction;
             final AtomicReference<U> result;
             if ((searchFunction = this.searchFunction) != null &&
                     (result = this.result) != null) {
@@ -5289,13 +5288,13 @@ public class CHashIntIntMap extends AbstractIntIntMap
                     if (result.get() != null)
                         return;
                     addToPendingCount(1);
-                    new SearchEntriesTask<V,U>
+                    new SearchEntriesTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     searchFunction, result).fork();
                 }
                 while (result.get() == null) {
                     U u;
-                    Node<V> p;
+                    Node p;
                     if ((p = advance()) == null) {
                         propagateCompletion();
                         break;
@@ -5311,20 +5310,20 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class SearchMappingsTask<V,U>
-            extends BulkTask<V,U> {
-        final IntBiFunction<? super V, ? extends U> searchFunction;
+    static final class SearchMappingsTask<U>
+            extends BulkTask<U> {
+        final ToObjIntIntBiFunction<? extends U> searchFunction;
         final AtomicReference<U> result;
         SearchMappingsTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntBiFunction<? super V, ? extends U> searchFunction,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 ToObjIntIntBiFunction<? extends U> searchFunction,
                  AtomicReference<U> result) {
             super(p, b, i, f, t);
             this.searchFunction = searchFunction; this.result = result;
         }
         public final U getRawResult() { return result.get(); }
         public final void compute() {
-            final IntBiFunction<? super V, ? extends U> searchFunction;
+            final ToObjIntIntBiFunction<? extends U> searchFunction;
             final AtomicReference<U> result;
             if ((searchFunction = this.searchFunction) != null &&
                     (result = this.result) != null) {
@@ -5339,12 +5338,12 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 }
                 while (result.get() == null) {
                     U u;
-                    Node<V> p;
+                    Node p;
                     if ((p = advance()) == null) {
                         propagateCompletion();
                         break;
                     }
-                    if ((u = searchFunction.apply(p.key, p.val)) != null) {
+                    if ((u = searchFunction.applyAsInt(p.key, p.val)) != null) {
                         if (result.compareAndSet(null, u))
                             quietlyCompleteRoot();
                         break;
@@ -5355,14 +5354,14 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class ReduceKeysTask<V>
-            extends BulkTask<V,Integer> {
+    static final class ReduceKeysTask
+            extends BulkTask<Integer> {
         final IntToIntBiFunction reducer;
         int result;
-        ReduceKeysTask<V> rights, nextRight;
+        ReduceKeysTask rights, nextRight;
         ReduceKeysTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 ReduceKeysTask<V> nextRight,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 ReduceKeysTask nextRight,
                  IntToIntBiFunction reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
@@ -5374,12 +5373,12 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new ReduceKeysTask<V>
+                    (rights = new ReduceKeysTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
                 int r = 0;
-                for (Node<V> p; (p = advance()) != null; ) {
+                for (Node p; (p = advance()) != null; ) {
                     int u = p.key;
                     r = reducer.applyAsInt(r, u);
                 }
@@ -5387,8 +5386,8 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    ReduceKeysTask<V>
-                            t = (ReduceKeysTask<V>)c,
+                    ReduceKeysTask
+                            t = (ReduceKeysTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsInt(t.result, s.result);
@@ -5400,46 +5399,46 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class ReduceValuesTask<V>
-            extends BulkTask<V,V> {
-        final BiFunction<? super V, ? super V, ? extends V> reducer;
-        V result;
-        ReduceValuesTask<V> rights, nextRight;
+    static final class ReduceValuesTask
+            extends BulkTask<Void> {
+        final IntToIntBiFunction reducer;
+        int result;
+        ReduceValuesTask rights, nextRight;
         ReduceValuesTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 ReduceValuesTask<V> nextRight,
-                 BiFunction<? super V, ? super V, ? extends V> reducer) {
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 ReduceValuesTask nextRight,
+                 IntToIntBiFunction reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final V getRawResult() { return result; }
+        public final int getRawResult() { return result; }
         public final void compute() {
-            final BiFunction<? super V, ? super V, ? extends V> reducer;
+            final IntToIntBiFunction reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new ReduceValuesTask<V>
+                    (rights = new ReduceValuesTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                V r = null;
-                for (Node<V> p; (p = advance()) != null; ) {
-                    V v = p.val;
-                    r = (r == null) ? v : reducer.apply(r, v);
+                int r = 0;
+                for (Node p; (p = advance()) != null; ) {
+                    int v = p.val;
+                    r = (r == 0) ? v : reducer.applyAsInt(r, v);
                 }
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    ReduceValuesTask<V>
-                            t = (ReduceValuesTask<V>)c,
+                    ReduceValuesTask
+                            t = (ReduceValuesTask)c,
                             s = t.rights;
                     while (s != null) {
-                        V tr, sr;
-                        if ((sr = s.result) != null)
-                            t.result = (((tr = t.result) == null) ? sr :
-                                    reducer.apply(tr, sr));
+                        int tr, sr;
+                        if ((sr = s.result) != 0)
+                            t.result = (((tr = t.result) == 0) ? sr :
+                                    reducer.applyAsInt(tr, sr));
                         s = t.rights = s.nextRight;
                     }
                 }
@@ -5448,41 +5447,41 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class ReduceEntriesTask<V>
-            extends BulkTask<V, Entry<V>> {
-        final BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer;
-        Entry<V> result;
-        ReduceEntriesTask<V> rights, nextRight;
+    static final class ReduceEntriesTask
+            extends BulkTask<Entry> {
+        final BiFunction<Entry, Entry, ? extends Entry> reducer;
+        Entry result;
+        ReduceEntriesTask rights, nextRight;
         ReduceEntriesTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 ReduceEntriesTask<V> nextRight,
-                 BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer) {
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 ReduceEntriesTask nextRight,
+                 BiFunction<Entry, Entry, ? extends Entry> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final Entry<V> getRawResult() { return result; }
+        public final Entry getRawResult() { return result; }
         public final void compute() {
-            final BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer;
+            final BiFunction<Entry, Entry, ? extends Entry> reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new ReduceEntriesTask<V>
+                    (rights = new ReduceEntriesTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                Entry<V> r = null;
-                for (Node<V> p; (p = advance()) != null; )
+                Entry r = null;
+                for (Node p; (p = advance()) != null; )
                     r = (r == null) ? p : reducer.apply(r, p);
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    ReduceEntriesTask<V>
-                            t = (ReduceEntriesTask<V>)c,
+                    ReduceEntriesTask
+                            t = (ReduceEntriesTask)c,
                             s = t.rights;
                     while (s != null) {
-                        Entry<V> tr, sr;
+                        Entry tr, sr;
                         if ((sr = s.result) != null)
                             t.result = (((tr = t.result) == null) ? sr :
                                     reducer.apply(tr, sr));
@@ -5494,15 +5493,15 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceKeysTask<V,U>
-            extends BulkTask<V,U> {
+    static final class MapReduceKeysTask<U>
+            extends BulkTask<U> {
         final IntFunction<? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
-        MapReduceKeysTask<V,U> rights, nextRight;
+        MapReduceKeysTask<U> rights, nextRight;
         MapReduceKeysTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceKeysTask<V,U> nextRight,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceKeysTask<U> nextRight,
                  IntFunction<? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5518,12 +5517,12 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceKeysTask<V,U>
+                    (rights = new MapReduceKeysTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, reducer)).fork();
                 }
                 U r = null;
-                for (Node<V> p; (p = advance()) != null; ) {
+                for (Node p; (p = advance()) != null; ) {
                     U u;
                     if ((u = transformer.apply(p.key)) != null)
                         r = (r == null) ? u : reducer.apply(r, u);
@@ -5532,8 +5531,8 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceKeysTask<V,U>
-                            t = (MapReduceKeysTask<V,U>)c,
+                    MapReduceKeysTask<U>
+                            t = (MapReduceKeysTask<U>)c,
                             s = t.rights;
                     while (s != null) {
                         U tr, sr;
@@ -5548,16 +5547,16 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceValuesTask<V,U>
-            extends BulkTask<V,U> {
-        final Function<? super V, ? extends U> transformer;
+    static final class MapReduceValuesTask<U>
+            extends BulkTask<U> {
+        final IntFunction<? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
-        MapReduceValuesTask<V,U> rights, nextRight;
+        MapReduceValuesTask<U> rights, nextRight;
         MapReduceValuesTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceValuesTask<V,U> nextRight,
-                 Function<? super V, ? extends U> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceValuesTask<U> nextRight,
+                 IntFunction<? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5565,19 +5564,19 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final Function<? super V, ? extends U> transformer;
+            final IntFunction<? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceValuesTask<V,U>
+                    (rights = new MapReduceValuesTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, reducer)).fork();
                 }
                 U r = null;
-                for (Node<V> p; (p = advance()) != null; ) {
+                for (Node p; (p = advance()) != null; ) {
                     U u;
                     if ((u = transformer.apply(p.val)) != null)
                         r = (r == null) ? u : reducer.apply(r, u);
@@ -5586,8 +5585,8 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceValuesTask<V,U>
-                            t = (MapReduceValuesTask<V,U>)c,
+                    MapReduceValuesTask<U>
+                            t = (MapReduceValuesTask<U>)c,
                             s = t.rights;
                     while (s != null) {
                         U tr, sr;
@@ -5602,16 +5601,16 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceEntriesTask<V,U>
-            extends BulkTask<V,U> {
-        final Function<Entry<V>, ? extends U> transformer;
+    static final class MapReduceEntriesTask<U>
+            extends BulkTask<U> {
+        final Function<Entry, ? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
-        MapReduceEntriesTask<V,U> rights, nextRight;
+        MapReduceEntriesTask<U> rights, nextRight;
         MapReduceEntriesTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceEntriesTask<V,U> nextRight,
-                 Function<Entry<V>, ? extends U> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceEntriesTask<U> nextRight,
+                 Function<Entry, ? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5619,19 +5618,19 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final Function<Entry<V>, ? extends U> transformer;
+            final Function<Entry, ? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceEntriesTask<V,U>
+                    (rights = new MapReduceEntriesTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, reducer)).fork();
                 }
                 U r = null;
-                for (Node<V> p; (p = advance()) != null; ) {
+                for (Node p; (p = advance()) != null; ) {
                     U u;
                     if ((u = transformer.apply(p)) != null)
                         r = (r == null) ? u : reducer.apply(r, u);
@@ -5640,8 +5639,8 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceEntriesTask<V,U>
-                            t = (MapReduceEntriesTask<V,U>)c,
+                    MapReduceEntriesTask<U>
+                            t = (MapReduceEntriesTask<U>)c,
                             s = t.rights;
                     while (s != null) {
                         U tr, sr;
@@ -5656,16 +5655,16 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceMappingsTask<V,U>
-            extends BulkTask<V,U> {
-        final IntBiFunction<? super V, ? extends U> transformer;
+    static final class MapReduceMappingsTask<U>
+            extends BulkTask<U> {
+        final ToObjIntIntBiFunction<? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
-        MapReduceMappingsTask<V,U> rights, nextRight;
+        MapReduceMappingsTask<U> rights, nextRight;
         MapReduceMappingsTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceMappingsTask<V,U> nextRight,
-                 IntBiFunction<? super V, ? extends U> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceMappingsTask<U> nextRight,
+                 ToObjIntIntBiFunction<? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5673,29 +5672,29 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final IntBiFunction<? super V, ? extends U> transformer;
+            final ToObjIntIntBiFunction<? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceMappingsTask<V,U>
+                    (rights = new MapReduceMappingsTask<U>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, reducer)).fork();
                 }
                 U r = null;
-                for (Node<V> p; (p = advance()) != null; ) {
+                for (Node p; (p = advance()) != null; ) {
                     U u;
-                    if ((u = transformer.apply(p.key, p.val)) != null)
+                    if ((u = transformer.applyAsInt(p.key, p.val)) != null)
                         r = (r == null) ? u : reducer.apply(r, u);
                 }
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceMappingsTask<V,U>
-                            t = (MapReduceMappingsTask<V,U>)c,
+                    MapReduceMappingsTask<U>
+                            t = (MapReduceMappingsTask<U>)c,
                             s = t.rights;
                     while (s != null) {
                         U tr, sr;
@@ -5710,16 +5709,16 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceKeysToDoubleTask<V>
-            extends BulkTask<V,Double> {
+    static final class MapReduceKeysToDoubleTask
+            extends BulkTask<Double> {
         final ToDoubleIntFunction transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
-        MapReduceKeysToDoubleTask<V> rights, nextRight;
+        MapReduceKeysToDoubleTask rights, nextRight;
         MapReduceKeysToDoubleTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceKeysToDoubleTask<V> nextRight,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceKeysToDoubleTask nextRight,
                  ToDoubleIntFunction transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
@@ -5737,18 +5736,18 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceKeysToDoubleTask<V>
+                    (rights = new MapReduceKeysToDoubleTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsDouble(r, transformer.applyAsDouble(p.key));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceKeysToDoubleTask<V>
-                            t = (MapReduceKeysToDoubleTask<V>)c,
+                    MapReduceKeysToDoubleTask
+                            t = (MapReduceKeysToDoubleTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsDouble(t.result, s.result);
@@ -5760,17 +5759,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceValuesToDoubleTask<V>
-            extends BulkTask<V,Double> {
-        final ToDoubleFunction<? super V> transformer;
+    static final class MapReduceValuesToDoubleTask
+            extends BulkTask<Double> {
+        final IntToDoubleFunction transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
-        MapReduceValuesToDoubleTask<V> rights, nextRight;
+        MapReduceValuesToDoubleTask rights, nextRight;
         MapReduceValuesToDoubleTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceValuesToDoubleTask<V> nextRight,
-                 ToDoubleFunction<? super V> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceValuesToDoubleTask nextRight,
+                 IntToDoubleFunction transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5779,7 +5778,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleFunction<? super V> transformer;
+            final IntToDoubleFunction transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5787,18 +5786,18 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceValuesToDoubleTask<V>
+                    (rights = new MapReduceValuesToDoubleTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsDouble(r, transformer.applyAsDouble(p.val));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceValuesToDoubleTask<V>
-                            t = (MapReduceValuesToDoubleTask<V>)c,
+                    MapReduceValuesToDoubleTask
+                            t = (MapReduceValuesToDoubleTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsDouble(t.result, s.result);
@@ -5810,17 +5809,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceEntriesToDoubleTask<V>
-            extends BulkTask<V,Double> {
-        final ToDoubleFunction<Entry<V>> transformer;
+    static final class MapReduceEntriesToDoubleTask
+            extends BulkTask<Double> {
+        final ToDoubleFunction<Entry> transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
-        MapReduceEntriesToDoubleTask<V> rights, nextRight;
+        MapReduceEntriesToDoubleTask rights, nextRight;
         MapReduceEntriesToDoubleTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceEntriesToDoubleTask<V> nextRight,
-                 ToDoubleFunction<Entry<V>> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceEntriesToDoubleTask nextRight,
+                 ToDoubleFunction<Entry> transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5829,7 +5828,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleFunction<Entry<V>> transformer;
+            final ToDoubleFunction<Entry> transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5837,18 +5836,18 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceEntriesToDoubleTask<V>
+                    (rights = new MapReduceEntriesToDoubleTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsDouble(r, transformer.applyAsDouble(p));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceEntriesToDoubleTask<V>
-                            t = (MapReduceEntriesToDoubleTask<V>)c,
+                    MapReduceEntriesToDoubleTask
+                            t = (MapReduceEntriesToDoubleTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsDouble(t.result, s.result);
@@ -5860,17 +5859,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceMappingsToDoubleTask<V>
-            extends BulkTask<V,Double> {
-        final ToDoubleIntBiFunction<? super V> transformer;
+    static final class MapReduceMappingsToDoubleTask
+            extends BulkTask<Double> {
+        final ToDoubleIntIntBiFunction transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
-        MapReduceMappingsToDoubleTask<V> rights, nextRight;
+        MapReduceMappingsToDoubleTask rights, nextRight;
         MapReduceMappingsToDoubleTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceMappingsToDoubleTask<V> nextRight,
-                 ToDoubleIntBiFunction<? super V> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceMappingsToDoubleTask nextRight,
+                 ToDoubleIntIntBiFunction transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5879,7 +5878,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleIntBiFunction<? super V> transformer;
+            final ToDoubleIntIntBiFunction transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5891,14 +5890,13 @@ public class CHashIntIntMap extends AbstractIntIntMap
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsDouble(r, transformer.applyAsDouble(p.key, p.val));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
-                    @SuppressWarnings("unchecked")
-                    MapReduceMappingsToDoubleTask<V>
-                            t = (MapReduceMappingsToDoubleTask<V>)c,
+                    MapReduceMappingsToDoubleTask
+                            t = (MapReduceMappingsToDoubleTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsDouble(t.result, s.result);
@@ -5910,16 +5908,16 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceKeysToLongTask<V>
-            extends BulkTask<V,Long> {
+    static final class MapReduceKeysToLongTask
+            extends BulkTask<Long> {
         final ToLongIntFunction transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
-        MapReduceKeysToLongTask<V> rights, nextRight;
+        MapReduceKeysToLongTask rights, nextRight;
         MapReduceKeysToLongTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceKeysToLongTask<V> nextRight,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceKeysToLongTask nextRight,
                  ToLongIntFunction transformer,
                  long basis,
                  LongBinaryOperator reducer) {
@@ -5941,13 +5939,13 @@ public class CHashIntIntMap extends AbstractIntIntMap
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsLong(r, transformer.applyAsLong(p.key));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
                     @SuppressWarnings("unchecked")
-                    MapReduceKeysToLongTask<V>
+                    MapReduceKeysToLongTask
                             t = (MapReduceKeysToLongTask<V>)c,
                             s = t.rights;
                     while (s != null) {
@@ -5960,17 +5958,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceValuesToLongTask<V>
-            extends BulkTask<V,Long> {
-        final ToLongFunction<? super V> transformer;
+    static final class MapReduceValuesToLongTask
+            extends BulkTask<Long> {
+        final IntToLongFunction transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
-        MapReduceValuesToLongTask<V> rights, nextRight;
+        MapReduceValuesToLongTask rights, nextRight;
         MapReduceValuesToLongTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceValuesToLongTask<V> nextRight,
-                 ToLongFunction<? super V> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceValuesToLongTask nextRight,
+                 IntToLongFunction transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5979,7 +5977,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongFunction<? super V> transformer;
+            final IntToLongFunction transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5987,11 +5985,11 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceValuesToLongTask<V>
+                    (rights = new MapReduceValuesToLongTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsLong(r, transformer.applyAsLong(p.val));
                 result = r;
                 CountedCompleter<?> c;
@@ -6010,17 +6008,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceEntriesToLongTask<V>
-            extends BulkTask<V,Long> {
-        final ToLongFunction<Entry<V>> transformer;
+    static final class MapReduceEntriesToLongTask
+            extends BulkTask<Long> {
+        final ToLongFunction<Entry> transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
-        MapReduceEntriesToLongTask<V> rights, nextRight;
+        MapReduceEntriesToLongTask rights, nextRight;
         MapReduceEntriesToLongTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceEntriesToLongTask<V> nextRight,
-                 ToLongFunction<Entry<V>> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceEntriesToLongTask nextRight,
+                 ToLongFunction<Entry> transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6029,7 +6027,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongFunction<Entry<V>> transformer;
+            final ToLongFunction<Entry> transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6037,18 +6035,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceEntriesToLongTask<V>
+                    (rights = new MapReduceEntriesToLongTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsLong(r, transformer.applyAsLong(p));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
-                    @SuppressWarnings("unchecked")
-                    MapReduceEntriesToLongTask<V>
-                            t = (MapReduceEntriesToLongTask<V>)c,
+                    MapReduceEntriesToLongTask
+                            t = (MapReduceEntriesToLongTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsLong(t.result, s.result);
@@ -6060,17 +6057,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
     }
 
     @SuppressWarnings("serial")
-    static final class MapReduceMappingsToLongTask<V>
-            extends BulkTask<V,Long> {
-        final ToLongIntBiFunction<? super V> transformer;
+    static final class MapReduceMappingsToLongTask
+            extends BulkTask<Long> {
+        final ToLongIntIntBiFunction transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
-        MapReduceMappingsToLongTask<V> rights, nextRight;
+        MapReduceMappingsToLongTask rights, nextRight;
         MapReduceMappingsToLongTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceMappingsToLongTask<V> nextRight,
-                 ToLongIntBiFunction<? super V> transformer,
+                (BulkTask<?> p, int b, int i, int f, Node[] t,
+                 MapReduceMappingsToLongTask nextRight,
+                 ToLongIntIntBiFunction transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6079,7 +6076,7 @@ public class CHashIntIntMap extends AbstractIntIntMap
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongIntBiFunction<? super V> transformer;
+            final ToLongIntIntBiFunction transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6087,18 +6084,17 @@ public class CHashIntIntMap extends AbstractIntIntMap
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
                     addToPendingCount(1);
-                    (rights = new MapReduceMappingsToLongTask<V>
+                    (rights = new MapReduceMappingsToLongTask
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, transformer, r, reducer)).fork();
                 }
-                for (Node<V> p; (p = advance()) != null; )
+                for (Node p; (p = advance()) != null; )
                     r = reducer.applyAsLong(r, transformer.applyAsLong(p.key, p.val));
                 result = r;
                 CountedCompleter<?> c;
                 for (c = firstComplete(); c != null; c = c.nextComplete()) {
-                    @SuppressWarnings("unchecked")
-                    MapReduceMappingsToLongTask<V>
-                            t = (MapReduceMappingsToLongTask<V>)c,
+                    MapReduceMappingsToLongTask
+                            t = (MapReduceMappingsToLongTask)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsLong(t.result, s.result);
