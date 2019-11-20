@@ -69,7 +69,7 @@ import static io.github.joealisson.primitive.Constants.DEFAULT_INT_VALUE;
  * @since 2.0
  * @author Doug Lea
  */
-public interface ConcurrentIntIntMap extends IntIntMap {
+public interface ConcurrentIntIntMap extends IntIntMap, ConcurrentMap {
 
     /**
      * {@inheritDoc}

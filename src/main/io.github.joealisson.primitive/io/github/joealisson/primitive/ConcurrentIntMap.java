@@ -69,7 +69,7 @@ import java.util.function.IntFunction;
  * @author Doug Lea
  * @param <V> the type of mapped values
  */
-public interface ConcurrentIntMap<V> extends IntMap<V> {
+public interface ConcurrentIntMap<V> extends IntMap<V>, ConcurrentMap{
 
     /**
      * {@inheritDoc}

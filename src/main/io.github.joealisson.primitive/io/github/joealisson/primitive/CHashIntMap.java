@@ -35,20 +35,22 @@
 
 package io.github.joealisson.primitive;
 
-import java.io.ObjectStreamField;
+import io.github.joealisson.primitive.function.*;
+import jdk.internal.misc.Unsafe;
+
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountedCompleter;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import io.github.joealisson.primitive.function.*;
-import jdk.internal.misc.Unsafe;
+import static java.util.Objects.requireNonNullElse;
 
 /**
  * A hash table supporting full concurrency of retrievals and
@@ -243,7 +245,7 @@ import jdk.internal.misc.Unsafe;
 public class CHashIntMap<V> extends AbstractIntMap<V>
         implements ConcurrentIntMap<V>, Serializable {
 
-    private static final long serialVersionUID = 7249069246763182397L;
+    private static final long serialVersionUID = 6886270481412620144L;
 
     /*
      * Overview:
@@ -476,123 +478,6 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * bulk operations.
      */
 
-    /* ---------------- Constants -------------- */
-
-    /**
-     * The largest possible table capacity.  This value must be
-     * exactly 1<<30 to stay within Java array allocation and indexing
-     * bounds for power of two table sizes, and is further required
-     * because the top two bits of 32bit hash fields are used for
-     * control purposes.
-     */
-    private static final int MAXIMUM_CAPACITY = 1 << 30;
-
-    /**
-     * The default initial table capacity.  Must be a power of 2
-     * (i.e., at least 1) and at most MAXIMUM_CAPACITY.
-     */
-    private static final int DEFAULT_CAPACITY = 16;
-
-    /**
-     * The largest possible (non-power of two) array size.
-     * Needed by toArray and related methods.
-     */
-    static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
-
-    /**
-     * The default concurrency level for this table. Unused but
-     * defined for compatibility with previous versions of this class.
-     */
-    private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-
-    /**
-     * The load factor for this table. Overrides of this value in
-     * constructors affect only the initial table capacity.  The
-     * actual floating point value isn't normally used -- it is
-     * simpler to use expressions such as {@code n - (n >>> 2)} for
-     * the associated resizing threshold.
-     */
-    private static final float LOAD_FACTOR = 0.75f;
-
-    /**
-     * The bin count threshold for using a tree rather than list for a
-     * bin.  Bins are converted to trees when adding an element to a
-     * bin with at least this many nodes. The value must be greater
-     * than 2, and should be at least 8 to mesh with assumptions in
-     * tree removal about conversion back to plain bins upon
-     * shrinkage.
-     */
-    static final int TREEIFY_THRESHOLD = 8;
-
-    /**
-     * The bin count threshold for untreeifying a (split) bin during a
-     * resize operation. Should be less than TREEIFY_THRESHOLD, and at
-     * most 6 to mesh with shrinkage detection under removal.
-     */
-    static final int UNTREEIFY_THRESHOLD = 6;
-
-    /**
-     * The smallest table capacity for which bins may be treeified.
-     * (Otherwise the table is resized if too many nodes in a bin.)
-     * The value should be at least 4 * TREEIFY_THRESHOLD to avoid
-     * conflicts between resizing and treeification thresholds.
-     */
-    static final int MIN_TREEIFY_CAPACITY = 64;
-
-    /**
-     * Minimum number of rebinnings per transfer step. Ranges are
-     * subdivided to allow multiple resizer threads.  This value
-     * serves as a lower bound to avoid resizers encountering
-     * excessive memory contention.  The value should be at least
-     * DEFAULT_CAPACITY.
-     */
-    private static final int MIN_TRANSFER_STRIDE = 16;
-
-    /**
-     * The number of bits used for generation stamp in sizeCtl.
-     * Must be at least 6 for 32bit arrays.
-     */
-    private static final int RESIZE_STAMP_BITS = 16;
-
-    /**
-     * The maximum number of threads that can help resize.
-     * Must fit in 32 - RESIZE_STAMP_BITS bits.
-     */
-    private static final int MAX_RESIZERS = (1 << (32 - RESIZE_STAMP_BITS)) - 1;
-
-    /**
-     * The bit shift for recording size stamp in sizeCtl.
-     */
-    private static final int RESIZE_STAMP_SHIFT = 32 - RESIZE_STAMP_BITS;
-
-    /*
-     * Encodings for Node hash fields. See above for explanation.
-     */
-    static final int MOVED     = -1; // hash for forwarding nodes
-    static final int TREEBIN   = -2; // hash for roots of trees
-    static final int RESERVED  = -3; // hash for transient reservations
-    static final int HASH_BITS = 0x7fffffff; // usable bits of normal node hash
-
-    /** Number of CPUS, to place bounds on some sizings */
-    static final int NCPU = Runtime.getRuntime().availableProcessors();
-
-
-    /**
-     * Serialized pseudo-fields, provided only for jdk7 compatibility.
-     * @serialField segments Segment[]
-     *   The segments, each of which is a specialized hash table.
-     * @serialField segmentMask int
-     *   Mask value for indexing into segments. The upper bits of a
-     *   key's hash code are used to choose the segment.
-     * @serialField segmentShift int
-     *   Shift value for indexing within segments.
-     */
-    private static final ObjectStreamField[] serialPersistentFields = {
-            new ObjectStreamField("segments", Segment[].class),
-            new ObjectStreamField("segmentMask", Integer.TYPE),
-            new ObjectStreamField("segmentShift", Integer.TYPE),
-    };
-
     /* ---------------- Nodes -------------- */
 
     /**
@@ -651,70 +536,6 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
     }
 
-    /* ---------------- Static utilities -------------- */
-
-    /**
-     * Spreads (XORs) higher bits of hash to lower and also forces top
-     * bit to 0. Because the table uses power-of-two masking, sets of
-     * hashes that vary only in bits above the current mask will
-     * always collide. (Among known examples are sets of Float keys
-     * holding consecutive whole numbers in small tables.)  So we
-     * applyAsInt a transform that spreads the impact of higher bits
-     * downward. There is a tradeoff between speed, utility, and
-     * quality of bit-spreading. Because many common sets of hashes
-     * are already reasonably distributed (so don't benefit from
-     * spreading), and because we use trees to handle large sets of
-     * collisions in bins, we just XOR some shifted bits in the
-     * cheapest possible way to reduce systematic lossage, as well as
-     * to incorporate impact of the highest bits that would otherwise
-     * never be used in index calculations because of table bounds.
-     */
-    static final int spread(int h) {
-        return (h ^ (h >>> 16)) & HASH_BITS;
-    }
-
-    /**
-     * Returns a power of two table size for the given desired capacity.
-     * See Hackers Delight, sec 3.2
-     */
-    private static final int tableSizeFor(int c) {
-        int n = -1 >>> Integer.numberOfLeadingZeros(c - 1);
-        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
-    }
-
-    /**
-     * Returns x's Class if it is of the form "class C implements
-     * Comparable<C>", else null.
-     */
-    static Class<?> comparableClassFor(Object x) {
-        if (x instanceof Comparable) {
-            Class<?> c; Type[] ts, as; ParameterizedType p;
-            if ((c = x.getClass()) == String.class) // bypass checks
-                return c;
-            if ((ts = c.getGenericInterfaces()) != null) {
-                for (Type t : ts) {
-                    if ((t instanceof ParameterizedType) &&
-                            ((p = (ParameterizedType)t).getRawType() ==
-                                    Comparable.class) &&
-                            (as = p.getActualTypeArguments()) != null &&
-                            as.length == 1 && as[0] == c) // type arg is c
-                        return c;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns k.compareTo(x) if x matches kc (k's screened comparable
-     * class), else 0.
-     */
-    @SuppressWarnings({"rawtypes","unchecked"}) // for cast to Comparable
-    static int compareComparables(Class<?> kc, Object k, Object x) {
-        return (x == null || x.getClass() != kc ? 0 :
-                ((Comparable)k).compareTo(x));
-    }
-
     /* ---------------- Table element access -------------- */
 
     /*
@@ -732,16 +553,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
 
     @SuppressWarnings("unchecked")
-    static final <V> Node<V> tabAt(Node<V>[] tab, int i) {
+    private static <V> Node<V> tabAt(Node<V>[] tab, int i) {
         return (Node<V>)U.getObjectAcquire(tab, ((long)i << ASHIFT) + ABASE);
     }
 
-    static final <V> boolean casTabAt(Node<V>[] tab, int i,
-                                        Node<V> c, Node<V> v) {
+    private static <V> boolean casTabAt(Node<V>[] tab, int i, Node<V> c, Node<V> v) {
         return U.compareAndSetObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 
-    static final <V> void setTabAt(Node<V>[] tab, int i, Node<V> v) {
+    private static <V> void setTabAt(Node<V>[] tab, int i, Node<V> v) {
         U.putObjectRelease(tab, ((long)i << ASHIFT) + ABASE, v);
     }
 
@@ -751,7 +571,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * The array of bins. Lazily initialized upon first insertion.
      * Size is always a power of two. Accessed directly by iterators.
      */
-    transient volatile Node<V>[] table;
+    private transient volatile Node<V>[] table;
 
     /**
      * The next table to use; non-null only while resizing.
@@ -872,9 +692,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         if (initialCapacity < concurrencyLevel)   // Use at least as many bins
             initialCapacity = concurrencyLevel;   // as estimated threads
         long size = (long)(1.0 + (long)initialCapacity / loadFactor);
-        int cap = (size >= (long)MAXIMUM_CAPACITY) ?
-                MAXIMUM_CAPACITY : tableSizeFor((int)size);
-        this.sizeCtl = cap;
+        this.sizeCtl = (size >= (long)MAXIMUM_CAPACITY) ?
+                MAXIMUM_CAPACITY : ConcurrentMap.tableSizeFor((int)size);
     }
 
     // Original (since JDK1.2) Map methods
@@ -907,19 +726,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      */
     public V get(int key) {
-        Node<V>[] tab; Node<V> e, p; int n, eh; int ek;
-        int h = spread(key);
-        if ((tab = table) != null && (n = tab.length) > 0 &&
-                (e = tabAt(tab, (n - 1) & h)) != null) {
+        Node<V>[] tab; Node<V> e, p; int n, eh;
+        int h = ConcurrentMap.spread(key);
+        if ((tab = table) != null && (n = tab.length) > 0 && (e = tabAt(tab, (n - 1) & h)) != null) {
+
             if ((eh = e.hash) == h) {
-                if ((ek = e.key) == key)
+                if (e.key == key)
                     return e.val;
             }
+
             else if (eh < 0)
                 return (p = e.find(h, key)) != null ? p.val : null;
+
             while ((e = e.next) != null) {
-                if (e.hash == h &&
-                        ((ek = e.key) == key))
+                if (e.hash == h && (e.key == key))
                     return e.val;
             }
         }
@@ -952,12 +772,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     public boolean containsValue(Object value) {
         if (value == null)
             throw new NullPointerException();
+
         Node<V>[] t;
         if ((t = table) != null) {
-            Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
+            Traverser<V> it = new Traverser<>(t, t.length, 0, t.length);
             for (Node<V> p; (p = it.advance()) != null; ) {
                 V v;
-                if ((v = p.val) == value || (v != null && value.equals(v)))
+                if ((v = p.val) == value || (value.equals(v)))
                     return true;
             }
         }
@@ -982,23 +803,24 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     }
 
     /** Implementation for put and putIfAbsent */
-    final V putVal(int key, V value, boolean onlyIfAbsent) {
+    private V putVal(int key, V value, boolean onlyIfAbsent) {
         if (value == null) throw new NullPointerException();
-        int hash = spread(key);
+        int hash = ConcurrentMap.spread(key);
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh; int fk; V fv;
+            Node<V> f; int n, i, fh;
+            V fv;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
-                if (casTabAt(tab, i, null, new Node<V>(hash, key, value)))
+                if (casTabAt(tab, i, null, new Node<>(hash, key, value)))
                     break;                   // no lock when adding to empty bin
             }
             else if ((fh = f.hash) == MOVED)
                 tab = helpTransfer(tab, f);
             else if (onlyIfAbsent // check first node without acquiring lock
                     && fh == hash
-                    && ((fk = f.key) == key)
+                    && (f.key == key)
                     && (fv = f.val) != null)
                 return fv;
             else {
@@ -1008,9 +830,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<V> e = f;; ++binCount) {
-                                int ek;
                                 if (e.hash == hash &&
-                                        ((ek = e.key) == key )) {
+                                        (e.key == key )) {
                                     oldVal = e.val;
                                     if (!onlyIfAbsent)
                                         e.val = value;
@@ -1018,7 +839,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 }
                                 Node<V> pred = e;
                                 if ((e = e.next) == null) {
-                                    pred.next = new Node<V>(hash, key, value);
+                                    pred.next = new Node<>(hash, key, value);
                                     break;
                                 }
                             }
@@ -1081,12 +902,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Replaces node value with v, conditional upon match of cv if
      * non-null.  If resulting value is null, delete.
      */
-    final V replaceNode(int key, V value, Object cv) {
-        int hash = spread(key);
+    private V replaceNode(int key, V value, Object cv) {
+        int hash = ConcurrentMap.spread(key);
         for (Node<V>[] tab = table;;) {
             Node<V> f; int n, i, fh;
-            if (tab == null || (n = tab.length) == 0 ||
-                    (f = tabAt(tab, i = (n - 1) & hash)) == null)
+            if (tab == null || (n = tab.length) == 0 || (f = tabAt(tab, i = (n - 1) & hash)) == null)
                 break;
             else if ((fh = f.hash) == MOVED)
                 tab = helpTransfer(tab, f);
@@ -1098,12 +918,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             validated = true;
                             for (Node<V> e = f, pred = null;;) {
-                                int ek;
                                 if (e.hash == hash &&
-                                        ((ek = e.key) == key )) {
+                                        (e.key == key )) {
                                     V ev = e.val;
-                                    if (cv == null || cv == ev ||
-                                            (ev != null && cv.equals(ev))) {
+                                    if (cv == null || cv == ev || (cv.equals(ev))) {
                                         oldVal = ev;
                                         if (value != null)
                                             e.val = value;
@@ -1123,11 +941,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             validated = true;
                             TreeBin<V> t = (TreeBin<V>)f;
                             TreeNode<V> r, p;
-                            if ((r = t.root) != null &&
-                                    (p = r.findTreeNode(hash, key, null)) != null) {
+                            if ((r = t.root) != null && (p = r.findTreeNode(hash, key, null)) != null) {
                                 V pv = p.val;
-                                if (cv == null || cv == pv ||
-                                        (pv != null && cv.equals(pv))) {
+                                if (cv == null || cv == pv || cv.equals(pv)) {
                                     oldVal = pv;
                                     if (value != null)
                                         p.val = value;
@@ -1393,7 +1209,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             @SuppressWarnings("unchecked")
             V v = (V) s.readObject();
             if (v != null) {
-                p = new Node<V>(spread(k), k, v, p);
+                p = new Node<>(ConcurrentMap.spread(k), k, v, p);
                 ++size;
             }
             else
@@ -1404,7 +1220,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         else {
             long ts = (long)(1.0 + size / LOAD_FACTOR);
             int n = (ts >= (long)MAXIMUM_CAPACITY) ?
-                    MAXIMUM_CAPACITY : tableSizeFor((int)ts);
+                    MAXIMUM_CAPACITY : ConcurrentMap.tableSizeFor((int)ts);
             @SuppressWarnings("unchecked")
             Node<V>[] tab = (Node<V>[])new Node<?>[n];
             int mask = n - 1;
@@ -1623,7 +1439,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     public V computeIfAbsent(int key, IntFunction<? extends V> mappingFunction) {
         if (mappingFunction == null)
             throw new NullPointerException();
-        int h = spread(key);
+        int h = ConcurrentMap.spread(key);
         V val = null;
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
@@ -1731,7 +1547,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     public V computeIfPresent(int key, IntBiFunction<? super V, ? extends V> remappingFunction) {
         if (remappingFunction == null)
             throw new NullPointerException();
-        int h = spread(key);
+        int h = ConcurrentMap.spread(key);
         V val = null;
         int delta = 0;
         int binCount = 0;
@@ -1823,7 +1639,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                      IntBiFunction<? super V, ? extends V> remappingFunction) {
         if (remappingFunction == null)
             throw new NullPointerException();
-        int h = spread(key);
+        int h = ConcurrentMap.spread(key);
         V val = null;
         int delta = 0;
         int binCount = 0;
@@ -1950,7 +1766,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     public V merge(int key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         if (value == null || remappingFunction == null)
             throw new NullPointerException();
-        int h = spread(key);
+        int h = ConcurrentMap.spread(key);
         V val = null;
         int delta = 0;
         int binCount = 0;
@@ -2243,7 +2059,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @param x the count to add
      * @param check if <0, don't check resize, if <= 1 only check if uncontended
      */
-    private final void addCount(long x, int check) {
+    private void addCount(long x, int check) {
         CounterCell[] cs; long b, s;
         if ((cs = counterCells) != null ||
                 !U.compareAndSetLong(this, BASECOUNT, b = baseCount, s = b + x)) {
@@ -2311,7 +2127,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     private final void tryPresize(int size) {
         int c = (size >= (MAXIMUM_CAPACITY >>> 1)) ? MAXIMUM_CAPACITY :
-                tableSizeFor(size + (size >>> 1) + 1);
+                ConcurrentMap.tableSizeFor(size + (size >>> 1) + 1);
         int sc;
         while ((sc = sizeCtl) >= 0) {
             Node<V>[] tab = table; int n;
@@ -2668,8 +2484,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 else if (pr == null)
                     p = pl;
                 else if ((kc != null ||
-                        (kc = comparableClassFor(k)) != null) &&
-                        (dir = compareComparables(kc, k, pk)) != 0)
+                        (kc = ConcurrentMap.comparableClassFor(k)) != null) &&
+                        (dir = ConcurrentMap.compareComparables(kc, k, pk)) != 0)
                     p = (dir < 0) ? pl : pr;
                 else if ((q = pr.findTreeNode(h, k, kc)) != null)
                     return q;
@@ -2743,8 +2559,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         else if (ph < h)
                             dir = 1;
                         else if ((kc == null &&
-                                (kc = comparableClassFor(k)) == null) ||
-                                (dir = compareComparables(kc, k, pk)) == 0)
+                                (kc = ConcurrentMap.comparableClassFor(k)) == null) ||
+                                (dir = ConcurrentMap.compareComparables(kc, k, pk)) == 0)
                             dir = tieBreakOrder(k, pk);
                         TreeNode<V> xp = p;
                         if ((p = (dir <= 0) ? p.left : p.right) == null) {
@@ -2854,8 +2670,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 else if ((pk = p.key) == k)
                     return p;
                 else if ((kc == null &&
-                        (kc = comparableClassFor(k)) == null) ||
-                        (dir = compareComparables(kc, k, pk)) == 0) {
+                        (kc = ConcurrentMap.comparableClassFor(k)) == null) ||
+                        (dir = ConcurrentMap.compareComparables(kc, k, pk)) == 0) {
                     if (!searched) {
                         TreeNode<V> q, ch;
                         searched = true;
@@ -2871,7 +2687,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 TreeNode<V> xp = p;
                 if ((p = (dir <= 0) ? p.left : p.right) == null) {
                     TreeNode<V> x, f = first;
-                    first = x = new TreeNode<V>(h, k, v, f, xp);
+                    first = x = new TreeNode<>(h, k, v, f, xp);
                     if (f != null)
                         f.prev = x;
                     if (dir <= 0)
@@ -2960,17 +2776,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         pp.left = s;
                     else
                         pp.right = s;
-                    if (sr != null)
-                        replacement = sr;
-                    else
-                        replacement = p;
+                    replacement = requireNonNullElse(sr, p);
                 }
                 else if (pl != null)
                     replacement = pl;
-                else if (pr != null)
-                    replacement = pr;
                 else
-                    replacement = p;
+                    replacement = requireNonNullElse(pr, p);
+
                 if (replacement != p) {
                     TreeNode<V> pp = replacement.parent = p.parent;
                     if (pp == null)
@@ -3095,8 +2907,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             }
         }
 
-        static <V> TreeNode<V> balanceDeletion(TreeNode<V> root,
-                                                   TreeNode<V> x) {
+        static <V> TreeNode<V> balanceDeletion(TreeNode<V> root, TreeNode<V> x) {
             for (TreeNode<V> xp, xpl, xpr;;) {
                 if (x == null || x == root)
                     return root;
@@ -3134,7 +2945,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                         null : xp.right;
                             }
                             if (xpr != null) {
-                                xpr.red = (xp == null) ? false : xp.red;
+                                xpr.red = (xp != null) && xp.red;
                                 if ((sr = xpr.right) != null)
                                     sr.red = false;
                             }
@@ -3172,7 +2983,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                         null : xp.left;
                             }
                             if (xpl != null) {
-                                xpl.red = (xp == null) ? false : xp.red;
+                                xpl.red = (xp != null) && xp.red;
                                 if ((sl = xpl.left) != null)
                                     sl.red = false;
                             }
@@ -3207,9 +3018,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 return false;
             if (tl != null && !checkInvariants(tl))
                 return false;
-            if (tr != null && !checkInvariants(tr))
-                return false;
-            return true;
+
+            return tr == null || checkInvariants(tr);
         }
 
         private static final long LOCKSTATE

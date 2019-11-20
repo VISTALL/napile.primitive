@@ -38,7 +38,6 @@ package io.github.joealisson.primitive;
 import io.github.joealisson.primitive.function.*;
 import jdk.internal.misc.Unsafe;
 
-import java.io.ObjectStreamField;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -236,10 +235,9 @@ import java.util.stream.Stream;
  * @since 1.5
  * @author Doug Lea
  */
-public class CHashIntIntMap extends AbstractIntIntMap
-        implements ConcurrentIntIntMap, Serializable {
+public class CHashIntIntMap extends AbstractIntIntMap implements ConcurrentIntIntMap, Serializable {
 
-    private static final long serialVersionUID = 7249069246763182397L;
+    private static final long serialVersionUID = 5646168409435137522L;
 
     /*
      * Overview:
@@ -471,123 +469,6 @@ public class CHashIntIntMap extends AbstractIntIntMap
      * internal ones), then sizing methods, trees, traversers, and
      * bulk operations.
      */
-
-    /* ---------------- Constants -------------- */
-
-    /**
-     * The largest possible table capacity.  This value must be
-     * exactly 1<<30 to stay within Java array allocation and indexing
-     * bounds for power of two table sizes, and is further required
-     * because the top two bits of 32bit hash fields are used for
-     * control purposes.
-     */
-    private static final int MAXIMUM_CAPACITY = 1 << 30;
-
-    /**
-     * The default initial table capacity.  Must be a power of 2
-     * (i.e., at least 1) and at most MAXIMUM_CAPACITY.
-     */
-    private static final int DEFAULT_CAPACITY = 16;
-
-    /**
-     * The largest possible (non-power of two) array size.
-     * Needed by toArray and related methods.
-     */
-    static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
-
-    /**
-     * The default concurrency level for this table. Unused but
-     * defined for compatibility with previous versions of this class.
-     */
-    private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-
-    /**
-     * The load factor for this table. Overrides of this value in
-     * constructors affect only the initial table capacity.  The
-     * actual floating point value isn't normally used -- it is
-     * simpler to use expressions such as {@code n - (n >>> 2)} for
-     * the associated resizing threshold.
-     */
-    private static final float LOAD_FACTOR = 0.75f;
-
-    /**
-     * The bin count threshold for using a tree rather than list for a
-     * bin.  Bins are converted to trees when adding an element to a
-     * bin with at least this many nodes. The value must be greater
-     * than 2, and should be at least 8 to mesh with assumptions in
-     * tree removal about conversion back to plain bins upon
-     * shrinkage.
-     */
-    static final int TREEIFY_THRESHOLD = 8;
-
-    /**
-     * The bin count threshold for untreeifying a (split) bin during a
-     * resize operation. Should be less than TREEIFY_THRESHOLD, and at
-     * most 6 to mesh with shrinkage detection under removal.
-     */
-    static final int UNTREEIFY_THRESHOLD = 6;
-
-    /**
-     * The smallest table capacity for which bins may be treeified.
-     * (Otherwise the table is resized if too many nodes in a bin.)
-     * The value should be at least 4 * TREEIFY_THRESHOLD to avoid
-     * conflicts between resizing and treeification thresholds.
-     */
-    static final int MIN_TREEIFY_CAPACITY = 64;
-
-    /**
-     * Minimum number of rebinnings per transfer step. Ranges are
-     * subdivided to allow multiple resizer threads.  This value
-     * serves as a lower bound to avoid resizers encountering
-     * excessive memory contention.  The value should be at least
-     * DEFAULT_CAPACITY.
-     */
-    private static final int MIN_TRANSFER_STRIDE = 16;
-
-    /**
-     * The number of bits used for generation stamp in sizeCtl.
-     * Must be at least 6 for 32bit arrays.
-     */
-    private static final int RESIZE_STAMP_BITS = 16;
-
-    /**
-     * The maximum number of threads that can help resize.
-     * Must fit in 32 - RESIZE_STAMP_BITS bits.
-     */
-    private static final int MAX_RESIZERS = (1 << (32 - RESIZE_STAMP_BITS)) - 1;
-
-    /**
-     * The bit shift for recording size stamp in sizeCtl.
-     */
-    private static final int RESIZE_STAMP_SHIFT = 32 - RESIZE_STAMP_BITS;
-
-    /*
-     * Encodings for Node hash fields. See above for explanation.
-     */
-    static final int MOVED     = -1; // hash for forwarding nodes
-    static final int TREEBIN   = -2; // hash for roots of trees
-    static final int RESERVED  = -3; // hash for transient reservations
-    static final int HASH_BITS = 0x7fffffff; // usable bits of normal node hash
-
-    /** Number of CPUS, to place bounds on some sizings */
-    static final int NCPU = Runtime.getRuntime().availableProcessors();
-
-
-    /**
-     * Serialized pseudo-fields, provided only for jdk7 compatibility.
-     * @serialField segments Segment[]
-     *   The segments, each of which is a specialized hash table.
-     * @serialField segmentMask int
-     *   Mask value for indexing into segments. The upper bits of a
-     *   key's hash code are used to choose the segment.
-     * @serialField segmentShift int
-     *   Shift value for indexing within segments.
-     */
-    private static final ObjectStreamField[] serialPersistentFields = {
-            new ObjectStreamField("segments", Segment[].class),
-            new ObjectStreamField("segmentMask", Integer.TYPE),
-            new ObjectStreamField("segmentShift", Integer.TYPE),
-    };
 
     /* ---------------- Nodes -------------- */
 
