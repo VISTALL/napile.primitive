@@ -121,6 +121,22 @@ public class HashIntSet
 	}
 
 	/**
+	 * Constructs a new set containing the elements in the specified
+	 * collection.  The {@code HashMap} is created with default load factor
+	 * (0.75) and an initial capacity sufficient to contain the elements in
+	 * the specified collection.
+	 *
+	 * @param c the collection whose elements are to be placed into this set
+	 * @throws NullPointerException if the specified collection is null
+	 */
+	public HashIntSet(int[] c) {
+		map = new HashIntMap<>(Math.max((int) (c.length/.75f) + 1, 16));
+		for (int i : c) {
+			add(i);
+		}
+	}
+
+	/**
 	 * Constructs a new, empty set; the backing {@code HashMap} instance has
 	 * the specified initial capacity and the specified load factor.
 	 *

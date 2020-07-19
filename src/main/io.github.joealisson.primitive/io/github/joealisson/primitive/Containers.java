@@ -342,45 +342,57 @@ public class Containers
         public abstract int hashCode();
     }
 
-    public static final class IntSet1 extends AbstractImmutableIntSet
+    public static final class IntSet12 extends AbstractImmutableIntSet
             implements Serializable {
 
-        final int e0;
+        private final int e0;
+        private final int e1;
 
-        public IntSet1(int e0) {
+        public IntSet12(int e0) {
             this.e0 = e0;
+            this.e1 = e0;
+        }
+
+        public IntSet12(int e0, int e1) {
+            this.e0 = e0;
+            this.e1 = e1;
         }
 
         @Override
         public int size() {
-            return 1;
+            return e0 == e1 ? 1 : 2;
         }
 
         @Override
         public boolean contains(int o) {
-            return e0 == o;
+            return e0 == o || e1 == o;
         }
 
         @Override
         public int hashCode() {
-            return e0;
+            return e0 == e1 ? e0 : e0 + e1 << 2;
         }
 
         @Override
         public PrimitiveIterator.OfInt iterator() {
             return new PrimitiveIterator.OfInt() {
-                private int idx = size();
+                private int idx = 0;
 
                 @Override
                 public boolean hasNext() {
-                    return idx > 0;
+                    return idx < size();
                 }
 
                 @Override
                 public int nextInt() {
-                    if (idx++ == 1) {
+                    if(idx == 0) {
+                        idx++;
                         return e0;
-                    } else {
+                    }else if(idx == 1){
+                        idx++;
+                        return e1;
+                    }
+                    else {
                         throw new NoSuchElementException();
                     }
                 }
@@ -409,7 +421,7 @@ public class Containers
         private final V v0;
 
         IntMap1(int k0, V v0) {
-            this.k0 = Objects.requireNonNull(k0);
+            this.k0 = k0;
             this.v0 = Objects.requireNonNull(v0);
         }
 

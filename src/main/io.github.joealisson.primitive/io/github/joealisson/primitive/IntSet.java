@@ -107,7 +107,6 @@ import java.util.*;
  * @see AbstractSet
  * @see Collections#singleton(java.lang.Object)
  * @see Collections#EMPTY_SET
- * @since 1.2
  */
 
 public interface IntSet extends IntCollection {
@@ -133,7 +132,6 @@ public interface IntSet extends IntCollection {
 	 * {@link Spliterator#SUBSIZED}.
 	 *
 	 * @return a {@code Spliterator} over the elements in this set
-	 * @since 1.8
 	 */
 	@Override
 	default Spliterator.OfInt spliterator() {
@@ -146,7 +144,6 @@ public interface IntSet extends IntCollection {
 	 *
 	 * @return an empty {@code Set}
 	 *
-	 * @since 9
 	 */
 	static IntSet of() {
 		return Containers.emptyIntSet();
@@ -160,9 +157,29 @@ public interface IntSet extends IntCollection {
 	 * @return a {@code Set} containing the specified element
 	 * @throws NullPointerException if the element is {@code null}
 	 *
-	 * @since 9
 	 */
 	static IntSet of(int e1) {
-		return new Containers.IntSet1(e1);
+		return new Containers.IntSet12(e1);
+	}
+
+	/**
+	 * Returns an unmodifiable set containing one element.
+	 * See <a href="#unmodifiable">Unmodifiable Sets</a> for details.
+	 *
+	 * @param e1 the first element
+	 * @param e2 the second element
+	 * @return a {@code Set} containing the specified element
+	 * @throws NullPointerException if the element is {@code null}
+	 *
+	 */
+	static IntSet of(int e1, int e2) {
+		return new Containers.IntSet12(e1, e2);
+	}
+
+	static IntSet of(int e1, int e2, int... e3) {
+		HashIntSet set = new HashIntSet(e3);
+		set.add(e1);
+		set.add(e2);
+		return set;
 	}
 }

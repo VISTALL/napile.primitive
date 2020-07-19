@@ -53,21 +53,16 @@ jar {
 }
 
 task jarSources(type:Jar){
-    archiveClassifier = 'sources'
+    classifier = 'sources'
     from sourceSets.main.allSource
 }
 
 javadoc {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.addStringOption('-module-path', classpath.asPath )
-        options.addStringOption("-add-exports", "java.base/jdk.internal.misc=io.github.joealisson.primitive")
-    }
+    exclude 'module-info.java'
 }
 
 task javadocJar(type: Jar) {
-    archiveVersion = 'javadoc'
-    from javadoc
+    classifier = 'javadoc'
 }
 
 publishing {
