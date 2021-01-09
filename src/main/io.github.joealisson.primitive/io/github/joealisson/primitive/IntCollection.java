@@ -544,6 +544,67 @@ public interface IntCollection extends IntIterable {
 	}
 
 	/**
+	 * Returns whether any elements of this collection match the provided
+	 * predicate.  May not evaluate the predicate on all elements if not
+	 * necessary for determining the result.  If the collection is empty then
+	 *
+	 * {@code false} is returned and the predicate is not evaluated.
+	 *
+	 * @param predicate a predicate to apply to elements of this collection
+	 * @return {@code true} if any element of this collections matches the predicate
+	 */
+	default boolean anyMatch(IntPredicate predicate) {
+		Objects.requireNonNull(predicate);
+		final var it = iterator();
+		while (it.hasNext()) {
+			if(predicate.test(it.nextInt())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns whether none elements of this collection match the provided
+	 * predicate. May not evaluate the predicate on all elements if not
+	 * necessary for determining the result.  If the collection is empty then
+	 * {@code true} is returned and the predicate is not evaluated.
+	 *
+	 * @param predicate a predicate to apply to elements of this collection
+	 * @return {@code true} if none element of this collections matches the predicate
+	 */
+	default boolean noneMatch(IntPredicate predicate) {
+		Objects.requireNonNull(predicate);
+		final var it = iterator();
+		while (it.hasNext()) {
+			if(predicate.test(it.nextInt())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Returns whether all elements of this collection match the provided
+	 * predicate. May not evaluate the predicate on all elements if not
+	 * necessary for determining the result.  If the collection is empty then
+	 * {@code true} is returned and the predicate is not evaluated.
+	 *
+	 * @param predicate a predicate to apply to elements of this collection
+	 * @return {@code true} if all elements of this collections matches the predicate
+	 */
+	default boolean allMatch(IntPredicate predicate) {
+		Objects.requireNonNull(predicate);
+		final var it = iterator();
+		while (it.hasNext()) {
+			if(!predicate.test(it.nextInt())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Retains only the elements in this collection that are contained in the
 	 * specified collection (optional operation).  In other words, removes from
 	 * this collection all of its elements that are not contained in the
